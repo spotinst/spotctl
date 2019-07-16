@@ -1,0 +1,116 @@
+project_name: spotinst-cli
+
+before:
+  # Global hooks.
+  hooks:
+    - go generate ./...
+
+builds:
+  -
+    # Path to main.go file or main package.
+    main: ./cmd/spotinst/main.go
+
+    # Name template for the binary final name.
+    binary: spotinst
+
+    # Set flags for custom build tags.
+    flags:
+      - -mod=vendor
+
+    # Custom environment variables to be set during the builds.
+    env:
+      - GO111MODULE=on
+      - CGO_ENABLED=0
+
+    # Custom gcflags templates.
+    gcflags:
+      - all=-trimpath={{ .Env.GOPATH }}
+
+    # Custom ldflags templates.
+    ldflags:
+      - -extldflags '-static' -s -w -X {{ .Env.VERSION_PKG }}.Version={{ .Env.VERSION }} -X {{ .Env.VERSION_PKG }}.Prerelease={{ .Env.VERSION_PRE }} -X {{ .Env.VERSION_PKG }}.Metadata={{ .Env.VERSION_META }}
+
+    # GOOS list to build for.
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    # GOARCH list to build for.
+    goarch:
+      - amd64
+
+brews:
+  -
+    # Formula name.
+    name: spotinst-cli
+
+    # Repository to push the tap to.
+    github:
+      owner: spotinst
+      name: homebrew-tap
+
+    # Template for the url.
+    url_template: "http://github.com/spotinst/spotinst-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Git author used to commit to the repository.
+    commit_author:
+      name: spotinst
+      email: team@spotinst.com
+
+    folder: Formula
+    homepage: "https://api.spotinst.com/"
+    description: "A unified command-line interface to manage your Spotinst resources."
+
+    # Setting this to true will prevent goreleaser to actually try to commit the
+    # updated formula. Instead, the formula file will be stored on the dist folder
+    # only, leaving the responsibility of publishing it to the user.
+    #
+    # If set to auto, the release will not be uploaded to the homebrew tap in case
+    # there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Default is false.
+    skip_upload: auto
+
+    # Custom install script for brew.
+    #
+    # Default is 'bin.install "program"'.
+    install: |
+      bin.install "spotinst"
+
+checksum:
+  # Checksums file name template.
+  name_template: '{{ .ProjectName }}-checksums.txt'
+
+changelog:
+  sort: asc
+
+  # Commit messages matching the regexp listed here will be removed from
+  # the changelog.
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
+
+archives:
+    # Archive name template.
+  - name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Env.VERSION }}'
+
+    # Additional files/globs you want to add to the archive.
+    files:
+      - none*
+
+release:
+  # If set to true, will not auto-upload any artifacts to GitHub.
+  disable: false
+
+  # If set to true, will not auto-publish the release.
+  draft: false
+
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto

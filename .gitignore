@@ -1,0 +1,12 @@
+# artifacts
+dist/
+
+# macOS
+.DS_Store
+
+# vim
+*~
+*.swp
+
+# jetbrains
+.idea

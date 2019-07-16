@@ -1,0 +1,85 @@
+# github.com/AlecAivazis/survey/v2 v2.0.2
+github.com/AlecAivazis/survey/v2
+github.com/AlecAivazis/survey/v2/core
+github.com/AlecAivazis/survey/v2/terminal
+# github.com/aws/aws-sdk-go v1.21.9
+github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/awserr
+github.com/aws/aws-sdk-go/aws/awsutil
+github.com/aws/aws-sdk-go/aws/client
+github.com/aws/aws-sdk-go/aws/client/metadata
+github.com/aws/aws-sdk-go/aws/corehandlers
+github.com/aws/aws-sdk-go/aws/credentials
+github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
+github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
+github.com/aws/aws-sdk-go/aws/credentials/processcreds
+github.com/aws/aws-sdk-go/aws/credentials/stscreds
+github.com/aws/aws-sdk-go/aws/csm
+github.com/aws/aws-sdk-go/aws/defaults
+github.com/aws/aws-sdk-go/aws/ec2metadata
+github.com/aws/aws-sdk-go/aws/endpoints
+github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/aws/session
+github.com/aws/aws-sdk-go/aws/signer/v4
+github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/sdkio
+github.com/aws/aws-sdk-go/internal/sdkrand
+github.com/aws/aws-sdk-go/internal/sdkuri
+github.com/aws/aws-sdk-go/internal/shareddefaults
+github.com/aws/aws-sdk-go/private/protocol
+github.com/aws/aws-sdk-go/private/protocol/ec2query
+github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
+github.com/aws/aws-sdk-go/private/protocol/query
+github.com/aws/aws-sdk-go/private/protocol/query/queryutil
+github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
+github.com/aws/aws-sdk-go/service/ec2
+github.com/aws/aws-sdk-go/service/sts
+github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/dustin/go-humanize v1.0.0
+github.com/dustin/go-humanize
+# github.com/ghodss/yaml v1.0.0
+github.com/ghodss/yaml
+# github.com/hashicorp/go-version v1.2.0
+github.com/hashicorp/go-version
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+github.com/jmespath/go-jmespath
+# github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+github.com/kballard/go-shellquote
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
+github.com/liggitt/tabwriter
+# github.com/mattn/go-colorable v0.1.2
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.8
+github.com/mattn/go-isatty
+# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+github.com/mgutz/ansi
+# github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
+github.com/riywo/loginshell
+# github.com/sirupsen/logrus v1.4.2
+github.com/sirupsen/logrus
+# github.com/spf13/cobra v0.0.5
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.3
+github.com/spf13/pflag
+# github.com/spotinst/spotinst-sdk-go v0.0.0-20190814081052-16968d6ba49e
+github.com/spotinst/spotinst-sdk-go/service/ocean
+github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
+github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
+github.com/spotinst/spotinst-sdk-go/spotinst
+github.com/spotinst/spotinst-sdk-go/spotinst/client
+github.com/spotinst/spotinst-sdk-go/spotinst/credentials
+github.com/spotinst/spotinst-sdk-go/spotinst/log
+github.com/spotinst/spotinst-sdk-go/spotinst/session
+github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
+github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
+# github.com/spotinst/spotinst-util-go v0.0.0-20190331130339-d352005f13d3
+github.com/spotinst/spotinst-util-go/version
+# golang.org/x/sys v0.0.0-20190530182044-ad28b68e88f1
+golang.org/x/sys/unix
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
