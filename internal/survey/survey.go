@@ -229,7 +229,14 @@ func (x *Survey) SelectMulti(input *Select) ([]string, error) {
 	}
 
 	if len(input.Defaults) > 0 {
-		prompt.Default = input.Defaults
+		defaults := make([]string, 0, len(input.Defaults))
+		for _, def := range input.Defaults {
+			if v, ok := def.(string); ok {
+				defaults = append(defaults, v)
+			}
+		}
+
+		prompt.Default = defaults
 	}
 
 	if input.Help != "" {
