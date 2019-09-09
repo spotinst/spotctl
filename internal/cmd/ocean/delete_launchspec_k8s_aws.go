@@ -10,6 +10,7 @@ import (
 	"github.com/spotinst/spotinst-cli/internal/log"
 	"github.com/spotinst/spotinst-cli/internal/survey"
 	"github.com/spotinst/spotinst-cli/internal/thirdparty/commands/kops"
+	"github.com/spotinst/spotinst-cli/internal/utils/flags"
 )
 
 type (
@@ -53,7 +54,12 @@ func newCmdDeleteLaunchSpecKubernetesAWS(opts *CmdDeleteLaunchSpecKubernetesOpti
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesAWS) Run(ctx context.Context) error {
-	steps := []func(context.Context) error{x.survey, x.validate, x.run}
+	steps := []func(context.Context) error{
+		x.survey,
+		x.log,
+		x.validate,
+		x.run,
+	}
 
 	for _, step := range steps {
 		if err := step(ctx); err != nil {
@@ -125,6 +131,11 @@ func (x *CmdDeleteLaunchSpecKubernetesAWS) survey(ctx context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+func (x *CmdDeleteLaunchSpecKubernetesAWS) log(ctx context.Context) error {
+	flags.Log(x.cmd)
 	return nil
 }
 

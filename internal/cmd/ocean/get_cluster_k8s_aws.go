@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
+	"github.com/spotinst/spotinst-cli/internal/utils/flags"
 	"github.com/spotinst/spotinst-cli/internal/writer"
 )
 
@@ -43,7 +44,12 @@ func newCmdGetClusterKubernetesAWS(opts *CmdGetClusterKubernetesOptions) *CmdGet
 }
 
 func (x *CmdGetClusterKubernetesAWS) Run(ctx context.Context) error {
-	steps := []func(context.Context) error{x.survey, x.validate, x.run}
+	steps := []func(context.Context) error{
+		x.survey,
+		x.log,
+		x.validate,
+		x.run,
+	}
 
 	for _, step := range steps {
 		if err := step(ctx); err != nil {
@@ -59,6 +65,11 @@ func (x *CmdGetClusterKubernetesAWS) survey(ctx context.Context) error {
 		return nil
 	}
 
+	return nil
+}
+
+func (x *CmdGetClusterKubernetesAWS) log(ctx context.Context) error {
+	flags.Log(x.cmd)
 	return nil
 }
 
