@@ -31,12 +31,12 @@ func (x *factory) NewSpotinst(options ...spotinst.ClientOption) (spotinst.Interf
 }
 
 func (x *factory) NewCloud(name cloud.ProviderName) (cloud.Interface, error) {
-	log.Debugf("Instantiating new cloud (%s)", name)
+	log.Debugf("Instantiating new cloud: %s", name)
 	return cloud.GetInstance(name)
 }
 
 func (x *factory) NewCommand(name thirdparty.CommandName) (thirdparty.Command, error) {
-	log.Debugf("Instantiating new command (%s)", name)
+	log.Debugf("Instantiating new command: %s", name)
 	return thirdparty.GetInstance(name, thirdparty.WithStdio(x.in, x.out, x.err))
 }
 
@@ -51,6 +51,6 @@ func (x *factory) NewDep() (dep.Interface, error) {
 }
 
 func (x *factory) NewWriter(format writer.Format) (writer.Writer, error) {
-	log.Debugf("Instantiating new writer (%s)", format)
+	log.Debugf("Instantiating new writer: %s", format)
 	return writer.GetInstance(format, x.out)
 }
