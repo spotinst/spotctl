@@ -5,11 +5,14 @@ import (
 )
 
 type ClientOptions struct {
-	// User credentials.
+	// Credentials profile. Defaults to `default`.
+	Profile string
+
+	// Static user credentials.
 	Token, Account string
 
 	// BaseURL configures the default base URL of the Spotinst API.
-	// Defaults to https://api.spotinst.io.
+	// Defaults to `https://api.spotinst.io`.
 	BaseURL string
 
 	// DryRun configures the client to print the actions that would be executed,
@@ -20,8 +23,15 @@ type ClientOptions struct {
 // ClientOption allows specifying various settings configurable by the client.
 type ClientOption func(*ClientOptions)
 
-// WithCredentials specifies static credentials.
-func WithCredentials(token, account string) ClientOption {
+// WithCredentialsProfile specifies credentials profile to use.
+func WithCredentialsProfile(profile string) ClientOption {
+	return func(opts *ClientOptions) {
+		opts.Profile = profile
+	}
+}
+
+// WithCredentialsStatic specifies static credentials.
+func WithCredentialsStatic(token, account string) ClientOption {
 	return func(opts *ClientOptions) {
 		opts.Token = token
 		opts.Account = account

@@ -38,8 +38,13 @@ func New(options ...ClientOption) Interface {
 		}
 	}
 
-	// Configure credentials, if provided.
+	// Configure credentials.
 	{
+		if opts.Profile != "" {
+			cfg.WithCredentials(credentials.NewFileCredentials(opts.Profile, credentials.DefaultFilename()))
+			log.Debugf("Configured file credentials")
+		}
+
 		if opts.Token != "" || opts.Account != "" {
 			cfg.WithCredentials(credentials.NewStaticCredentials(opts.Token, opts.Account))
 			log.Debugf("Configured static credentials")
@@ -50,7 +55,7 @@ func New(options ...ClientOption) Interface {
 	{
 		if opts.DryRun {
 			cfg.HTTPClient.Transport = new(roundTripperMock)
-			cfg.WithCredentials(credentials.NewStaticCredentials("unknown", "unknown"))
+			cfg.WithCredentials(credentials.NewStaticCredentials("dry-run", "dry-run"))
 			log.Debugf("Configured dry-run mode")
 		}
 	}

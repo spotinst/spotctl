@@ -156,11 +156,11 @@ func (x *CmdRoot) initLogger() error {
 }
 
 func (x *CmdRoot) initProfiling() error {
-	switch x.opts.Profile {
+	switch x.opts.PprofProfile {
 	case "none":
 		return nil
 	case "cpu":
-		f, err := os.Create(x.opts.ProfileOutput)
+		f, err := os.Create(x.opts.PprofOutput)
 		if err != nil {
 			return err
 		}
@@ -175,8 +175,8 @@ func (x *CmdRoot) initProfiling() error {
 		return nil
 	default:
 		// Check the profile name is valid.
-		if profile := pprof.Lookup(x.opts.Profile); profile == nil {
-			return fmt.Errorf("unknown profile %q", x.opts.Profile)
+		if profile := pprof.Lookup(x.opts.PprofProfile); profile == nil {
+			return fmt.Errorf("unknown profile %q", x.opts.PprofProfile)
 		}
 	}
 
@@ -184,7 +184,7 @@ func (x *CmdRoot) initProfiling() error {
 }
 
 func (x *CmdRoot) flushProfiling() error {
-	switch x.opts.Profile {
+	switch x.opts.PprofProfile {
 	case "none":
 		return nil
 	case "cpu":
@@ -193,11 +193,11 @@ func (x *CmdRoot) flushProfiling() error {
 		runtime.GC()
 		fallthrough
 	default:
-		profile := pprof.Lookup(x.opts.Profile)
+		profile := pprof.Lookup(x.opts.PprofProfile)
 		if profile == nil {
 			return nil
 		}
-		f, err := os.Create(x.opts.ProfileOutput)
+		f, err := os.Create(x.opts.PprofOutput)
 		if err != nil {
 			return err
 		}

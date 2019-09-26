@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.21.9
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-ini/ini v1.48.0
 	github.com/hashicorp/go-version v1.2.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
@@ -15,7 +16,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
-	github.com/spotinst/spotinst-sdk-go v0.0.0-20190814081052-16968d6ba49e
-	github.com/spotinst/spotinst-util-go v0.0.0-20190331130339-d352005f13d3
+	github.com/spotinst/spotinst-sdk-go v0.0.0-20190925085030-e4a2ed790d91
 	github.com/stretchr/testify v1.3.0 // indirect
 )

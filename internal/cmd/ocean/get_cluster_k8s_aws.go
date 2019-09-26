@@ -78,7 +78,11 @@ func (x *CmdGetClusterKubernetesAWS) validate(ctx context.Context) error {
 }
 
 func (x *CmdGetClusterKubernetesAWS) run(ctx context.Context) error {
-	spotinstClient, err := x.opts.Clients.NewSpotinst()
+	spotinstClientOpts := []spotinst.ClientOption{
+		spotinst.WithCredentialsProfile(x.opts.Profile),
+	}
+
+	spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
 	if err != nil {
 		return err
 	}

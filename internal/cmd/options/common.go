@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/cmd/clients"
+	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 )
 
 // CommonOptions contains common options and helper methods.
@@ -37,10 +38,15 @@ type CommonOptions struct {
 	// Verbose enables verbose logging.
 	Verbose bool
 
-	// Profile and ProfileOutput enables collecting of runtime profiling data for
-	// the command's process in the format expected by the pprof visualization tool.
+	// Profile configures the name of the credentials profile to use.
+	// Defaults to `default`.
+	Profile string
+
+	// PprofProfile and PprofOutput enables collecting of runtime profiling data
+	// for the command's process in the format expected by the pprof visualization
+	// tool.
 	//
-	// Profile configures the type of profile to capture:
+	// PprofProfile configures the type of profile to capture:
 	// 	- cpu
 	// 	- heap
 	// 	- goroutine
@@ -48,9 +54,8 @@ type CommonOptions struct {
 	// 	- block
 	// 	- mutex
 	//
-	// ProfileOutput configures the path of the file to write the profile to.
-	Profile       string
-	ProfileOutput string
+	// PprofOutput configures the path of the file to write the profile to.
+	PprofProfile, PprofOutput string
 }
 
 func NewCommonOptions(in io.Reader, out, err io.Writer) *CommonOptions {
@@ -69,22 +74,30 @@ func (x *CommonOptions) Init(flags *pflag.FlagSet) {
 }
 
 func (x *CommonOptions) initDefaults() {
-	x.Profile = "none"
-	x.ProfileOutput = "profile.pprof"
+	x.PprofProfile = "none"
+	x.PprofOutput = "profile.pprof"
+	x.Profile = credentials.DefaultProfile()
 	x.Timeout = time.Minute
 }
 
 func (x *CommonOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
+	flags.StringVarP(
 		&x.Profile,
 		"profile",
+		"p",
 		x.Profile,
+		"name of credentials profile to use")
+
+	flags.StringVar(
+		&x.PprofProfile,
+		"pprof-profile",
+		x.PprofProfile,
 		"name of profile to capture (none|cpu|heap|goroutine|threadcreate|block|mutex)")
 
 	flags.StringVar(
-		&x.ProfileOutput,
-		"profile-output",
-		x.ProfileOutput,
+		&x.PprofOutput,
+		"pprof-output",
+		x.PprofOutput,
 		"name of the file to write the profile to")
 
 	flags.BoolVarP(

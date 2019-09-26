@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-ini/ini"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/cmd/options"
@@ -12,6 +13,7 @@ import (
 	"github.com/spotinst/spotinst-cli/internal/log"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
 	"github.com/spotinst/spotinst-cli/internal/survey"
+	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 )
 
 type (
@@ -93,8 +95,7 @@ func (x *Cmd) survey(ctx context.Context) error {
 		if x.opts.Account == "" {
 			// Instantiate a Spotinst client instance.
 			spotinstClientOpts := []spotinst.ClientOption{
-				spotinst.WithCredentials(x.opts.Token, ""),
-				spotinst.WithDryRun(x.opts.DryRun),
+				spotinst.WithCredentialsStatic(x.opts.Token, ""),
 			}
 
 			spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
@@ -134,7 +135,41 @@ func (x *Cmd) validate(ctx context.Context) error {
 }
 
 func (x *Cmd) run(ctx context.Context) error {
-	return errors.NotImplemented()
+	// Configuration filename.
+	filename := credentials.DefaultFilename()
+
+	// Create or update configuration.
+	cfg, err := ini.LooseLoad(filename)
+	if err != nil {
+		return err
+	}
+
+	// Create a new `default` section.
+	sec, err := cfg.NewSection(x.opts.Profile)
+	if err != nil {
+		return err
+	}
+
+	// Create a new `token` key.
+	if _, err := sec.NewKey("token", x.opts.Token); err != nil {
+		return err
+	}
+
+	// Create a new `account` key.
+	if x.opts.Account != "" {
+		if _, err := sec.NewKey("account", x.opts.Account); err != nil {
+			return err
+		}
+	}
+
+	// Write out configuration to stdout.
+	if x.opts.DryRun {
+		_, err := cfg.WriteTo(x.opts.Out)
+		return err
+	}
+
+	// Write out configuration to a file.
+	return cfg.SaveTo(filename)
 }
 
 func (x *CmdOptions) Init(flags *pflag.FlagSet, opts *options.CommonOptions) {
