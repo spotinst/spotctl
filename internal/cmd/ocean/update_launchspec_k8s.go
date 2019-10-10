@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"reflect"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -14,15 +15,16 @@ import (
 )
 
 type (
-	CmdCreateLaunchSpecKubernetes struct {
+	CmdUpdateLaunchSpecKubernetes struct {
 		cmd  *cobra.Command
-		opts CmdCreateLaunchSpecKubernetesOptions
+		opts CmdUpdateLaunchSpecKubernetesOptions
 	}
 
-	CmdCreateLaunchSpecKubernetesOptions struct {
-		*CmdCreateLaunchSpecOptions
+	CmdUpdateLaunchSpecKubernetesOptions struct {
+		*CmdUpdateLaunchSpecOptions
 
 		Name             string
+		SpecID           string
 		OceanID          string
 		ImageID          string
 		UserData         string
@@ -30,16 +32,16 @@ type (
 	}
 )
 
-func NewCmdCreateLaunchSpecKubernetes(opts *CmdCreateLaunchSpecOptions) *cobra.Command {
-	return newCmdCreateLaunchSpecKubernetes(opts).cmd
+func NewCmdUpdateLaunchSpecKubernetes(opts *CmdUpdateLaunchSpecOptions) *cobra.Command {
+	return newCmdUpdateLaunchSpecKubernetes(opts).cmd
 }
 
-func newCmdCreateLaunchSpecKubernetes(opts *CmdCreateLaunchSpecOptions) *CmdCreateLaunchSpecKubernetes {
-	var cmd CmdCreateLaunchSpecKubernetes
+func newCmdUpdateLaunchSpecKubernetes(opts *CmdUpdateLaunchSpecOptions) *CmdUpdateLaunchSpecKubernetes {
+	var cmd CmdUpdateLaunchSpecKubernetes
 
 	cmd.cmd = &cobra.Command{
 		Use:           "kubernetes",
-		Short:         "Create a new Kubernetes launchspec",
+		Short:         "Update an existing Kubernetes launchspec",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -52,7 +54,7 @@ func newCmdCreateLaunchSpecKubernetes(opts *CmdCreateLaunchSpecOptions) *CmdCrea
 	return &cmd
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) Run(ctx context.Context) error {
+func (x *CmdUpdateLaunchSpecKubernetes) Run(ctx context.Context) error {
 	steps := []func(context.Context) error{
 		x.survey,
 		x.log,
@@ -69,7 +71,7 @@ func (x *CmdCreateLaunchSpecKubernetes) Run(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) survey(ctx context.Context) error {
+func (x *CmdUpdateLaunchSpecKubernetes) survey(ctx context.Context) error {
 	if x.opts.Noninteractive {
 		return nil
 	}
@@ -77,16 +79,16 @@ func (x *CmdCreateLaunchSpecKubernetes) survey(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) log(ctx context.Context) error {
+func (x *CmdUpdateLaunchSpecKubernetes) log(ctx context.Context) error {
 	flags.Log(x.cmd)
 	return nil
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) validate(ctx context.Context) error {
+func (x *CmdUpdateLaunchSpecKubernetes) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) run(ctx context.Context) error {
+func (x *CmdUpdateLaunchSpecKubernetes) run(ctx context.Context) error {
 	spotinstClientOpts := []spotinst.ClientOption{
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
@@ -101,28 +103,31 @@ func (x *CmdCreateLaunchSpecKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	spec, err := oceanClient.CreateLaunchSpec(ctx, x.buildLaunchSpecFromOpts())
-	if err != nil {
-		return err
+	spec, ok := x.buildLaunchSpecFromOpts()
+	if !ok {
+		fmt.Fprintln(x.opts.Out, "Update cancelled, no changes made.")
+		return nil
 	}
 
-	fmt.Fprintln(x.opts.Out, spec.ID)
-	return nil
+	_, err = oceanClient.UpdateLaunchSpec(ctx, spec)
+	return err
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) buildLaunchSpecFromOpts() *spotinst.OceanLaunchSpec {
+func (x *CmdUpdateLaunchSpecKubernetes) buildLaunchSpecFromOpts() (*spotinst.OceanLaunchSpec, bool) {
 	var spec interface{}
+	var changed bool
 
 	switch x.opts.CloudProvider {
 	case spotinst.CloudProviderAWS:
-		spec = x.buildLaunchSpecFromOptsAWS()
+		spec, changed = x.buildLaunchSpecFromOptsAWS()
 	}
 
-	return &spotinst.OceanLaunchSpec{Obj: spec}
+	return &spotinst.OceanLaunchSpec{Obj: spec}, changed
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) buildLaunchSpecFromOptsAWS() *aws.LaunchSpec {
+func (x *CmdUpdateLaunchSpecKubernetes) buildLaunchSpecFromOptsAWS() (*aws.LaunchSpec, bool) {
 	spec := new(aws.LaunchSpec)
+	changed := false
 
 	if x.opts.Name != "" {
 		spec.SetName(spotinstsdk.String(x.opts.Name))
@@ -148,24 +153,34 @@ func (x *CmdCreateLaunchSpecKubernetes) buildLaunchSpecFromOptsAWS() *aws.Launch
 		spec.SetSecurityGroupIDs(x.opts.SecurityGroupIDs)
 	}
 
-	return spec
+	if changed = !reflect.DeepEqual(spec, new(aws.LaunchSpec)); changed {
+		spec.SetId(spotinstsdk.String(x.opts.SpecID))
+	}
+
+	return spec, changed
 }
 
-func (x *CmdCreateLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdCreateLaunchSpecOptions) {
+func (x *CmdUpdateLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdUpdateLaunchSpecOptions) {
 	x.initDefaults(opts)
 	x.initFlags(flags)
 }
 
-func (x *CmdCreateLaunchSpecKubernetesOptions) initDefaults(opts *CmdCreateLaunchSpecOptions) {
-	x.CmdCreateLaunchSpecOptions = opts
+func (x *CmdUpdateLaunchSpecKubernetesOptions) initDefaults(opts *CmdUpdateLaunchSpecOptions) {
+	x.CmdUpdateLaunchSpecOptions = opts
 }
 
-func (x *CmdCreateLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
+func (x *CmdUpdateLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
 	flags.StringVar(
 		&x.Name,
 		"name",
 		x.Name,
 		"name of the launch spec")
+
+	flags.StringVar(
+		&x.SpecID,
+		"spec-id",
+		x.SpecID,
+		"id of the launch spec")
 
 	flags.StringVar(
 		&x.OceanID,
@@ -186,6 +201,6 @@ func (x *CmdCreateLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
 		"user data to provide when launching a node (plain-text or base64-encoded)")
 }
 
-func (x *CmdCreateLaunchSpecKubernetesOptions) Validate() error {
-	return x.CmdCreateLaunchSpecOptions.Validate()
+func (x *CmdUpdateLaunchSpecKubernetesOptions) Validate() error {
+	return x.CmdUpdateLaunchSpecOptions.Validate()
 }

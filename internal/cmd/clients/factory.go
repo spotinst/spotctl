@@ -5,6 +5,7 @@ import (
 
 	"github.com/spotinst/spotinst-cli/internal/cloud"
 	"github.com/spotinst/spotinst-cli/internal/dep"
+	"github.com/spotinst/spotinst-cli/internal/editor"
 	"github.com/spotinst/spotinst-cli/internal/log"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
 	"github.com/spotinst/spotinst-cli/internal/survey"
@@ -48,6 +49,11 @@ func (x *factory) NewSurvey() (survey.Interface, error) {
 func (x *factory) NewDep() (dep.Interface, error) {
 	log.Debugf("Instantiating new dependency manager")
 	return dep.New(survey.New(x.in, x.out, x.err)), nil
+}
+
+func (x *factory) NewEditor() (editor.Editor, error) {
+	log.Debugf("Instantiating new editor")
+	return editor.New(x.in, x.out, x.err), nil
 }
 
 func (x *factory) NewWriter(format writer.Format) (writer.Writer, error) {

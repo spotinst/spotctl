@@ -39,6 +39,7 @@ type CommonOptions struct {
 	Verbose bool
 
 	// Profile configures the name of the credentials profile to use.
+	//
 	// Defaults to `default`.
 	Profile string
 

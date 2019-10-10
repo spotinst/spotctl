@@ -38,6 +38,30 @@ type (
 
 		// ListLaunchSpecs returns a list of Ocean launch specs.
 		ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, error)
+
+		// GetCluster returns an Ocean cluster spec by ID.
+		GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error)
+
+		// GetLaunchSpec returns an Ocean launch spec by ID.
+		GetLaunchSpec(ctx context.Context, specID string) (*OceanLaunchSpec, error)
+
+		// CreateCluster creates a new Ocean cluster.
+		CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error)
+
+		// CreateLaunchSpec creates a new Ocean launch spec.
+		CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error)
+
+		// UpdateCluster updates an existing Ocean cluster by ID.
+		UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error)
+
+		// UpdateLaunchSpec updates an existing Ocean launch spec by ID.
+		UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error)
+
+		// DeleteCluster deletes an Ocean cluster spec by ID.
+		DeleteCluster(ctx context.Context, clusterID string) error
+
+		// DeleteLaunchSpec deletes an Ocean launch spec by ID.
+		DeleteLaunchSpec(ctx context.Context, specID string) error
 	}
 
 	// CloudProviderName represents the name of a cloud provider.
@@ -49,8 +73,9 @@ type (
 
 // Cloud Providers.
 const (
-	CloudProviderAWS CloudProviderName = "aws"
-	CloudProviderGCP CloudProviderName = "gcp"
+	CloudProviderAWS   CloudProviderName = "aws"
+	CloudProviderGCP   CloudProviderName = "gcp"
+	CloudProviderAzure CloudProviderName = "azure"
 )
 
 // Orchestrators.

@@ -25,9 +25,6 @@ type (
 
 		// UpdatedAt represents the timestamp when the cluster has been updated.
 		UpdatedAt time.Time `json:"updatedAt" table:"10,updated"`
-
-		// Obj holds the raw object which is an orchestrator-specific implementation.
-		Obj interface{} `json:"-"`
 	}
 
 	// Account represents a Spotinst account.
@@ -52,6 +49,9 @@ type (
 
 		// Object's metadata.
 		ObjectMeta
+
+		// Obj holds the raw object which is an orchestrator-specific implementation.
+		Obj interface{} `json:"-"`
 	}
 
 	// OceanLaunchSpec represents an Ocean launch spec.
@@ -61,6 +61,9 @@ type (
 
 		// Object's metadata.
 		ObjectMeta
+
+		// Obj holds the raw object which is an orchestrator-specific implementation.
+		Obj interface{} `json:"-"`
 	}
 )
 

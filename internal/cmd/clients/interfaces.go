@@ -5,6 +5,7 @@ import (
 
 	"github.com/spotinst/spotinst-cli/internal/cloud"
 	"github.com/spotinst/spotinst-cli/internal/dep"
+	"github.com/spotinst/spotinst-cli/internal/editor"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
 	"github.com/spotinst/spotinst-cli/internal/survey"
 	"github.com/spotinst/spotinst-cli/internal/thirdparty"
@@ -33,6 +34,9 @@ type (
 
 		// NewDep returns an instance of dependency manager interface.
 		NewDep() (dep.Interface, error)
+
+		// NewEditor returns an instance of an editor.
+		NewEditor() (editor.Editor, error)
 
 		// NewWriter returns an instance of writer interface.
 		NewWriter(format writer.Format) (writer.Writer, error)

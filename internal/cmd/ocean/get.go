@@ -29,7 +29,7 @@ func newCmdGet(opts *CmdOptions) *CmdGet {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "get",
-		Short:         "Display on or many resources",
+		Short:         "Display one or many resources",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

@@ -17,13 +17,13 @@ import (
 )
 
 type (
-	CmdCreateClusterKubernetesAWS struct {
+	CmdQuickstartClusterKubernetesAWS struct {
 		cmd  *cobra.Command
-		opts CmdCreateClusterKubernetesAWSOptions
+		opts CmdQuickstartClusterKubernetesAWSOptions
 	}
 
-	CmdCreateClusterKubernetesAWSOptions struct {
-		*CmdCreateClusterKubernetesOptions
+	CmdQuickstartClusterKubernetesAWSOptions struct {
+		*CmdQuickstartClusterKubernetesOptions
 
 		// Basic
 		ClusterName string
@@ -52,16 +52,16 @@ type (
 	}
 )
 
-func NewCmdCreateClusterKubernetesAWS(opts *CmdCreateClusterKubernetesOptions) *cobra.Command {
-	return newCmdCreateClusterKubernetesAWS(opts).cmd
+func NewCmdQuickstartClusterKubernetesAWS(opts *CmdQuickstartClusterKubernetesOptions) *cobra.Command {
+	return newCmdQuickstartClusterKubernetesAWS(opts).cmd
 }
 
-func newCmdCreateClusterKubernetesAWS(opts *CmdCreateClusterKubernetesOptions) *CmdCreateClusterKubernetesAWS {
-	var cmd CmdCreateClusterKubernetesAWS
+func newCmdQuickstartClusterKubernetesAWS(opts *CmdQuickstartClusterKubernetesOptions) *CmdQuickstartClusterKubernetesAWS {
+	var cmd CmdQuickstartClusterKubernetesAWS
 
 	cmd.cmd = &cobra.Command{
 		Use:           "aws",
-		Short:         "Create a new Ocean cluster on AWS (using kops)",
+		Short:         "Quickstart a new Ocean cluster on AWS (using kops)",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -74,7 +74,7 @@ func newCmdCreateClusterKubernetesAWS(opts *CmdCreateClusterKubernetesOptions) *
 	return &cmd
 }
 
-func (x *CmdCreateClusterKubernetesAWS) Run(ctx context.Context) error {
+func (x *CmdQuickstartClusterKubernetesAWS) Run(ctx context.Context) error {
 	steps := []func(context.Context) error{
 		x.survey,
 		x.log,
@@ -91,7 +91,7 @@ func (x *CmdCreateClusterKubernetesAWS) Run(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetesAWS) survey(ctx context.Context) error {
+func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 	if x.opts.Noninteractive {
 		return nil
 	}
@@ -361,16 +361,16 @@ func (x *CmdCreateClusterKubernetesAWS) survey(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetesAWS) log(ctx context.Context) error {
+func (x *CmdQuickstartClusterKubernetesAWS) log(ctx context.Context) error {
 	flags.Log(x.cmd)
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetesAWS) validate(ctx context.Context) error {
+func (x *CmdQuickstartClusterKubernetesAWS) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
-func (x *CmdCreateClusterKubernetesAWS) run(ctx context.Context) error {
+func (x *CmdQuickstartClusterKubernetesAWS) run(ctx context.Context) error {
 	cmd, err := x.opts.Clients.NewCommand(kops.CommandName)
 	if err != nil {
 		return err
@@ -379,7 +379,7 @@ func (x *CmdCreateClusterKubernetesAWS) run(ctx context.Context) error {
 	return cmd.Run(ctx, x.buildKopsArgs()...)
 }
 
-func (x *CmdCreateClusterKubernetesAWS) buildKopsArgs() []string {
+func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
 	log.Debugf("Building up command arguments")
 
 	args := []string{
@@ -446,13 +446,13 @@ func (x *CmdCreateClusterKubernetesAWS) buildKopsArgs() []string {
 	return args
 }
 
-func (x *CmdCreateClusterKubernetesAWSOptions) Init(flags *pflag.FlagSet, opts *CmdCreateClusterKubernetesOptions) {
+func (x *CmdQuickstartClusterKubernetesAWSOptions) Init(flags *pflag.FlagSet, opts *CmdQuickstartClusterKubernetesOptions) {
 	x.initDefaults(opts)
 	x.initFlags(flags)
 }
 
-func (x *CmdCreateClusterKubernetesAWSOptions) initDefaults(opts *CmdCreateClusterKubernetesOptions) {
-	x.CmdCreateClusterKubernetesOptions = opts
+func (x *CmdQuickstartClusterKubernetesAWSOptions) initDefaults(opts *CmdQuickstartClusterKubernetesOptions) {
+	x.CmdQuickstartClusterKubernetesOptions = opts
 	x.ClusterName = os.Getenv("KOPS_CLUSTER_NAME")
 	x.State = os.Getenv("KOPS_STATE_STORE")
 	x.Region = os.Getenv("AWS_DEFAULT_REGION")
@@ -462,7 +462,7 @@ func (x *CmdCreateClusterKubernetesAWSOptions) initDefaults(opts *CmdCreateClust
 	x.SSHPublicKey = "~/.ssh/id_rsa.pub"
 }
 
-func (x *CmdCreateClusterKubernetesAWSOptions) initFlags(flags *pflag.FlagSet) {
+func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(flags *pflag.FlagSet) {
 	flags.StringVar(
 		&x.ClusterName,
 		"cluster-name",
@@ -548,17 +548,17 @@ func (x *CmdCreateClusterKubernetesAWSOptions) initFlags(flags *pflag.FlagSet) {
 		"kubernetes version")
 }
 
-func (x *CmdCreateClusterKubernetesAWSOptions) Validate() error {
-	if err := x.CmdCreateClusterKubernetesOptions.Validate(); err != nil {
+func (x *CmdQuickstartClusterKubernetesAWSOptions) Validate() error {
+	if err := x.CmdQuickstartClusterKubernetesOptions.Validate(); err != nil {
 		return err
 	}
 
 	if x.State == "" {
-		return errors.Required("state")
+		return errors.Required("State")
 	}
 
 	if x.ClusterName == "" {
-		return errors.Required("cluster-name")
+		return errors.Required("ClusterName")
 	}
 
 	return nil

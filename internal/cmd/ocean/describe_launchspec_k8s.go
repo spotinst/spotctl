@@ -1,8 +1,14 @@
 package ocean
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotinst-cli/internal/errors"
+	"github.com/spotinst/spotinst-cli/internal/spotinst"
+	"github.com/spotinst/spotinst-cli/internal/utils/flags"
+	"github.com/spotinst/spotinst-cli/internal/writer/writers/json"
 )
 
 type (
@@ -13,6 +19,8 @@ type (
 
 	CmdDescribeLaunchSpecKubernetesOptions struct {
 		*CmdDescribeLaunchSpecOptions
+
+		LaunchSpecID string
 	}
 )
 
@@ -28,28 +36,103 @@ func newCmdDescribeLaunchSpecKubernetes(opts *CmdDescribeLaunchSpecOptions) *Cmd
 		Short:         "Describe a Kubernetes launch spec",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		RunE: func(*cobra.Command, []string) error {
+			return cmd.Run(context.Background())
+		},
 	}
 
 	cmd.opts.Init(cmd.cmd.Flags(), opts)
-	cmd.initSubCommands()
 
 	return &cmd
 }
 
-func (x *CmdDescribeLaunchSpecKubernetes) initSubCommands() {
-	commands := []func(*CmdDescribeLaunchSpecKubernetesOptions) *cobra.Command{
-		NewCmdDescribeLaunchSpecKubernetesAWS,
+func (x *CmdDescribeLaunchSpecKubernetes) Run(ctx context.Context) error {
+	steps := []func(context.Context) error{
+		x.survey,
+		x.log,
+		x.validate,
+		x.run,
 	}
 
-	for _, cmd := range commands {
-		x.cmd.AddCommand(cmd(&x.opts))
+	for _, step := range steps {
+		if err := step(ctx); err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func (x *CmdDescribeLaunchSpecKubernetes) survey(ctx context.Context) error {
+	if x.opts.Noninteractive {
+		return nil
+	}
+
+	return nil
+}
+
+func (x *CmdDescribeLaunchSpecKubernetes) log(ctx context.Context) error {
+	flags.Log(x.cmd)
+	return nil
+}
+
+func (x *CmdDescribeLaunchSpecKubernetes) validate(ctx context.Context) error {
+	return x.opts.Validate()
+}
+
+func (x *CmdDescribeLaunchSpecKubernetes) run(ctx context.Context) error {
+	spotinstClientOpts := []spotinst.ClientOption{
+		spotinst.WithCredentialsProfile(x.opts.Profile),
+	}
+
+	spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
+	if err != nil {
+		return err
+	}
+
+	oceanClient, err := spotinstClient.Services().Ocean(x.opts.CloudProvider, spotinst.OrchestratorKubernetes)
+	if err != nil {
+		return err
+	}
+
+	spec, err := oceanClient.GetLaunchSpec(ctx, x.opts.LaunchSpecID)
+	if err != nil {
+		return err
+	}
+
+	w, err := x.opts.Clients.NewWriter(json.WriterFormat)
+	if err != nil {
+		return err
+	}
+
+	return w.Write(spec)
 }
 
 func (x *CmdDescribeLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdDescribeLaunchSpecOptions) {
+	x.initDefaults(opts)
+	x.initFlags(flags)
+}
+
+func (x *CmdDescribeLaunchSpecKubernetesOptions) initDefaults(opts *CmdDescribeLaunchSpecOptions) {
 	x.CmdDescribeLaunchSpecOptions = opts
 }
 
+func (x *CmdDescribeLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
+	flags.StringVar(
+		&x.LaunchSpecID,
+		"spec-id",
+		x.LaunchSpecID,
+		"id of the launch spec")
+}
+
 func (x *CmdDescribeLaunchSpecKubernetesOptions) Validate() error {
-	return x.CmdDescribeLaunchSpecOptions.Validate()
+	if err := x.CmdDescribeLaunchSpecOptions.Validate(); err != nil {
+		return err
+	}
+
+	if x.LaunchSpecID == "" {
+		return errors.Required("LaunchSpecID")
+	}
+
+	return nil
 }

@@ -25,7 +25,7 @@ func newCmdDescribeLaunchSpec(opts *CmdDescribeOptions) *CmdDescribeLaunchSpec {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "launchspec",
-		Short:         "Describe a launchspec",
+		Short:         "Describe a launch spec",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

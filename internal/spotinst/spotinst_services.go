@@ -15,17 +15,32 @@ func (x *apiServices) Ocean(provider CloudProviderName, orchestrator Orchestrato
 	switch provider {
 	case CloudProviderAWS:
 		return x.oceanAWS(orchestrator)
+	case CloudProviderGCP:
+		return x.oceanGCP(orchestrator)
 	default:
 		return nil, fmt.Errorf("spotinst: unsupported cloud provider: %s", provider)
 	}
 }
 
 func (x *apiServices) oceanAWS(orchestrator OrchestratorName) (OceanInterface, error) {
+	svc := ocean.New(x.session).CloudProviderAWS()
+
 	switch orchestrator {
 	case OrchestratorKubernetes:
-		return &oceanKubernetesAWS{
-			svc: ocean.New(x.session).CloudProviderAWS(),
-		}, nil
+		return &oceanKubernetesAWS{svc}, nil
+	case OrchestratorECS:
+		return &oceanECS{svc}, nil
+	default:
+		return nil, fmt.Errorf("spotinst: unsupported orchestrator: %s", orchestrator)
+	}
+}
+
+func (x *apiServices) oceanGCP(orchestrator OrchestratorName) (OceanInterface, error) {
+	svc := ocean.New(x.session).CloudProviderGCP()
+
+	switch orchestrator {
+	case OrchestratorKubernetes:
+		return &oceanKubernetesGCP{svc}, nil
 	default:
 		return nil, fmt.Errorf("spotinst: unsupported orchestrator: %s", orchestrator)
 	}

@@ -13,9 +13,6 @@ type (
 
 	CmdCreateOptions struct {
 		*CmdOptions
-
-		// Create options
-		Advanced bool
 	}
 )
 
@@ -33,7 +30,7 @@ func newCmdCreate(opts *CmdOptions) *CmdCreate {
 		SilenceUsage:  true,
 	}
 
-	cmd.opts.Init(cmd.cmd.Flags(), opts)
+	cmd.opts.Init(cmd.cmd.PersistentFlags(), opts)
 	cmd.initSubCommands()
 
 	return &cmd

@@ -25,7 +25,7 @@ func newCmdDeleteLaunchSpec(opts *CmdDeleteOptions) *CmdDeleteLaunchSpec {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "launchspec",
-		Short:         "Delete an existing launchspec",
+		Short:         "Delete an existing launch spec",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

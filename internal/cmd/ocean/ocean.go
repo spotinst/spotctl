@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/cmd/options"
-	"github.com/spotinst/spotinst-cli/internal/dep"
+	"github.com/spotinst/spotinst-cli/internal/spotinst"
 )
 
 type (
@@ -17,6 +17,12 @@ type (
 
 	CmdOptions struct {
 		*options.CommonOptions
+
+		// CloudProvider configures the name of the cloud provider associated with
+		// the account.
+		//
+		// Populated by a pre-run function.
+		CloudProvider spotinst.CloudProviderName
 	}
 )
 
@@ -29,7 +35,7 @@ func newCmd(opts *options.CommonOptions) *Cmd {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "ocean",
-		Short:         "Manage Cmd resources",
+		Short:         "Manage Ocean resources",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRunE: func(*cobra.Command, []string) error {
@@ -43,19 +49,6 @@ func newCmd(opts *options.CommonOptions) *Cmd {
 	return &cmd
 }
 
-func (x *Cmd) initSubCommands() {
-	commands := []func(*CmdOptions) *cobra.Command{
-		NewCmdCreate,
-		NewCmdDelete,
-		NewCmdGet,
-		NewCmdDescribe,
-	}
-
-	for _, cmd := range commands {
-		x.cmd.AddCommand(cmd(&x.opts))
-	}
-}
-
 func (x *Cmd) preRun(ctx context.Context) error {
 	// Call to the the parent command's PersistentPreRunE.
 	// See: https://github.com/spf13/cobra/issues/216.
@@ -65,24 +58,28 @@ func (x *Cmd) preRun(ctx context.Context) error {
 		}
 	}
 
-	return x.installDeps(ctx)
+	// TODO(liran): Use the Spotinst API to figure out the cloud provider
+	//  associated with the configured account. We support a single cloud
+	//  provider (AWS) it's okay to to hard coded it here for now.
+	x.opts.CloudProvider = spotinst.CloudProviderAWS
+
+	return nil
 }
 
-func (x *Cmd) installDeps(ctx context.Context) error {
-	// Initialize a new dependency manager.
-	dm, err := x.opts.Clients.NewDep()
-	if err != nil {
-		return err
+func (x *Cmd) initSubCommands() {
+	commands := []func(*CmdOptions) *cobra.Command{
+		NewCmdQuickstart,
+		NewCmdCreate,
+		NewCmdGet,
+		NewCmdDescribe,
+		NewCmdUpdate,
+		NewCmdEdit,
+		NewCmdDelete,
 	}
 
-	// Install options.
-	installOpts := []dep.InstallOption{
-		dep.WithNoninteractive(x.opts.Noninteractive),
-		dep.WithDryRun(x.opts.DryRun),
+	for _, cmd := range commands {
+		x.cmd.AddCommand(cmd(&x.opts))
 	}
-
-	// Install!
-	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
 func (x *CmdOptions) Init(flags *pflag.FlagSet, opts *options.CommonOptions) {

@@ -25,7 +25,7 @@ func newCmdGetLaunchSpec(opts *CmdGetOptions) *CmdGetLaunchSpec {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "launchspec",
-		Short:         "Display one or many launchspecs",
+		Short:         "Display one or many launch specs",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

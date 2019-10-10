@@ -30,7 +30,7 @@ func newCmdCreateCluster(opts *CmdCreateOptions) *CmdCreateCluster {
 		SilenceUsage:  true,
 	}
 
-	cmd.opts.Init(cmd.cmd.Flags(), opts)
+	cmd.opts.Init(cmd.cmd.PersistentFlags(), opts)
 	cmd.initSubCommands()
 
 	return &cmd

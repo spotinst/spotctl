@@ -3,6 +3,7 @@ package ocean
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -13,17 +14,17 @@ import (
 )
 
 type (
-	CmdCreateClusterKubernetes struct {
+	CmdUpdateClusterKubernetes struct {
 		cmd  *cobra.Command
-		opts CmdCreateClusterKubernetesOptions
+		opts CmdUpdateClusterKubernetesOptions
 	}
 
-	CmdCreateClusterKubernetesOptions struct {
-		*CmdCreateClusterOptions
+	CmdUpdateClusterKubernetesOptions struct {
+		*CmdUpdateClusterOptions
 
 		// Base
-		Name   string
-		Region string
+		ClusterID string
+		Name      string
 
 		// Strategy
 		SpotPercentage           float64
@@ -55,16 +56,16 @@ type (
 	}
 )
 
-func NewCmdCreateClusterKubernetes(opts *CmdCreateClusterOptions) *cobra.Command {
-	return newCmdCreateClusterKubernetes(opts).cmd
+func NewCmdUpdateClusterKubernetes(opts *CmdUpdateClusterOptions) *cobra.Command {
+	return newCmdUpdateClusterKubernetes(opts).cmd
 }
 
-func newCmdCreateClusterKubernetes(opts *CmdCreateClusterOptions) *CmdCreateClusterKubernetes {
-	var cmd CmdCreateClusterKubernetes
+func newCmdUpdateClusterKubernetes(opts *CmdUpdateClusterOptions) *CmdUpdateClusterKubernetes {
+	var cmd CmdUpdateClusterKubernetes
 
 	cmd.cmd = &cobra.Command{
 		Use:           "kubernetes",
-		Short:         "Create a new Kubernetescluster",
+		Short:         "Update an existing Kubernetes cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -77,7 +78,7 @@ func newCmdCreateClusterKubernetes(opts *CmdCreateClusterOptions) *CmdCreateClus
 	return &cmd
 }
 
-func (x *CmdCreateClusterKubernetes) Run(ctx context.Context) error {
+func (x *CmdUpdateClusterKubernetes) Run(ctx context.Context) error {
 	steps := []func(context.Context) error{
 		x.survey,
 		x.log,
@@ -94,7 +95,7 @@ func (x *CmdCreateClusterKubernetes) Run(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetes) survey(ctx context.Context) error {
+func (x *CmdUpdateClusterKubernetes) survey(ctx context.Context) error {
 	if x.opts.Noninteractive {
 		return nil
 	}
@@ -102,16 +103,16 @@ func (x *CmdCreateClusterKubernetes) survey(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetes) log(ctx context.Context) error {
+func (x *CmdUpdateClusterKubernetes) log(ctx context.Context) error {
 	flags.Log(x.cmd)
 	return nil
 }
 
-func (x *CmdCreateClusterKubernetes) validate(ctx context.Context) error {
+func (x *CmdUpdateClusterKubernetes) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
-func (x *CmdCreateClusterKubernetes) run(ctx context.Context) error {
+func (x *CmdUpdateClusterKubernetes) run(ctx context.Context) error {
 	spotinstClientOpts := []spotinst.ClientOption{
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
@@ -126,59 +127,66 @@ func (x *CmdCreateClusterKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	cluster, err := oceanClient.CreateCluster(ctx, x.buildClusterFromOpts())
-	if err != nil {
-		return err
+	cluster, ok := x.buildClusterFromOpts()
+	if !ok {
+		fmt.Fprintln(x.opts.Out, "Update cancelled, no changes made.")
+		return nil
 	}
 
-	fmt.Fprintln(x.opts.Out, cluster.ID)
-	return nil
+	_, err = oceanClient.UpdateCluster(ctx, cluster)
+	return err
 }
 
-func (x *CmdCreateClusterKubernetes) buildClusterFromOpts() *spotinst.OceanCluster {
+func (x *CmdUpdateClusterKubernetes) buildClusterFromOpts() (*spotinst.OceanCluster, bool) {
 	var cluster interface{}
+	var changed bool
 
 	switch x.opts.CloudProvider {
 	case spotinst.CloudProviderAWS:
-		cluster = x.buildClusterFromOptsAWS()
+		cluster, changed = x.buildClusterFromOptsAWS()
 	}
 
-	return &spotinst.OceanCluster{Obj: cluster}
+	return &spotinst.OceanCluster{Obj: cluster}, changed
 }
 
-func (x *CmdCreateClusterKubernetes) buildClusterFromOptsAWS() *aws.Cluster {
+func (x *CmdUpdateClusterKubernetes) buildClusterFromOptsAWS() (*aws.Cluster, bool) {
 	cluster := new(aws.Cluster)
+	changed := false
 
 	if x.opts.Name != "" {
 		cluster.SetName(spotinstsdk.String(x.opts.Name))
 	}
 
-	return cluster
+	if changed = !reflect.DeepEqual(cluster, new(aws.Cluster)); changed {
+		cluster.SetId(spotinstsdk.String(x.opts.ClusterID))
+	}
+
+	return cluster, changed
 }
 
-func (x *CmdCreateClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdCreateClusterOptions) {
+func (x *CmdUpdateClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdUpdateClusterOptions) {
 	x.initDefaults(opts)
 	x.initFlags(flags)
 }
 
-func (x *CmdCreateClusterKubernetesOptions) initDefaults(opts *CmdCreateClusterOptions) {
-	x.CmdCreateClusterOptions = opts
+func (x *CmdUpdateClusterKubernetesOptions) initDefaults(opts *CmdUpdateClusterOptions) {
+	x.CmdUpdateClusterOptions = opts
 }
 
-func (x *CmdCreateClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
+func (x *CmdUpdateClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
 	// Base
 	{
+		flags.StringVar(
+			&x.ClusterID,
+			"cluster-id",
+			x.ClusterID,
+			"id of the cluster")
+
 		flags.StringVar(
 			&x.Name,
 			"name",
 			x.Name,
 			"name of the cluster")
-
-		flags.StringVar(
-			&x.Region,
-			"region",
-			x.Region,
-			"")
 	}
 
 	// Strategy
@@ -315,6 +323,6 @@ func (x *CmdCreateClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
 	}
 }
 
-func (x *CmdCreateClusterKubernetesOptions) Validate() error {
-	return x.CmdCreateClusterOptions.Validate()
+func (x *CmdUpdateClusterKubernetesOptions) Validate() error {
+	return x.CmdUpdateClusterOptions.Validate()
 }
