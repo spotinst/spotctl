@@ -1,6 +1,6 @@
 ---
 name: Enhancement request
-about: Suggest an enhancement to the Spotinst CLI project
+about: Suggest an enhancement to the Spotinst CLI
 title: ""
 labels: ""
 assignees: ""
