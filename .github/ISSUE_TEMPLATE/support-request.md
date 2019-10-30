@@ -1,5 +1,5 @@
 ---
-name: Support Request
+name: Support request
 about: Support request or question relating to Spotinst CLI
 title: ''
 labels: ''

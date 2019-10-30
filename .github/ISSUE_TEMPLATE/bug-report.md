@@ -1,15 +1,14 @@
 ---
 name: Bug report
 about: Report a bug encountered while operating Spotinst CLI
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 <!-- Please use this template while reporting a bug and provide as much info as possible. Not doing so may result in your bug not being addressed in a timely manner. Thanks!
 
-If the matter is security related, please disclose it privately via https://kubernetes.io/security/
+If the matter is security related, please disclose it privately via https://spotinst.io/security/
 -->
 
 **What happened**:
@@ -21,6 +20,7 @@ If the matter is security related, please disclose it privately via https://kube
 **Anything else we need to know:**
 
 **Environment:**
+
 - CLI version (use `spotinst version`):
 - OS (e.g: `cat /etc/os-release`):
 - Kernel (e.g. `uname -a`):

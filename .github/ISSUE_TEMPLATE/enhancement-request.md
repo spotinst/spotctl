@@ -1,10 +1,9 @@
 ---
-name: Enhancement Request
+name: Enhancement request
 about: Suggest an enhancement to the Spotinst CLI project
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 <!-- Please only use this template for submitting enhancement requests -->
