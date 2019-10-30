@@ -22,6 +22,10 @@ builds:
       - GO111MODULE=on
       - CGO_ENABLED=0
 
+    # Custom asmflags templates.
+    asmflags:
+      - all=-trimpath={{ .Env.GOPATH }}
+
     # Custom gcflags templates.
     gcflags:
       - all=-trimpath={{ .Env.GOPATH }}
@@ -85,8 +89,7 @@ checksum:
 changelog:
   sort: asc
 
-  # Commit messages matching the regexp listed here will be removed from
-  # the changelog.
+  # Commit messages matching the regexp listed here will be removed from the changelog.
   filters:
     exclude:
       - '^docs:'
@@ -109,8 +112,7 @@ release:
   # If set to true, will not auto-publish the release.
   draft: false
 
-  # If set to auto, will mark the release as not ready for production
-  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
-  # If set to true, will mark the release as not ready for production.
-  # Default is false.
+  # If set to auto, will mark the release as not ready for production in case there
+  # is an indicator for this in the tag e.g. v1.0.0-rc1. If set to true, will mark
+  # the release as not ready for production.
   prerelease: auto
