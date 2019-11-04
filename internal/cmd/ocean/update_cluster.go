@@ -46,7 +46,7 @@ func (x *CmdUpdateCluster) initSubCommands() {
 	}
 }
 
-func (x *CmdUpdateClusterOptions) Init(flags *pflag.FlagSet, opts *CmdUpdateOptions) {
+func (x *CmdUpdateClusterOptions) Init(fs *pflag.FlagSet, opts *CmdUpdateOptions) {
 	x.CmdUpdateOptions = opts
 }
 

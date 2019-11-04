@@ -132,21 +132,17 @@ func (x *CmdEditClusterKubernetes) run(ctx context.Context) error {
 	return err
 }
 
-func (x *CmdEditClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdEditClusterOptions) {
+func (x *CmdEditClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdEditClusterOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdEditClusterKubernetesOptions) initDefaults(opts *CmdEditClusterOptions) {
 	x.CmdEditClusterOptions = opts
 }
 
-func (x *CmdEditClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.ClusterID,
-		"cluster-id",
-		x.ClusterID,
-		"id of the cluster")
+func (x *CmdEditClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
 }
 
 func (x *CmdEditClusterKubernetesOptions) Validate() error {

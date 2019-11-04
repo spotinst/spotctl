@@ -46,7 +46,7 @@ func (x *CmdQuickstartClusterKubernetes) initSubCommands() {
 	}
 }
 
-func (x *CmdQuickstartClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdQuickstartClusterOptions) {
+func (x *CmdQuickstartClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdQuickstartClusterOptions) {
 	x.CmdQuickstartClusterOptions = opts
 }
 

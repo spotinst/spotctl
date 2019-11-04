@@ -84,7 +84,7 @@ func (x *CmdQuickstart) installDeps(ctx context.Context) error {
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
-func (x *CmdQuickstartOptions) Init(flags *pflag.FlagSet, opts *CmdOptions) {
+func (x *CmdQuickstartOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
 	x.CmdOptions = opts
 }
 

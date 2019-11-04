@@ -48,7 +48,7 @@ func (x *Cmd) Run(ctx context.Context) error {
 	return err
 }
 
-func (x *CmdOptions) Init(flags *pflag.FlagSet, opts *options.CommonOptions) {
+func (x *CmdOptions) Init(fs *pflag.FlagSet, opts *options.CommonOptions) {
 	x.CommonOptions = opts
 }
 

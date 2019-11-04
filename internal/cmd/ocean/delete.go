@@ -47,7 +47,7 @@ func (x *CmdDelete) initSubCommands() {
 	}
 }
 
-func (x *CmdDeleteOptions) Init(flags *pflag.FlagSet, opts *CmdOptions) {
+func (x *CmdDeleteOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
 	x.CmdOptions = opts
 }
 

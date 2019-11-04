@@ -46,7 +46,7 @@ func (x *CmdDeleteCluster) initSubCommands() {
 	}
 }
 
-func (x *CmdDeleteClusterOptions) Init(flags *pflag.FlagSet, opts *CmdDeleteOptions) {
+func (x *CmdDeleteClusterOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteOptions) {
 	x.CmdDeleteOptions = opts
 }
 

@@ -105,7 +105,7 @@ func (x *CmdGetLaunchSpecKubernetes) run(ctx context.Context) error {
 	return w.Write(specs)
 }
 
-func (x *CmdGetLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdGetLaunchSpecOptions) {
+func (x *CmdGetLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdGetLaunchSpecOptions) {
 	x.CmdGetLaunchSpecOptions = opts
 }
 

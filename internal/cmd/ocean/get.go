@@ -51,9 +51,9 @@ func (x *CmdGet) initSubCommands() {
 	}
 }
 
-func (x *CmdGetOptions) Init(flags *pflag.FlagSet, opts *CmdOptions) {
+func (x *CmdGetOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdGetOptions) initDefaults(opts *CmdOptions) {
@@ -62,19 +62,9 @@ func (x *CmdGetOptions) initDefaults(opts *CmdOptions) {
 	x.Output = "table"
 }
 
-func (x *CmdGetOptions) initFlags(flags *pflag.FlagSet) {
-	flags.BoolVar(
-		&x.NoHeaders,
-		"no-headers",
-		x.NoHeaders,
-		"when using the `table` output format, don't print headers")
-
-	flags.StringVarP(
-		&x.Output,
-		"output",
-		"o",
-		x.Output,
-		"output format (table|json|yaml)")
+func (x *CmdGetOptions) initFlags(fs *pflag.FlagSet) {
+	fs.BoolVar(&x.NoHeaders, "no-headers", x.NoHeaders, "when using the `table` output format, don't print headers")
+	fs.StringVarP(&x.Output, "output", "o", x.Output, "output format (table|json|yaml)")
 }
 
 func (x *CmdGetOptions) Validate() error {

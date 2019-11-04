@@ -3,6 +3,7 @@ package spotinst
 import (
 	"context"
 
+	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/log"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -10,6 +11,14 @@ import (
 
 type oceanKubernetesGCP struct {
 	svc gcp.Service
+}
+
+func (x *oceanKubernetesGCP) NewClusterBuilder(fs *pflag.FlagSet, opts *OceanClusterOptions) OceanClusterBuilder {
+	return &oceanKubernetesGCPClusterBuilder{fs, opts}
+}
+
+func (x *oceanKubernetesGCP) NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *OceanLaunchSpecOptions) OceanLaunchSpecBuilder {
+	return &oceanKubernetesGCPLaunchSpecBuilder{fs, opts}
 }
 
 func (x *oceanKubernetesGCP) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
@@ -262,4 +271,22 @@ func (x *oceanKubernetesGCP) DeleteLaunchSpec(ctx context.Context, specID string
 
 	_, err := x.svc.DeleteLaunchSpec(ctx, input)
 	return err
+}
+
+type oceanKubernetesGCPClusterBuilder struct {
+	fs   *pflag.FlagSet
+	opts *OceanClusterOptions
+}
+
+func (x *oceanKubernetesGCPClusterBuilder) Build() (*OceanCluster, error) {
+	return nil, ErrNotImplemented
+}
+
+type oceanKubernetesGCPLaunchSpecBuilder struct {
+	fs   *pflag.FlagSet
+	opts *OceanLaunchSpecOptions
+}
+
+func (x *oceanKubernetesGCPLaunchSpecBuilder) Build() (*OceanLaunchSpec, error) {
+	return nil, ErrNotImplemented
 }

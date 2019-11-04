@@ -97,21 +97,17 @@ func (x *CmdDeleteClusterKubernetes) run(ctx context.Context) error {
 	return oceanClient.DeleteCluster(ctx, x.opts.ClusterID)
 }
 
-func (x *CmdDeleteClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdDeleteClusterOptions) {
+func (x *CmdDeleteClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteClusterOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdDeleteClusterKubernetesOptions) initDefaults(opts *CmdDeleteClusterOptions) {
 	x.CmdDeleteClusterOptions = opts
 }
 
-func (x *CmdDeleteClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.ClusterID,
-		"cluster-id",
-		x.ClusterID,
-		"id of the cluster")
+func (x *CmdDeleteClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
 }
 
 func (x *CmdDeleteClusterKubernetesOptions) Validate() error {

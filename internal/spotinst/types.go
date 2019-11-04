@@ -65,6 +65,69 @@ type (
 		// Obj holds the raw object which is an orchestrator-specific implementation.
 		Obj interface{} `json:"-"`
 	}
+
+	// OceanClusterOptions represents an Ocean cluster.
+	OceanClusterOptions struct {
+		// Base
+		ClusterID string
+		Name      string
+		Region    string
+
+		// Strategy
+		SpotPercentage           float64
+		UtilizeReservedInstances bool
+		FallbackToOnDemand       bool
+		DrainingTimeout          int
+
+		// Capacity
+		MinSize    int
+		MaxSize    int
+		TargetSize int
+
+		// Compute
+		SubnetIDs                []string
+		InstanceTypesWhitelist   []string
+		InstanceTypesBlacklist   []string
+		SecurityGroupIDs         []string
+		ImageID                  string
+		KeyPair                  string
+		UserData                 string
+		RootVolumeSize           int
+		AssociatePublicIPAddress bool
+		EnableMonitoring         bool
+		EnableEBSOptimization    bool
+		IAMInstanceProfileName   string
+		IAMInstanceProfileARN    string
+		LoadBalancerName         string
+		LoadBalancerARN          string
+		LoadBalancerType         string
+
+		// Auto Scaling
+		EnableAutoScaler       bool
+		EnableAutoConfig       bool
+		Cooldown               int
+		HeadroomCPUPerUnit     int
+		HeadroomMemoryPerUnit  int
+		HeadroomGPUPerUnit     int
+		HeadroomNumPerUnit     int
+		ResourceLimitMaxVCPU   int
+		ResourceLimitMaxMemory int
+		EvaluationPeriods      int
+		MaxScaleDownPercentage int
+	}
+
+	// OceanLaunchSpecOptions represents an Ocean launch spec.
+	OceanLaunchSpecOptions struct {
+		// Base
+		Name    string
+		OceanID string
+		SpecID  string
+
+		// Compute
+		ImageID          string
+		UserData         string
+		SecurityGroupIDs []string
+	}
 )
 
 // typeOf returns obj type's name using reflection.

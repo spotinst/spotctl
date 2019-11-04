@@ -46,7 +46,7 @@ func (x *CmdQuickstartCluster) initSubCommands() {
 	}
 }
 
-func (x *CmdQuickstartClusterOptions) Init(flags *pflag.FlagSet, opts *CmdQuickstartOptions) {
+func (x *CmdQuickstartClusterOptions) Init(fs *pflag.FlagSet, opts *CmdQuickstartOptions) {
 	x.CmdQuickstartOptions = opts
 }
 

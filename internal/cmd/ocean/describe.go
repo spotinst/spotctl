@@ -50,7 +50,7 @@ func (x *CmdDescribe) initSubCommands() {
 	}
 }
 
-func (x *CmdDescribeOptions) Init(flags *pflag.FlagSet, opts *CmdOptions) {
+func (x *CmdDescribeOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
 	x.CmdOptions = opts
 }
 

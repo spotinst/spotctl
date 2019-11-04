@@ -105,7 +105,7 @@ func (x *CmdGetClusterKubernetes) run(ctx context.Context) error {
 	return w.Write(clusters)
 }
 
-func (x *CmdGetClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdGetClusterOptions) {
+func (x *CmdGetClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdGetClusterOptions) {
 	x.CmdGetClusterOptions = opts
 }
 

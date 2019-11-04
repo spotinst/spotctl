@@ -132,21 +132,17 @@ func (x *CmdEditLaunchSpecKubernetes) run(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdEditLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdEditLaunchSpecOptions) {
+func (x *CmdEditLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdEditLaunchSpecOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdEditLaunchSpecKubernetesOptions) initDefaults(opts *CmdEditLaunchSpecOptions) {
 	x.CmdEditLaunchSpecOptions = opts
 }
 
-func (x *CmdEditLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.LaunchSpecID,
-		"spec-id",
-		x.LaunchSpecID,
-		"id of the launch spec")
+func (x *CmdEditLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.LaunchSpecID, flags.FlagOceanSpecID, x.LaunchSpecID, "id of the launch spec")
 }
 
 func (x *CmdEditLaunchSpecKubernetesOptions) Validate() error {

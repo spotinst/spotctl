@@ -446,9 +446,9 @@ func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
 	return args
 }
 
-func (x *CmdQuickstartClusterKubernetesAWSOptions) Init(flags *pflag.FlagSet, opts *CmdQuickstartClusterKubernetesOptions) {
+func (x *CmdQuickstartClusterKubernetesAWSOptions) Init(fs *pflag.FlagSet, opts *CmdQuickstartClusterKubernetesOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) initDefaults(opts *CmdQuickstartClusterKubernetesOptions) {
@@ -462,90 +462,21 @@ func (x *CmdQuickstartClusterKubernetesAWSOptions) initDefaults(opts *CmdQuickst
 	x.SSHPublicKey = "~/.ssh/id_rsa.pub"
 }
 
-func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.ClusterName,
-		"cluster-name",
-		x.ClusterName,
-		"name of the cluster")
-
-	flags.Int64Var(
-		&x.MasterCount,
-		"master-count",
-		x.MasterCount,
-		"master count")
-
-	flags.Int64Var(
-		&x.NodeCount,
-		"node-count",
-		x.NodeCount,
-		"node count")
-
-	flags.StringVar(
-		&x.Region,
-		"region",
-		x.Region,
-		"region in which your cluster (control plane and nodes) will be created")
-
-	flags.StringVar(
-		&x.VPC,
-		"vpc",
-		x.VPC,
-		"region in which your cluster (control plane and nodes) will be created")
-
-	flags.StringSliceVar(
-		&x.Zones,
-		"zones",
-		x.Zones,
-		"availability zones in which your cluster (control plane and nodes) will be created")
-
-	flags.StringSliceVar(
-		&x.MasterMachineTypes,
-		"master-machine-types",
-		x.MasterMachineTypes,
-		"list of machine types for masters")
-
-	flags.StringSliceVar(
-		&x.NodeMachineTypes,
-		"node-machine-types",
-		x.NodeMachineTypes,
-		"list of machine types for nodes")
-
-	flags.StringVar(
-		&x.State,
-		"state",
-		x.State,
-		"s3 bucket used to store the state of the cluster")
-
-	flags.StringVar(
-		&x.SSHPublicKey,
-		"ssh-public-key",
-		x.SSHPublicKey,
-		"ssh public key to use for nodes")
-
-	flags.StringSliceVar(
-		&x.Tags,
-		"tags",
-		x.Tags,
-		"list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
-
-	flags.StringVar(
-		&x.Authorization,
-		"authorization",
-		x.Authorization,
-		"authorization mode to use")
-
-	flags.StringVar(
-		&x.Image,
-		"image",
-		x.Image,
-		"image to use in your cluster (control plane and nodes)")
-
-	flags.StringVar(
-		&x.KubernetesVersion,
-		"kubernetes-version",
-		x.KubernetesVersion,
-		"kubernetes version")
+func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.ClusterName, "cluster-name", x.ClusterName, "name of the cluster")
+	fs.Int64Var(&x.MasterCount, "master-count", x.MasterCount, "master count")
+	fs.Int64Var(&x.NodeCount, "node-count", x.NodeCount, "node count")
+	fs.StringVar(&x.Region, "region", x.Region, "region in which your cluster (control plane and nodes) will be created")
+	fs.StringVar(&x.VPC, "vpc", x.VPC, "region in which your cluster (control plane and nodes) will be created")
+	fs.StringSliceVar(&x.Zones, "zones", x.Zones, "availability zones in which your cluster (control plane and nodes) will be created")
+	fs.StringSliceVar(&x.MasterMachineTypes, "master-machine-types", x.MasterMachineTypes, "list of machine types for masters")
+	fs.StringSliceVar(&x.NodeMachineTypes, "node-machine-types", x.NodeMachineTypes, "list of machine types for nodes")
+	fs.StringVar(&x.State, "state", x.State, "s3 bucket used to store the state of the cluster")
+	fs.StringVar(&x.SSHPublicKey, "ssh-public-key", x.SSHPublicKey, "ssh public key to use for nodes")
+	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
+	fs.StringVar(&x.Authorization, "authorization", x.Authorization, "authorization mode to use")
+	fs.StringVar(&x.Image, "image", x.Image, "image to use in your cluster (control plane and nodes)")
+	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", x.KubernetesVersion, "kubernetes version")
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) Validate() error {

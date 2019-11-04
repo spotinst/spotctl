@@ -46,7 +46,7 @@ func (x *CmdCreateCluster) initSubCommands() {
 	}
 }
 
-func (x *CmdCreateClusterOptions) Init(flags *pflag.FlagSet, opts *CmdCreateOptions) {
+func (x *CmdCreateClusterOptions) Init(fs *pflag.FlagSet, opts *CmdCreateOptions) {
 	x.CmdCreateOptions = opts
 }
 

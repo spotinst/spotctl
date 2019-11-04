@@ -105,24 +105,20 @@ func (x *CmdDescribeClusterKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	return w.Write(cluster)
+	return w.Write(cluster.Obj)
 }
 
-func (x *CmdDescribeClusterKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdDescribeClusterOptions) {
+func (x *CmdDescribeClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDescribeClusterOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdDescribeClusterKubernetesOptions) initDefaults(opts *CmdDescribeClusterOptions) {
 	x.CmdDescribeClusterOptions = opts
 }
 
-func (x *CmdDescribeClusterKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.ClusterID,
-		"cluster-id",
-		x.ClusterID,
-		"id of the cluster")
+func (x *CmdDescribeClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
 }
 
 func (x *CmdDescribeClusterKubernetesOptions) Validate() error {

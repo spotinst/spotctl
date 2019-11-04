@@ -97,21 +97,17 @@ func (x *CmdDeleteLaunchSpecKubernetes) run(ctx context.Context) error {
 	return oceanClient.DeleteLaunchSpec(ctx, x.opts.LaunchSpecID)
 }
 
-func (x *CmdDeleteLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdDeleteLaunchSpecOptions) {
+func (x *CmdDeleteLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteLaunchSpecOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesOptions) initDefaults(opts *CmdDeleteLaunchSpecOptions) {
 	x.CmdDeleteLaunchSpecOptions = opts
 }
 
-func (x *CmdDeleteLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.LaunchSpecID,
-		"spec-id",
-		x.LaunchSpecID,
-		"id of the launch spec")
+func (x *CmdDeleteLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.LaunchSpecID, flags.FlagOceanSpecID, x.LaunchSpecID, "id of the launch spec")
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesOptions) Validate() error {

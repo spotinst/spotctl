@@ -46,7 +46,7 @@ func (x *CmdEditLaunchSpec) initSubCommands() {
 	}
 }
 
-func (x *CmdEditLaunchSpecOptions) Init(flags *pflag.FlagSet, opts *CmdEditOptions) {
+func (x *CmdEditLaunchSpecOptions) Init(fs *pflag.FlagSet, opts *CmdEditOptions) {
 	x.CmdEditOptions = opts
 }
 

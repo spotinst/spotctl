@@ -315,7 +315,7 @@ $ spotinst completion > $(brew --prefix)/etc/bash_completion.d/spotinst
 	kubectl completion zsh > "${fpath[1]}/_kubectl"
 `
 
-func (x *CmdOptions) Init(flags *pflag.FlagSet, opts *options.CommonOptions) {
+func (x *CmdOptions) Init(fs *pflag.FlagSet, opts *options.CommonOptions) {
 	x.CommonOptions = opts
 }
 

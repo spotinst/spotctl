@@ -46,7 +46,7 @@ func (x *CmdDeleteLaunchSpec) initSubCommands() {
 	}
 }
 
-func (x *CmdDeleteLaunchSpecOptions) Init(flags *pflag.FlagSet, opts *CmdDeleteOptions) {
+func (x *CmdDeleteLaunchSpecOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteOptions) {
 	x.CmdDeleteOptions = opts
 }
 

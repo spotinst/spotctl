@@ -2,16 +2,12 @@ package ocean
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"reflect"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
 	"github.com/spotinst/spotinst-cli/internal/utils/flags"
-	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
-	spotinstsdk "github.com/spotinst/spotinst-sdk-go/spotinst"
 )
 
 type (
@@ -22,13 +18,7 @@ type (
 
 	CmdUpdateLaunchSpecKubernetesOptions struct {
 		*CmdUpdateLaunchSpecOptions
-
-		Name             string
-		SpecID           string
-		OceanID          string
-		ImageID          string
-		UserData         string
-		SecurityGroupIDs []string
+		spotinst.OceanLaunchSpecOptions
 	}
 )
 
@@ -103,102 +93,41 @@ func (x *CmdUpdateLaunchSpecKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	spec, ok := x.buildLaunchSpecFromOpts()
-	if !ok {
-		fmt.Fprintln(x.opts.Out, "Update cancelled, no changes made.")
-		return nil
+	oceanLaunchSpec, err := oceanClient.NewLaunchSpecBuilder(x.cmd.Flags(), &x.opts.OceanLaunchSpecOptions).Build()
+	if err != nil {
+		return err
 	}
 
-	_, err = oceanClient.UpdateLaunchSpec(ctx, spec)
+	spec, err := oceanClient.UpdateLaunchSpec(ctx, oceanLaunchSpec)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(x.opts.Out, fmt.Sprintf("Updated (%q).", spec.ID))
 	return err
 }
 
-func (x *CmdUpdateLaunchSpecKubernetes) buildLaunchSpecFromOpts() (*spotinst.OceanLaunchSpec, bool) {
-	var spec interface{}
-	var changed bool
-
-	switch x.opts.CloudProvider {
-	case spotinst.CloudProviderAWS:
-		spec, changed = x.buildLaunchSpecFromOptsAWS()
-	}
-
-	return &spotinst.OceanLaunchSpec{Obj: spec}, changed
-}
-
-func (x *CmdUpdateLaunchSpecKubernetes) buildLaunchSpecFromOptsAWS() (*aws.LaunchSpec, bool) {
-	spec := new(aws.LaunchSpec)
-	changed := false
-
-	if x.opts.Name != "" {
-		spec.SetName(spotinstsdk.String(x.opts.Name))
-	}
-
-	if x.opts.OceanID != "" {
-		spec.SetOceanId(spotinstsdk.String(x.opts.OceanID))
-	}
-
-	if x.opts.ImageID != "" {
-		spec.SetImageId(spotinstsdk.String(x.opts.ImageID))
-	}
-
-	if x.opts.UserData != "" {
-		if _, err := base64.StdEncoding.DecodeString(x.opts.UserData); err != nil {
-			x.opts.UserData = base64.StdEncoding.EncodeToString([]byte(x.opts.UserData))
-		}
-
-		spec.SetUserData(spotinstsdk.String(x.opts.UserData))
-	}
-
-	if len(x.opts.SecurityGroupIDs) > 0 {
-		spec.SetSecurityGroupIDs(x.opts.SecurityGroupIDs)
-	}
-
-	if changed = !reflect.DeepEqual(spec, new(aws.LaunchSpec)); changed {
-		spec.SetId(spotinstsdk.String(x.opts.SpecID))
-	}
-
-	return spec, changed
-}
-
-func (x *CmdUpdateLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdUpdateLaunchSpecOptions) {
+func (x *CmdUpdateLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdUpdateLaunchSpecOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdUpdateLaunchSpecKubernetesOptions) initDefaults(opts *CmdUpdateLaunchSpecOptions) {
 	x.CmdUpdateLaunchSpecOptions = opts
 }
 
-func (x *CmdUpdateLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.Name,
-		"name",
-		x.Name,
-		"name of the launch spec")
+func (x *CmdUpdateLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	// Base
+	{
+		fs.StringVar(&x.Name, "name", x.Name, "name of the launch spec")
+		fs.StringVar(&x.OceanID, "ocean-id", x.OceanID, "id of the cluster")
+	}
 
-	flags.StringVar(
-		&x.SpecID,
-		"spec-id",
-		x.SpecID,
-		"id of the launch spec")
-
-	flags.StringVar(
-		&x.OceanID,
-		"ocean-id",
-		x.OceanID,
-		"id of the cluster")
-
-	flags.StringVar(
-		&x.ImageID,
-		"image-id",
-		x.ImageID,
-		"id of the image")
-
-	flags.StringVar(
-		&x.UserData,
-		"user-data",
-		x.UserData,
-		"user data to provide when launching a node (plain-text or base64-encoded)")
+	// Compute
+	{
+		fs.StringVar(&x.ImageID, "image-id", x.ImageID, "id of the image")
+		fs.StringVar(&x.UserData, "user-data", x.UserData, "user data to provide when launching a node (plain-text or base64-encoded)")
+	}
 }
 
 func (x *CmdUpdateLaunchSpecKubernetesOptions) Validate() error {

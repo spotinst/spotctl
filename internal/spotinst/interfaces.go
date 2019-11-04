@@ -3,6 +3,8 @@ package spotinst
 import (
 	"context"
 	"errors"
+
+	"github.com/spf13/pflag"
 )
 
 // ErrNotImplemented is the error returned if a method is not implemented.
@@ -33,6 +35,14 @@ type (
 
 	// OceanInterface defines the interface of the Spotinst Ocean API.
 	OceanInterface interface {
+		// NewClusterBuilder returns new instance of OceanClusterBuilder
+		// interface for defining fresh Ocean cluster.
+		NewClusterBuilder(fs *pflag.FlagSet, opts *OceanClusterOptions) OceanClusterBuilder
+
+		// NewLaunchSpecBuilder returns new instance of OceanLaunchSpecBuilder
+		// interface for defining fresh Ocean launch spec.
+		NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *OceanLaunchSpecOptions) OceanLaunchSpecBuilder
+
 		// ListClusters returns a list of Ocean clusters.
 		ListClusters(ctx context.Context) ([]*OceanCluster, error)
 
@@ -62,6 +72,18 @@ type (
 
 		// DeleteLaunchSpec deletes an Ocean launch spec by ID.
 		DeleteLaunchSpec(ctx context.Context, specID string) error
+	}
+
+	// OceanClusterBuilder is the interface that every Ocean cluster
+	// concrete implementation should obey.
+	OceanClusterBuilder interface {
+		Build() (*OceanCluster, error)
+	}
+
+	// OceanLaunchSpecBuilder is the interface that every Ocean launch spec
+	// concrete implementation should obey.
+	OceanLaunchSpecBuilder interface {
+		Build() (*OceanLaunchSpec, error)
 	}
 
 	// CloudProviderName represents the name of a cloud provider.

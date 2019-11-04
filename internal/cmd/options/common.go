@@ -67,11 +67,11 @@ func NewCommonOptions(in io.Reader, out, err io.Writer) *CommonOptions {
 	}
 }
 
-func (x *CommonOptions) Init(flags *pflag.FlagSet) {
+func (x *CommonOptions) Init(fs *pflag.FlagSet) {
 	x.initIOStreams()
 	x.initClientsFactory()
 	x.initDefaults()
-	x.initFlags(flags)
+	x.initFlags(fs)
 }
 
 func (x *CommonOptions) initDefaults() {
@@ -81,53 +81,14 @@ func (x *CommonOptions) initDefaults() {
 	x.Timeout = time.Minute
 }
 
-func (x *CommonOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(
-		&x.Profile,
-		"profile",
-		"p",
-		x.Profile,
-		"name of credentials profile to use")
-
-	flags.StringVar(
-		&x.PprofProfile,
-		"pprof-profile",
-		x.PprofProfile,
-		"name of profile to capture (none|cpu|heap|goroutine|threadcreate|block|mutex)")
-
-	flags.StringVar(
-		&x.PprofOutput,
-		"pprof-output",
-		x.PprofOutput,
-		"name of the file to write the profile to")
-
-	flags.BoolVarP(
-		&x.Verbose,
-		"verbose",
-		"v",
-		x.Verbose,
-		"enable verbose logging")
-
-	flags.BoolVarP(
-		&x.Noninteractive,
-		"noninteractive",
-		"n",
-		x.Noninteractive,
-		"disable interactive mode user interface")
-
-	flags.BoolVarP(
-		&x.DryRun,
-		"dry-run",
-		"d",
-		x.DryRun,
-		"only print the actions that would be executed, without executing them")
-
-	flags.DurationVarP(
-		&x.Timeout,
-		"timeout",
-		"t",
-		x.Timeout,
-		"maximum duration before timing out the execution")
+func (x *CommonOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&x.Profile, "profile", "p", x.Profile, "name of credentials profile to use")
+	fs.StringVar(&x.PprofProfile, "pprof-profile", x.PprofProfile, "name of profile to capture (none|cpu|heap|goroutine|threadcreate|block|mutex)")
+	fs.StringVar(&x.PprofOutput, "pprof-output", x.PprofOutput, "name of the file to write the profile to")
+	fs.BoolVarP(&x.Verbose, "verbose", "v", x.Verbose, "enable verbose logging")
+	fs.BoolVarP(&x.Noninteractive, "noninteractive", "n", x.Noninteractive, "disable interactive mode user interface")
+	fs.BoolVarP(&x.DryRun, "dry-run", "d", x.DryRun, "only print the actions that would be executed, without executing them")
+	fs.DurationVarP(&x.Timeout, "timeout", "t", x.Timeout, "maximum duration before timing out the execution")
 }
 
 func (x *CommonOptions) initIOStreams() {

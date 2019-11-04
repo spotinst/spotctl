@@ -105,24 +105,20 @@ func (x *CmdDescribeLaunchSpecKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	return w.Write(spec)
+	return w.Write(spec.Obj)
 }
 
-func (x *CmdDescribeLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdDescribeLaunchSpecOptions) {
+func (x *CmdDescribeLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDescribeLaunchSpecOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdDescribeLaunchSpecKubernetesOptions) initDefaults(opts *CmdDescribeLaunchSpecOptions) {
 	x.CmdDescribeLaunchSpecOptions = opts
 }
 
-func (x *CmdDescribeLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.LaunchSpecID,
-		"spec-id",
-		x.LaunchSpecID,
-		"id of the launch spec")
+func (x *CmdDescribeLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&x.LaunchSpecID, flags.FlagOceanSpecID, x.LaunchSpecID, "id of the launch spec")
 }
 
 func (x *CmdDescribeLaunchSpecKubernetesOptions) Validate() error {

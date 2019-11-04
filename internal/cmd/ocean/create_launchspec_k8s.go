@@ -2,15 +2,12 @@ package ocean
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotinst-cli/internal/spotinst"
 	"github.com/spotinst/spotinst-cli/internal/utils/flags"
-	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
-	spotinstsdk "github.com/spotinst/spotinst-sdk-go/spotinst"
 )
 
 type (
@@ -21,12 +18,7 @@ type (
 
 	CmdCreateLaunchSpecKubernetesOptions struct {
 		*CmdCreateLaunchSpecOptions
-
-		Name             string
-		OceanID          string
-		ImageID          string
-		UserData         string
-		SecurityGroupIDs []string
+		spotinst.OceanLaunchSpecOptions
 	}
 )
 
@@ -101,89 +93,41 @@ func (x *CmdCreateLaunchSpecKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	spec, err := oceanClient.CreateLaunchSpec(ctx, x.buildLaunchSpecFromOpts())
+	oceanLaunchSpec, err := oceanClient.NewLaunchSpecBuilder(x.cmd.Flags(), &x.opts.OceanLaunchSpecOptions).Build()
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintln(x.opts.Out, spec.ID)
+	spec, err := oceanClient.CreateLaunchSpec(ctx, oceanLaunchSpec)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(x.opts.Out, fmt.Sprintf("Created (%q).", spec.ID))
 	return nil
 }
 
-func (x *CmdCreateLaunchSpecKubernetes) buildLaunchSpecFromOpts() *spotinst.OceanLaunchSpec {
-	var spec interface{}
-
-	switch x.opts.CloudProvider {
-	case spotinst.CloudProviderAWS:
-		spec = x.buildLaunchSpecFromOptsAWS()
-	}
-
-	return &spotinst.OceanLaunchSpec{Obj: spec}
-}
-
-func (x *CmdCreateLaunchSpecKubernetes) buildLaunchSpecFromOptsAWS() *aws.LaunchSpec {
-	spec := new(aws.LaunchSpec)
-
-	if x.opts.Name != "" {
-		spec.SetName(spotinstsdk.String(x.opts.Name))
-	}
-
-	if x.opts.OceanID != "" {
-		spec.SetOceanId(spotinstsdk.String(x.opts.OceanID))
-	}
-
-	if x.opts.ImageID != "" {
-		spec.SetImageId(spotinstsdk.String(x.opts.ImageID))
-	}
-
-	if x.opts.UserData != "" {
-		if _, err := base64.StdEncoding.DecodeString(x.opts.UserData); err != nil {
-			x.opts.UserData = base64.StdEncoding.EncodeToString([]byte(x.opts.UserData))
-		}
-
-		spec.SetUserData(spotinstsdk.String(x.opts.UserData))
-	}
-
-	if len(x.opts.SecurityGroupIDs) > 0 {
-		spec.SetSecurityGroupIDs(x.opts.SecurityGroupIDs)
-	}
-
-	return spec
-}
-
-func (x *CmdCreateLaunchSpecKubernetesOptions) Init(flags *pflag.FlagSet, opts *CmdCreateLaunchSpecOptions) {
+func (x *CmdCreateLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdCreateLaunchSpecOptions) {
+	x.initFlags(fs)
 	x.initDefaults(opts)
-	x.initFlags(flags)
 }
 
 func (x *CmdCreateLaunchSpecKubernetesOptions) initDefaults(opts *CmdCreateLaunchSpecOptions) {
 	x.CmdCreateLaunchSpecOptions = opts
 }
 
-func (x *CmdCreateLaunchSpecKubernetesOptions) initFlags(flags *pflag.FlagSet) {
-	flags.StringVar(
-		&x.Name,
-		"name",
-		x.Name,
-		"name of the launch spec")
+func (x *CmdCreateLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
+	// Base
+	{
+		fs.StringVar(&x.Name, "name", x.Name, "name of the launch spec")
+		fs.StringVar(&x.OceanID, "ocean-id", x.OceanID, "id of the cluster")
+	}
 
-	flags.StringVar(
-		&x.OceanID,
-		"ocean-id",
-		x.OceanID,
-		"id of the cluster")
-
-	flags.StringVar(
-		&x.ImageID,
-		"image-id",
-		x.ImageID,
-		"id of the image")
-
-	flags.StringVar(
-		&x.UserData,
-		"user-data",
-		x.UserData,
-		"user data to provide when launching a node (plain-text or base64-encoded)")
+	// Compute
+	{
+		fs.StringVar(&x.ImageID, "image-id", x.ImageID, "id of the image")
+		fs.StringVar(&x.UserData, "user-data", x.UserData, "user data to provide when launching a node (plain-text or base64-encoded)")
+	}
 }
 
 func (x *CmdCreateLaunchSpecKubernetesOptions) Validate() error {

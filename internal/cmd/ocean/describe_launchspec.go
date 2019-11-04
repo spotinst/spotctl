@@ -46,7 +46,7 @@ func (x *CmdDescribeLaunchSpec) initSubCommands() {
 	}
 }
 
-func (x *CmdDescribeLaunchSpecOptions) Init(flags *pflag.FlagSet, opts *CmdDescribeOptions) {
+func (x *CmdDescribeLaunchSpecOptions) Init(fs *pflag.FlagSet, opts *CmdDescribeOptions) {
 	x.CmdDescribeOptions = opts
 }
 
