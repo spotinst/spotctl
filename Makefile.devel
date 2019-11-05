@@ -25,6 +25,8 @@ build: fmt ## Build all commands
 			-X $(VERSION_PKG).Version=$(VERSION) \
 			-X $(VERSION_PKG).Prerelease=$(VERSION_PRE) \
 			-X $(VERSION_PKG).Metadata=$(VERSION_META)" \
+		-gcflags  "all=-trimpath=$(GOPATH)/src/github.com" \
+		-asmflags "all=-trimpath=$(GOPATH)/src/github.com" \
 		-mod=vendor \
 		-race \
 		-o dist/spotinst cmd/spotinst/main.go
