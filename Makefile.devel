@@ -6,7 +6,7 @@ VERSION      := $$(cat VERSION | cut -d'-' -f 1)
 VERSION_PRE  := $$(cat VERSION | cut -d'-' -f 2- -s)
 VERSION_FULL := $$(cat VERSION)
 VERSION_META := $(GIT_COMMIT)$(GIT_DIRTY)
-VERSION_PKG  := github.com/spotinst/spotinst-cli/internal/version
+VERSION_PKG  := github.com/spotinst/spotctl/internal/version
 
 define goreleaser_release
 	VERSION=$(VERSION) \
@@ -29,7 +29,7 @@ build: fmt ## Build all commands
 		-asmflags "all=-trimpath=$(GOPATH)/src/github.com" \
 		-mod=vendor \
 		-race \
-		-o dist/spotinst cmd/spotinst/main.go
+		-o dist/spotctl cmd/spotctl/main.go
 
 .PHONY: release
 release: fmt ## Release all commands

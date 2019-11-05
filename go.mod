@@ -1,4 +1,4 @@
-module github.com/spotinst/spotinst-cli
+module github.com/spotinst/spotctl
 
 go 1.12
 

@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/ghodss/yaml"
-	"github.com/spotinst/spotinst-cli/internal/writer"
+	"github.com/spotinst/spotctl/internal/writer"
 )
 
 // WriterFormat is the format of this writer.

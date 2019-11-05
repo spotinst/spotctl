@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/dep"
+	"github.com/spotinst/spotctl/internal/dep"
 )
 
 type (

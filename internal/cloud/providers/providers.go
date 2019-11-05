@@ -1,5 +1,5 @@
 package providers
 
 import (
-	_ "github.com/spotinst/spotinst-cli/internal/cloud/providers/aws"
+	_ "github.com/spotinst/spotctl/internal/cloud/providers/aws"
 )

@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spotinst/spotinst-cli/internal/child"
-	"github.com/spotinst/spotinst-cli/internal/log"
-	"github.com/spotinst/spotinst-cli/internal/thirdparty"
+	"github.com/spotinst/spotctl/internal/child"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/thirdparty"
 )
 
 // CommandName is the name of this command.

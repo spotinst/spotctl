@@ -9,16 +9,16 @@ import (
 	"runtime/pprof"
 
 	"github.com/spf13/cobra"
-	"github.com/spotinst/spotinst-cli/internal/cmd/completion"
-	"github.com/spotinst/spotinst-cli/internal/cmd/configure"
-	"github.com/spotinst/spotinst-cli/internal/cmd/ocean"
-	"github.com/spotinst/spotinst-cli/internal/cmd/options"
-	"github.com/spotinst/spotinst-cli/internal/cmd/version"
-	"github.com/spotinst/spotinst-cli/internal/log"
+	"github.com/spotinst/spotctl/internal/cmd/completion"
+	"github.com/spotinst/spotctl/internal/cmd/configure"
+	"github.com/spotinst/spotctl/internal/cmd/ocean"
+	"github.com/spotinst/spotctl/internal/cmd/options"
+	"github.com/spotinst/spotctl/internal/cmd/version"
+	"github.com/spotinst/spotctl/internal/log"
 
-	_ "github.com/spotinst/spotinst-cli/internal/cloud/providers"
-	_ "github.com/spotinst/spotinst-cli/internal/thirdparty/commands"
-	_ "github.com/spotinst/spotinst-cli/internal/writer/writers"
+	_ "github.com/spotinst/spotctl/internal/cloud/providers"
+	_ "github.com/spotinst/spotctl/internal/thirdparty/commands"
+	_ "github.com/spotinst/spotctl/internal/writer/writers"
 )
 
 type (
@@ -40,11 +40,11 @@ func newCmd(in io.Reader, out, err io.Writer) *CmdRoot {
 	var cmd CmdRoot
 
 	cmd.cmd = &cobra.Command{
-		Use:   "spotinst",
+		Use:   "spotctl",
 		Short: `A unified command-line interface to manage your Spotinst resources`,
 		Long: `
 A unified command-line interface to manage your Spotinst resources. 
-See the home page (https://api.spotinst.com/spotinst-cli/) for installation, 
+See the home page (https://api.spotinst.com/spotctl/) for installation, 
 usage, documentation, changelog and configuration walkthroughs.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,

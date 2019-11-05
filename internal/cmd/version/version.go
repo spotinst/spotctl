@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/cmd/options"
-	"github.com/spotinst/spotinst-cli/internal/version"
+	"github.com/spotinst/spotctl/internal/cmd/options"
+	"github.com/spotinst/spotctl/internal/version"
 )
 
 type (

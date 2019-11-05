@@ -1,5 +1,5 @@
 package commands
 
 import (
-	_ "github.com/spotinst/spotinst-cli/internal/thirdparty/commands/kops"
+	_ "github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
 )

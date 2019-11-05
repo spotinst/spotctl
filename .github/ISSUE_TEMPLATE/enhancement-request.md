@@ -1,6 +1,6 @@
 ---
 name: Enhancement request
-about: Suggest an enhancement to the Spotinst CLI
+about: Suggest an enhancement to the `spotctl`
 title: ""
 labels: ""
 assignees: ""

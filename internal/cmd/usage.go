@@ -22,6 +22,6 @@ Global Flags:
 Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
 
-Use "spotinst [command] --help" for more information about a command.
-Use "spotinst options" for a list of global command-line options.
+Use "spotctl [command] --help" for more information about a command.
+Use "spotctl options" for a list of global command-line options.
 `

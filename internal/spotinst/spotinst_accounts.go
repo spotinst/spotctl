@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/spotinst/spotinst-cli/internal/log"
+	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 )
 

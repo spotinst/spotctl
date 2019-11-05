@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/spotinst/spotinst-cli/internal/child"
+	"github.com/spotinst/spotctl/internal/child"
 )
 
 const (

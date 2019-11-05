@@ -3,7 +3,7 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/spotinst/spotinst-cli/internal/cloud"
+	"github.com/spotinst/spotctl/internal/cloud"
 )
 
 // CloudProviderName is the name of this cloud provider.

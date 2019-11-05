@@ -1,4 +1,4 @@
-project_name: spotinst-cli
+project_name: spotctl
 
 before:
   # Global hooks.
@@ -8,10 +8,10 @@ before:
 builds:
   -
     # Path to main.go file or main package.
-    main: ./cmd/spotinst/main.go
+    main: ./cmd/spotctl/main.go
 
     # Name template for the binary final name.
-    binary: spotinst
+    binary: spotctl
 
     # Set flags for custom build tags.
     flags:
@@ -47,7 +47,7 @@ builds:
 brews:
   -
     # Formula name.
-    name: spotinst-cli
+    name: spotctl
 
     # Repository to push the tap to.
     github:
@@ -80,7 +80,7 @@ brews:
     #
     # Default is 'bin.install "program"'.
     install: |
-      bin.install "spotinst"
+      bin.install "spotctl"
 
 checksum:
   # Checksums file name template.

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/log"
+	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 )

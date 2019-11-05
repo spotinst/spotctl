@@ -8,11 +8,11 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/cmd/options"
-	"github.com/spotinst/spotinst-cli/internal/errors"
-	"github.com/spotinst/spotinst-cli/internal/log"
-	"github.com/spotinst/spotinst-cli/internal/spotinst"
-	"github.com/spotinst/spotinst-cli/internal/survey"
+	"github.com/spotinst/spotctl/internal/cmd/options"
+	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/survey"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 )
 

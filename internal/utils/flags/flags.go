@@ -3,7 +3,7 @@ package flags
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/log"
+	"github.com/spotinst/spotctl/internal/log"
 )
 
 const (

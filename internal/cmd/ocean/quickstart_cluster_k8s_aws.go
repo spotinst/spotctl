@@ -8,12 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/cloud/providers/aws"
-	"github.com/spotinst/spotinst-cli/internal/errors"
-	"github.com/spotinst/spotinst-cli/internal/log"
-	"github.com/spotinst/spotinst-cli/internal/survey"
-	"github.com/spotinst/spotinst-cli/internal/thirdparty/commands/kops"
-	"github.com/spotinst/spotinst-cli/internal/utils/flags"
+	"github.com/spotinst/spotctl/internal/cloud/providers/aws"
+	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/survey"
+	"github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
+	"github.com/spotinst/spotctl/internal/utils/flags"
 )
 
 type (

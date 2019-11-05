@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spotinst/spotinst-cli/internal/cmd"
+	"github.com/spotinst/spotctl/internal/cmd"
 )
 
 func main() {

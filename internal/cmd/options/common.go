@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotinst-cli/internal/cmd/clients"
+	"github.com/spotinst/spotctl/internal/cmd/clients"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 )
 

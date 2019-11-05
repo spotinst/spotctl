@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/spotinst/spotinst-cli/internal/log"
-	"github.com/spotinst/spotinst-cli/internal/survey"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/survey"
 )
 
 type manager struct {

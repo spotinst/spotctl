@@ -11,7 +11,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/liggitt/tabwriter"
-	"github.com/spotinst/spotinst-cli/internal/writer"
+	"github.com/spotinst/spotctl/internal/writer"
 )
 
 // WriterFormat is the format of this writer.

@@ -3,13 +3,13 @@ package clients
 import (
 	"errors"
 
-	"github.com/spotinst/spotinst-cli/internal/cloud"
-	"github.com/spotinst/spotinst-cli/internal/dep"
-	"github.com/spotinst/spotinst-cli/internal/editor"
-	"github.com/spotinst/spotinst-cli/internal/spotinst"
-	"github.com/spotinst/spotinst-cli/internal/survey"
-	"github.com/spotinst/spotinst-cli/internal/thirdparty"
-	"github.com/spotinst/spotinst-cli/internal/writer"
+	"github.com/spotinst/spotctl/internal/cloud"
+	"github.com/spotinst/spotctl/internal/dep"
+	"github.com/spotinst/spotctl/internal/editor"
+	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/survey"
+	"github.com/spotinst/spotctl/internal/thirdparty"
+	"github.com/spotinst/spotctl/internal/writer"
 )
 
 // ErrNotImplemented is the error returned if a method is not implemented.

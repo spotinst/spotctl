@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/spotinst/spotinst-cli/internal/log"
-	"github.com/spotinst/spotinst-cli/internal/version"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/version"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
@@ -62,7 +62,7 @@ func New(options ...ClientOption) Interface {
 
 	// Configure the user agent.
 	{
-		userAgent := fmt.Sprintf("spotinst-cli/%s", version.String())
+		userAgent := fmt.Sprintf("spotctl/%s", version.String())
 		cfg.WithUserAgent(userAgent)
 		log.Debugf("Configured user agent: %q", userAgent)
 	}

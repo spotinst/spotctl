@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Supported Versions
-Information about supported Spotinst CLI versions can be found on the [Spotinst Documentation](https://api.spotinst.com/) website.
+Information about supported `spotctl` versions can be found on the [Spotinst Documentation](https://api.spotinst.com/) website.
 
 ## Reporting a Vulnerability
 

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug encountered while operating Spotinst CLI
+about: Report a bug encountered while operating `spotctl`
 title: ""
 labels: ""
 assignees: ""
