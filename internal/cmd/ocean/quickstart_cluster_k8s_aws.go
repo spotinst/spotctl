@@ -448,8 +448,8 @@ func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) Init(fs *pflag.FlagSet, opts *CmdQuickstartClusterKubernetesOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) initDefaults(opts *CmdQuickstartClusterKubernetesOptions) {

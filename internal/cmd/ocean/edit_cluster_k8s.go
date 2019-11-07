@@ -133,8 +133,8 @@ func (x *CmdEditClusterKubernetes) run(ctx context.Context) error {
 }
 
 func (x *CmdEditClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdEditClusterOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdEditClusterKubernetesOptions) initDefaults(opts *CmdEditClusterOptions) {

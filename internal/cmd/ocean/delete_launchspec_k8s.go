@@ -98,8 +98,8 @@ func (x *CmdDeleteLaunchSpecKubernetes) run(ctx context.Context) error {
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteLaunchSpecOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesOptions) initDefaults(opts *CmdDeleteLaunchSpecOptions) {

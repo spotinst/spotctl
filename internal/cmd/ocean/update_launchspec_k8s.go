@@ -108,8 +108,8 @@ func (x *CmdUpdateLaunchSpecKubernetes) run(ctx context.Context) error {
 }
 
 func (x *CmdUpdateLaunchSpecKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdUpdateLaunchSpecOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdUpdateLaunchSpecKubernetesOptions) initDefaults(opts *CmdUpdateLaunchSpecOptions) {

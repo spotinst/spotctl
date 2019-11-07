@@ -160,8 +160,8 @@ Ubuntu:
 Additionally, you may want to output the completion to a file and source in your shell rcfile.`
 
 func (x *CmdOptions) Init(fs *pflag.FlagSet, opts *options.CommonOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdOptions) initDefaults(opts *options.CommonOptions) {

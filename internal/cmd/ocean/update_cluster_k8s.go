@@ -109,8 +109,8 @@ func (x *CmdUpdateClusterKubernetes) run(ctx context.Context) error {
 }
 
 func (x *CmdUpdateClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdUpdateClusterOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdUpdateClusterKubernetesOptions) initDefaults(opts *CmdUpdateClusterOptions) {

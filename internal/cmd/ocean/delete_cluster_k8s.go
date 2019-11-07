@@ -98,8 +98,8 @@ func (x *CmdDeleteClusterKubernetes) run(ctx context.Context) error {
 }
 
 func (x *CmdDeleteClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdDeleteClusterOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdDeleteClusterKubernetesOptions) initDefaults(opts *CmdDeleteClusterOptions) {

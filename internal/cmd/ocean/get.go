@@ -52,8 +52,8 @@ func (x *CmdGet) initSubCommands() {
 }
 
 func (x *CmdGetOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
-	x.initFlags(fs)
 	x.initDefaults(opts)
+	x.initFlags(fs)
 }
 
 func (x *CmdGetOptions) initDefaults(opts *CmdOptions) {
