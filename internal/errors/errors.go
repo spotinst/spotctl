@@ -72,6 +72,12 @@ func Range(name string, value interface{}) error {
 	return New(ErrorTypeRange, fmt.Sprintf("invalid range for argument: %s=%v", name, value))
 }
 
+// Noninteractive generates an instance representing an error that occurs when
+// a command cannot run in non-interactive mode.
+func Noninteractive(op string) error {
+	return New(ErrorTypeInternal, fmt.Sprintf("cannot run %q in non-interactive mode", op))
+}
+
 // NotImplemented generates an instance representing an error that occurs when
 // an unimplemented method is called.
 func NotImplemented() error {

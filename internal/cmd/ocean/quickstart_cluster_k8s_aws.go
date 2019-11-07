@@ -208,6 +208,7 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 		}
 
 		if !x.opts.Advanced {
+			log.Debugf("Skipping advanced configuration because user selection")
 			return nil
 		}
 

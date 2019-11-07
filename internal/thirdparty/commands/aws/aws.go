@@ -1,10 +1,8 @@
-package kops
+package aws
 
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spotinst/spotctl/internal/child"
@@ -13,7 +11,7 @@ import (
 )
 
 // CommandName is the name of this command.
-const CommandName thirdparty.CommandName = "kops"
+const CommandName thirdparty.CommandName = "aws"
 
 func init() {
 	thirdparty.Register(CommandName, factory)
@@ -52,7 +50,7 @@ func (x *Command) runVersion(ctx context.Context, args ...string) error {
 	var buf bytes.Buffer
 
 	cmdOptions := []child.CommandOption{
-		child.WithArgs("version"),
+		child.WithArgs("--version"),
 		child.WithStdio(nil, &buf, nil),
 	}
 
@@ -65,29 +63,9 @@ func (x *Command) runVersion(ctx context.Context, args ...string) error {
 }
 
 func (x *Command) run(ctx context.Context, args ...string) error {
-	const (
-		featureFlagKey = "KOPS_FEATURE_FLAGS"
-		featureFlagVal = "Spotinst,SpotinstOcean"
-	)
-
-	env := os.Environ()
-	envFeatured := false
-
-	for _, kv := range env {
-		if strings.Contains(kv, featureFlagKey) && strings.Contains(kv, featureFlagVal) {
-			envFeatured = true
-		}
-	}
-	if !envFeatured {
-		env = append(env, fmt.Sprintf(`%s="+%s"`,
-			featureFlagKey,
-			featureFlagVal))
-	}
-
 	cmdOptions := []child.CommandOption{
 		child.WithArgs(args...),
 		child.WithStdio(x.opts.In, x.opts.Out, x.opts.Err),
-		child.WithEnv(env),
 	}
 
 	return child.NewCommand(string(CommandName), cmdOptions...).Run(ctx)
