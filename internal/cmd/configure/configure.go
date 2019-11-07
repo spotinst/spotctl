@@ -3,6 +3,8 @@ package configure
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/go-ini/ini"
 	"github.com/spf13/cobra"
@@ -142,8 +144,21 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 
 	// Configure.
 	{
-		// Configuration filename.
+		// Credentials filename.
 		filename := credsspot.DefaultFilename()
+		log.Debugf("Credentials filename: %s", filename)
+
+		// Configuration directory.
+		dir := filepath.Dir(filename)
+		log.Debugf("Configuration directory: %s", dir)
+
+		// Create the configuration directory.
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			log.Debugf("Configuration directory does not exist, creating...")
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return err
+			}
+		}
 
 		// Create or update configuration.
 		cfg, err := ini.LooseLoad(filename)
