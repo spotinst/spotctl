@@ -6,7 +6,7 @@ var (
 	// See: https://kubernetes.io/docs/reference/kubectl.
 	DependencyKubectl = Dependency{
 		Name:    "kubectl",
-		Version: "1.15.3",
+		Version: "1.16.2",
 		URL: "https://storage.googleapis.com/kubernetes-release/" +
 			"release/v{{.version}}/bin/{{.os}}/{{.arch}}/kubectl{{.extension}}",
 	}
@@ -14,7 +14,7 @@ var (
 	// See: https://github.com/kubernetes/kops.
 	DependencyKops = Dependency{
 		Name:    "kops",
-		Version: "1.14.0-beta.2-cd9317f63",
+		Version: "v1.14.0-d6d8e1578",
 		URL: "https://spotinst-public.s3.amazonaws.com/integrations/kubernetes/kops/" +
 			"v{{.version}}/{{.os}}/{{.arch}}/kops",
 	}
