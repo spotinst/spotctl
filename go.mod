@@ -13,6 +13,7 @@ require (
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 	github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
+	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3

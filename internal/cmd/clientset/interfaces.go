@@ -1,4 +1,4 @@
-package clients
+package clientset
 
 import (
 	"errors"
@@ -18,13 +18,13 @@ var ErrNotImplemented = errors.New("clients: not implemented")
 type (
 	// Factory interface represents a clients factory that creates instances of
 	// each client type. For example, to create an instance of the cloud provider
-	// client interface, call the following method Clients.NewCloud().
+	// client interface, call the following method Clientset.NewCloud().
 	Factory interface {
 		// NewSpotinst returns an instance of Spotinst interface.
 		NewSpotinst(options ...spotinst.ClientOption) (spotinst.Interface, error)
 
 		// NewCloud returns an instance of cloud provider by name.
-		NewCloud(name cloud.ProviderName) (cloud.Interface, error)
+		NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Interface, error)
 
 		// NewCommand returns an instance of a third-party command by name.
 		NewCommand(name thirdparty.CommandName) (thirdparty.Command, error)

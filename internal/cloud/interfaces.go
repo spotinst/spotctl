@@ -1,6 +1,9 @@
 package cloud
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 // ErrNotImplemented is the error returned if a method is not implemented.
 var ErrNotImplemented = errors.New("cloud: not implemented")
@@ -14,17 +17,35 @@ type (
 		// Name returns the cloud provider name.
 		Name() ProviderName
 
+		// Compute returns an instance of Compute interface.
+		Compute() ComputeInterface
+
+		// Storage returns an instance of Storage interface.
+		Storage() StorageInterface
+	}
+
+	// ComputeInterface defines the interface of the Compute Services API.
+	ComputeInterface interface {
 		// DescribeRegions returns a list of regions.
-		DescribeRegions() ([]*Region, error)
+		DescribeRegions(ctx context.Context) ([]*Region, error)
 
 		// DescribeZones returns a list of availability zones within a region.
-		DescribeZones(region string) ([]*Zone, error)
+		DescribeZones(ctx context.Context) ([]*Zone, error)
 
 		// DescribeVPCs returns a list of VPCs within a region.
-		DescribeVPCs(region string) ([]*VPC, error)
+		DescribeVPCs(ctx context.Context) ([]*VPC, error)
 
 		// DescribeSubnets returns a list of subnets within a VPC.
-		DescribeSubnets(region, vpcID string) ([]*Subnet, error)
+		DescribeSubnets(ctx context.Context, vpcID string) ([]*Subnet, error)
+	}
+
+	// StorageInterface defines the interface of the Storage Services API.
+	StorageInterface interface {
+		// GetBucket returns a bucket by name.
+		GetBucket(ctx context.Context, bucket string) (*Bucket, error)
+
+		// CreateBucket creates a new bucket.
+		CreateBucket(ctx context.Context, bucket string) (*Bucket, error)
 	}
 
 	// Describes a region.
@@ -34,23 +55,29 @@ type (
 
 	// Describes a zone.
 	Zone struct {
-		Id   string
+		ID   string
 		Name string
 	}
 
 	// Describes a VPC.
 	VPC struct {
-		Id   string
+		ID   string
 		Name string
 	}
 
 	// Describes a subnet.
 	Subnet struct {
-		Id   string
+		ID   string
 		Name string
+	}
+
+	// Describes a bucket.
+	Bucket struct {
+		Name   string
+		Region string
 	}
 
 	// Factory is a function that returns a Provider interface. An error is
 	// returned if the cloud provider fails to initialize, nil otherwise.
-	Factory func() (Interface, error)
+	Factory func(options ...ProviderOption) (Interface, error)
 )

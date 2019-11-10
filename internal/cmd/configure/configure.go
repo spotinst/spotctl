@@ -28,7 +28,6 @@ type (
 
 	CmdOptions struct {
 		*options.CommonOptions
-
 		CredentialsSpotinst
 	}
 
@@ -84,7 +83,7 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 		}
 
 		log.Debugf("Starting survey...")
-		surv, err := x.opts.Clients.NewSurvey()
+		surv, err := x.opts.Clientset.NewSurvey()
 		if err != nil {
 			return err
 		}
@@ -112,7 +111,7 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 					spotinst.WithCredentialsStatic(x.opts.CredentialsSpotinst.Token, ""),
 				}
 
-				spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
+				spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
 				if err != nil {
 					return err
 				}
@@ -203,12 +202,8 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 func (x *Cmd) configureCredentialsAWS(ctx context.Context) error {
 	log.Debugf("Configuring AWS credentials")
 
-	// Survey.
+	// Verify.
 	{
-		if x.opts.Noninteractive {
-			return errors.Noninteractive(x.cmd.Name())
-		}
-
 		provider := credsaws.NewChainCredentials(
 			[]credsaws.Provider{
 				&credsaws.EnvProvider{},
@@ -216,15 +211,20 @@ func (x *Cmd) configureCredentialsAWS(ctx context.Context) error {
 			})
 
 		if _, err := provider.Get(); err == nil {
-			log.Debugf("Skipping AWS credential configuration because credentials are already configured")
+			log.Debugf("Skipping AWS credential configuration because "+
+				"credentials are already configured for profile %q", x.opts.Profile)
 			return nil
 		}
 	}
 
-	// Configure.
+	// Survey.
 	{
+		if x.opts.Noninteractive {
+			return errors.Noninteractive(x.cmd.Name())
+		}
+
 		log.Debugf("Starting survey...")
-		surv, err := x.opts.Clients.NewSurvey()
+		surv, err := x.opts.Clientset.NewSurvey()
 		if err != nil {
 			return err
 		}
@@ -245,9 +245,12 @@ func (x *Cmd) configureCredentialsAWS(ctx context.Context) error {
 				return nil
 			}
 		}
+	}
 
+	// Configure.
+	{
 		// TODO(liran): Use the dependency manager to install the AWS CLI, if needed.
-		cmd, err := x.opts.Clients.NewCommand(aws.CommandName)
+		cmd, err := x.opts.Clientset.NewCommand(aws.CommandName)
 		if err != nil {
 			return err
 		}

@@ -22,18 +22,23 @@ github.com/aws/aws-sdk-go/aws/request
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/aws/signer/v4
 github.com/aws/aws-sdk-go/internal/ini
+github.com/aws/aws-sdk-go/internal/s3err
 github.com/aws/aws-sdk-go/internal/sdkio
 github.com/aws/aws-sdk-go/internal/sdkrand
 github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/internal/shareddefaults
 github.com/aws/aws-sdk-go/private/protocol
 github.com/aws/aws-sdk-go/private/protocol/ec2query
+github.com/aws/aws-sdk-go/private/protocol/eventstream
+github.com/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
 github.com/aws/aws-sdk-go/private/protocol/query
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/rest
+github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/ec2
+github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/dustin/go-humanize v1.0.0
@@ -62,6 +67,8 @@ github.com/mattn/go-isatty
 github.com/mgutz/ansi
 # github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
 github.com/riywo/loginshell
+# github.com/satori/go.uuid v1.2.0
+github.com/satori/go.uuid
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spf13/cobra v0.0.5

@@ -1,4 +1,4 @@
-package clients
+package clientset
 
 import (
 	"io"
@@ -31,9 +31,9 @@ func (x *factory) NewSpotinst(options ...spotinst.ClientOption) (spotinst.Interf
 	return spotinst.New(options...), nil
 }
 
-func (x *factory) NewCloud(name cloud.ProviderName) (cloud.Interface, error) {
+func (x *factory) NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Interface, error) {
 	log.Debugf("Instantiating new cloud: %s", name)
-	return cloud.GetInstance(name)
+	return cloud.GetInstance(name, options...)
 }
 
 func (x *factory) NewCommand(name thirdparty.CommandName) (thirdparty.Command, error) {

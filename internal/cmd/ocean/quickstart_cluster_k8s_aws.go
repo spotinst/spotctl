@@ -6,14 +6,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/cloud/providers/aws"
 	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/survey"
-	"github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
-	"github.com/spotinst/spotctl/internal/utils/flags"
+	"github.com/spotinst/spotctl/internal/uuid"
 )
 
 type (
@@ -27,7 +30,7 @@ type (
 
 		// Basic
 		ClusterName string
-		State       string
+		StateStore  string
 
 		// Networking
 		Region  string
@@ -97,13 +100,17 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 	}
 
 	log.Debugf("Starting survey...")
-	surv, err := x.opts.Clients.NewSurvey()
+	surv, err := x.opts.Clientset.NewSurvey()
 	if err != nil {
 		return err
 	}
 
 	// Instantiate a cloud provider instance.
-	cloudProvider, err := x.opts.Clients.NewCloud(aws.CloudProviderName)
+	cloudProviderOpts := []cloud.ProviderOption{
+		cloud.WithProfile(x.opts.Profile),
+		cloud.WithRegion(x.opts.Region),
+	}
+	cloudProvider, err := x.opts.Clientset.NewCloud(aws.CloudProviderName, cloudProviderOpts...)
 	if err != nil {
 		return err
 	}
@@ -115,6 +122,7 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 				Message: "Cluster name",
 				Help: "Name must start with a lowercase letter followed by up to " +
 					"39 lowercase letters, numbers, or hyphens, and cannot end with a hyphen",
+				Default:  x.opts.ClusterName,
 				Required: true,
 			}
 
@@ -129,7 +137,7 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 		// Region.
 		{
 			if x.opts.Region == "" {
-				regions, err := cloudProvider.DescribeRegions()
+				regions, err := cloudProvider.Compute().DescribeRegions(ctx)
 				if err != nil {
 					return err
 				}
@@ -149,13 +157,23 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 				if x.opts.Region, err = surv.Select(input); err != nil {
 					return err
 				}
+
+				// Instantiate a cloud provider instance.
+				cloudProviderOpts := []cloud.ProviderOption{
+					cloud.WithProfile(x.opts.Profile),
+					cloud.WithRegion(x.opts.Region),
+				}
+				cloudProvider, err = x.opts.Clientset.NewCloud(aws.CloudProviderName, cloudProviderOpts...)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
 		// Availability zones.
 		{
 			if len(x.opts.Zones) == 0 {
-				zones, err := cloudProvider.DescribeZones(x.opts.Region)
+				zones, err := cloudProvider.Compute().DescribeZones(ctx)
 				if err != nil {
 					return err
 				}
@@ -179,24 +197,6 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 		}
 	}
 
-	// KOPS specific.
-	{
-		// State.
-		{
-			if x.opts.State == "" {
-				input := &survey.Input{
-					Message:  "Location of state store",
-					Help:     "See: https://git.io/fjH5V",
-					Required: true,
-				}
-
-				if x.opts.State, err = surv.InputString(input); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
 	// Advanced.
 	{
 		input := &survey.Input{
@@ -210,6 +210,23 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 		if !x.opts.Advanced {
 			log.Debugf("Skipping advanced configuration because user selection")
 			return nil
+		}
+
+		// KOPS specific.
+		{
+			// State.
+			{
+				input := &survey.Input{
+					Message:  "State store",
+					Help:     "See: https://git.io/fjH5V",
+					Default:  x.opts.StateStore,
+					Required: true,
+				}
+
+				if x.opts.StateStore, err = surv.InputString(input); err != nil {
+					return err
+				}
+			}
 		}
 
 		// Node count.
@@ -259,14 +276,14 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 					}
 
 					if selectVPC {
-						vpcs, err := cloudProvider.DescribeVPCs(x.opts.Region)
+						vpcs, err := cloudProvider.Compute().DescribeVPCs(ctx)
 						if err != nil {
 							return err
 						}
 
 						vpcOpts := make([]interface{}, len(vpcs))
 						for i, vpc := range vpcs {
-							vpcOpts[i] = fmt.Sprintf("%s (%s)", vpc.Id, vpc.Name)
+							vpcOpts[i] = fmt.Sprintf("%s (%s)", vpc.ID, vpc.Name)
 						}
 
 						input := &survey.Select{
@@ -298,14 +315,14 @@ func (x *CmdQuickstartClusterKubernetesAWS) survey(ctx context.Context) error {
 					}
 
 					if selectSubnets {
-						subnets, err := cloudProvider.DescribeSubnets(x.opts.Region, x.opts.VPC)
+						subnets, err := cloudProvider.Compute().DescribeSubnets(ctx, x.opts.VPC)
 						if err != nil {
 							return err
 						}
 
 						subnetOpts := make([]interface{}, len(subnets))
 						for i, subnet := range subnets {
-							subnetOpts[i] = fmt.Sprintf("%s (%s)", subnet.Id, subnet.Name)
+							subnetOpts[i] = fmt.Sprintf("%s (%s)", subnet.ID, subnet.Name)
 						}
 
 						input := &survey.Select{
@@ -372,12 +389,32 @@ func (x *CmdQuickstartClusterKubernetesAWS) validate(ctx context.Context) error 
 }
 
 func (x *CmdQuickstartClusterKubernetesAWS) run(ctx context.Context) error {
-	cmd, err := x.opts.Clients.NewCommand(kops.CommandName)
+	// Instantiate a cloud provider instance.
+	cloudProviderOpts := []cloud.ProviderOption{
+		cloud.WithProfile(x.opts.Profile),
+		cloud.WithRegion(x.opts.Region),
+	}
+	cloudProvider, err := x.opts.Clientset.NewCloud(aws.CloudProviderName, cloudProviderOpts...)
 	if err != nil {
 		return err
 	}
 
-	return cmd.Run(ctx, x.buildKopsArgs()...)
+	// Create an S3 bucket to store the cluster state.
+	if _, err = cloudProvider.Storage().CreateBucket(ctx, x.opts.StateStore); err != nil {
+		return err
+	}
+
+	// Instantiate new command.
+	cmd, err := x.opts.Clientset.NewCommand(kops.CommandName)
+	if err != nil {
+		return err
+	}
+
+	// Build cluster configuration.
+	cmdArgs := x.buildKopsArgs()
+
+	// Finally, create the cluster.
+	return cmd.Run(ctx, cmdArgs...)
 }
 
 func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
@@ -385,7 +422,7 @@ func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
 
 	args := []string{
 		"create", "cluster",
-		"--state", x.opts.State,
+		"--state", x.opts.StateStore,
 		"--name", x.opts.ClusterName,
 		"--cloud", string(aws.CloudProviderName),
 		"--master-count", fmt.Sprintf("%d", x.opts.MasterCount),
@@ -454,13 +491,18 @@ func (x *CmdQuickstartClusterKubernetesAWSOptions) Init(fs *pflag.FlagSet, opts 
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) initDefaults(opts *CmdQuickstartClusterKubernetesOptions) {
 	x.CmdQuickstartClusterKubernetesOptions = opts
-	x.ClusterName = os.Getenv("KOPS_CLUSTER_NAME")
-	x.State = os.Getenv("KOPS_STATE_STORE")
-	x.Region = os.Getenv("AWS_DEFAULT_REGION")
 	x.MasterCount = 3
 	x.NodeCount = 3
 	x.Authorization = "RBAC"
 	x.SSHPublicKey = "~/.ssh/id_rsa.pub"
+	x.Region = os.Getenv("AWS_DEFAULT_REGION")
+	x.ClusterName = os.Getenv("KOPS_CLUSTER_NAME")
+
+	x.StateStore = os.Getenv("KOPS_STATE_STORE")
+	if x.StateStore == "" {
+		// TODO(liran): Clean up after cluster deletion.
+		x.StateStore = fmt.Sprintf("s3://spot-ocean-quickstart-%s", uuid.NewV4().Short())
+	}
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(fs *pflag.FlagSet) {
@@ -472,7 +514,7 @@ func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(fs *pflag.FlagSet) 
 	fs.StringSliceVar(&x.Zones, "zones", x.Zones, "availability zones in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.MasterMachineTypes, "master-machine-types", x.MasterMachineTypes, "list of machine types for masters")
 	fs.StringSliceVar(&x.NodeMachineTypes, "node-machine-types", x.NodeMachineTypes, "list of machine types for nodes")
-	fs.StringVar(&x.State, "state", x.State, "s3 bucket used to store the state of the cluster")
+	fs.StringVar(&x.StateStore, "state", x.StateStore, "s3 bucket used to store the state of the cluster")
 	fs.StringVar(&x.SSHPublicKey, "ssh-public-key", x.SSHPublicKey, "ssh public key to use for nodes")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.Authorization, "authorization", x.Authorization, "authorization mode to use")
@@ -485,8 +527,8 @@ func (x *CmdQuickstartClusterKubernetesAWSOptions) Validate() error {
 		return err
 	}
 
-	if x.State == "" {
-		return errors.Required("State")
+	if x.StateStore == "" {
+		return errors.Required("StateStore")
 	}
 
 	if x.ClusterName == "" {

@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/options"
 	"github.com/spotinst/spotctl/internal/errors"
-	"github.com/spotinst/spotctl/internal/utils/flags"
+	"github.com/spotinst/spotctl/internal/flags"
 )
 
 type (

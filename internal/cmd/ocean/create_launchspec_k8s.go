@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spotinst"
-	"github.com/spotinst/spotctl/internal/utils/flags"
 )
 
 type (
@@ -83,7 +83,7 @@ func (x *CmdCreateLaunchSpecKubernetes) run(ctx context.Context) error {
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
+	spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
 	if err != nil {
 		return err
 	}

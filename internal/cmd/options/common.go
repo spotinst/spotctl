@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotctl/internal/cmd/clients"
+	"github.com/spotinst/spotctl/internal/cmd/clientset"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
 )
 
@@ -18,10 +18,10 @@ type CommonOptions struct {
 	In       io.Reader
 	Out, Err io.Writer
 
-	// Clients represents a factory interface that creates instances of each
+	// Clientset represents a factory interface that creates instances of each
 	// client type. For example, to create an instance of the cloud provider
-	// client interface, call the following method Clients.CloudProvider().
-	Clients clients.Factory
+	// client interface, call the following method Clientset.CloudProvider().
+	Clientset clientset.Factory
 
 	// Noninteractive disables the interactive mode user interface by quieting the
 	// configuration prompts.
@@ -109,7 +109,7 @@ func (x *CommonOptions) initIOStreams() {
 }
 
 func (x *CommonOptions) initClientsFactory() {
-	x.Clients = clients.NewFactory(x.In, x.Out, x.Err)
+	x.Clientset = clientset.NewFactory(x.In, x.Out, x.Err)
 }
 
 func (x *CommonOptions) Validate() error {

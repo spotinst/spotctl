@@ -84,6 +84,12 @@ func (x *Command) run(ctx context.Context, args ...string) error {
 			featureFlagVal))
 	}
 
+	for _, kv := range env {
+		if strings.HasPrefix(kv, "KOPS") {
+			log.Debugf("ENV: %s", kv)
+		}
+	}
+
 	cmdOptions := []child.CommandOption{
 		child.WithArgs(args...),
 		child.WithStdio(x.opts.In, x.opts.Out, x.opts.Err),

@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spotinst"
-	"github.com/spotinst/spotctl/internal/utils/flags"
 	"github.com/spotinst/spotctl/internal/writer"
 )
 
@@ -83,7 +83,7 @@ func (x *CmdGetClusterKubernetes) run(ctx context.Context) error {
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	spotinstClient, err := x.opts.Clients.NewSpotinst(spotinstClientOpts...)
+	spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (x *CmdGetClusterKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	w, err := x.opts.Clients.NewWriter(writer.Format(x.opts.Output))
+	w, err := x.opts.Clientset.NewWriter(writer.Format(x.opts.Output))
 	if err != nil {
 		return err
 	}

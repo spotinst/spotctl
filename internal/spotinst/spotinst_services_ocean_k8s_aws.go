@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/utils/flags"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 )
