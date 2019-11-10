@@ -6,8 +6,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cloud"
@@ -16,6 +14,7 @@ import (
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/survey"
+	"github.com/spotinst/spotctl/internal/thirdparty/commands/kops"
 	"github.com/spotinst/spotctl/internal/uuid"
 )
 
