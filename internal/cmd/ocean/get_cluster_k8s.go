@@ -113,9 +113,5 @@ func (x *CmdGetClusterKubernetesOptions) Init(fs *pflag.FlagSet, opts *CmdGetClu
 }
 
 func (x *CmdGetClusterKubernetesOptions) Validate() error {
-	if err := x.CmdGetClusterOptions.Validate(); err != nil {
-		return err
-	}
-
-	return nil
+	return x.CmdGetClusterOptions.Validate()
 }

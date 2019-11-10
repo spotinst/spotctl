@@ -68,18 +68,18 @@ type (
 
 	// OceanClusterOptions represents an Ocean cluster.
 	OceanClusterOptions struct {
-		// Base
+		// Base.
 		ClusterID string
 		Name      string
 		Region    string
 
-		// Strategy
+		// Strategy.
 		SpotPercentage           float64
 		UtilizeReservedInstances bool
 		FallbackToOnDemand       bool
 		DrainingTimeout          int
 
-		// Capacity
+		// Capacity.
 		MinSize    int
 		MaxSize    int
 		TargetSize int
@@ -102,7 +102,7 @@ type (
 		LoadBalancerARN          string
 		LoadBalancerType         string
 
-		// Auto Scaling
+		// Auto Scaling.
 		EnableAutoScaler       bool
 		EnableAutoConfig       bool
 		Cooldown               int
@@ -118,12 +118,12 @@ type (
 
 	// OceanLaunchSpecOptions represents an Ocean launch spec.
 	OceanLaunchSpecOptions struct {
-		// Base
-		Name    string
-		OceanID string
-		SpecID  string
+		// Base.
+		SpecID    string
+		ClusterID string
+		Name      string
 
-		// Compute
+		// Compute.
 		ImageID          string
 		UserData         string
 		SecurityGroupIDs []string

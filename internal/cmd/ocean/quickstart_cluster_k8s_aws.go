@@ -523,16 +523,22 @@ func (x *CmdQuickstartClusterKubernetesAWSOptions) initFlags(fs *pflag.FlagSet) 
 }
 
 func (x *CmdQuickstartClusterKubernetesAWSOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdQuickstartClusterKubernetesOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.StateStore == "" {
-		return errors.Required("StateStore")
+		errg.Add(errors.Required("StateStore"))
 	}
 
 	if x.ClusterName == "" {
-		return errors.Required("ClusterName")
+		errg.Add(errors.Required("ClusterName"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil

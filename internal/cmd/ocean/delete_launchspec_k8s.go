@@ -111,12 +111,18 @@ func (x *CmdDeleteLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdDeleteLaunchSpecKubernetesOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdDeleteLaunchSpecOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.LaunchSpecID == "" {
-		return errors.Required("LaunchSpecID")
+		errg.Add(errors.Required("LaunchSpecID"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil

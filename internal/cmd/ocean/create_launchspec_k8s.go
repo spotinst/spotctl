@@ -117,16 +117,16 @@ func (x *CmdCreateLaunchSpecKubernetesOptions) initDefaults(opts *CmdCreateLaunc
 }
 
 func (x *CmdCreateLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
-	// Base
+	// Base.
 	{
-		fs.StringVar(&x.Name, "name", x.Name, "name of the launch spec")
-		fs.StringVar(&x.OceanID, "ocean-id", x.OceanID, "id of the cluster")
+		fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
+		fs.StringVar(&x.Name, flags.FlagOceanName, x.Name, "name of the launch spec")
 	}
 
-	// Compute
+	// Compute.
 	{
-		fs.StringVar(&x.ImageID, "image-id", x.ImageID, "id of the image")
-		fs.StringVar(&x.UserData, "user-data", x.UserData, "user data to provide when launching a node (plain-text or base64-encoded)")
+		fs.StringVar(&x.ImageID, flags.FlagOceanImageID, x.ImageID, "id of the image")
+		fs.StringVar(&x.UserData, flags.FlagOceanUserData, x.UserData, "user data to provide when launching a node (plain-text or base64-encoded)")
 	}
 }
 

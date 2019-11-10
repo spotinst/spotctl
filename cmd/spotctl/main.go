@@ -9,7 +9,7 @@ import (
 
 func main() {
 	if err := cmd.New(os.Stdin, os.Stdout, os.Stderr).Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Exited with error: %v", err)
+		fmt.Fprintf(os.Stderr, "Exited with error: %v\n", err)
 		os.Exit(1)
 	}
 }

@@ -118,13 +118,14 @@ func (x *CmdUpdateClusterKubernetesOptions) initDefaults(opts *CmdUpdateClusterO
 }
 
 func (x *CmdUpdateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
-	// Base
+	// Base.
 	{
+		fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
 		fs.StringVar(&x.Name, flags.FlagOceanName, x.Name, "name of the cluster")
 		fs.StringVar(&x.Region, flags.FlagOceanRegion, x.Region, "")
 	}
 
-	// Strategy
+	// Strategy.
 	{
 		fs.Float64Var(&x.SpotPercentage, flags.FlagOceanSpotPercentage, x.SpotPercentage, "")
 		fs.IntVar(&x.DrainingTimeout, flags.FlagOceanDrainingTimeout, x.DrainingTimeout, "")
@@ -132,14 +133,14 @@ func (x *CmdUpdateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.BoolVar(&x.FallbackToOnDemand, flags.FlagOceanFallbackOnDemand, x.FallbackToOnDemand, "")
 	}
 
-	// Capacity
+	// Capacity.
 	{
 		fs.IntVar(&x.MinSize, flags.FlagOceanMinSize, x.MinSize, "")
 		fs.IntVar(&x.MaxSize, flags.FlagOceanMaxSize, x.MaxSize, "")
 		fs.IntVar(&x.TargetSize, flags.FlagOceanTargetSize, x.TargetSize, "")
 	}
 
-	// Compute
+	// Compute.
 	{
 		fs.StringSliceVar(&x.SubnetIDs, flags.FlagOceanSubnetIDs, x.SubnetIDs, "")
 		fs.StringSliceVar(&x.InstanceTypesWhitelist, flags.FlagOceanInstancesTypesWhitelist, x.InstanceTypesWhitelist, "")
@@ -160,7 +161,7 @@ func (x *CmdUpdateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 
 	}
 
-	// Auto Scaling
+	// Auto Scaling.
 	{
 		fs.BoolVar(&x.EnableAutoScaler, flags.FlagOceanEnableAutoScaler, x.EnableAutoScaler, "")
 		fs.BoolVar(&x.EnableAutoConfig, flags.FlagOceanEnableAutoScalerAutoConfig, x.EnableAutoConfig, "")
@@ -177,12 +178,18 @@ func (x *CmdUpdateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdUpdateClusterKubernetesOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdUpdateClusterOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.ClusterID == "" {
-		return errors.Required("ClusterID")
+		errg.Add(errors.Required("ClusterID"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil

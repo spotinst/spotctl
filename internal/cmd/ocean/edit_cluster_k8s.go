@@ -146,12 +146,18 @@ func (x *CmdEditClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdEditClusterKubernetesOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdEditClusterOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.ClusterID == "" {
-		return errors.Required("ClusterID")
+		errg.Add(errors.Required("ClusterID"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil

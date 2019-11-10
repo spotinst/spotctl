@@ -288,8 +288,18 @@ func (x *oceanKubernetesAWSClusterBuilder) Build() (*OceanCluster, error) {
 func (x *oceanKubernetesAWSClusterBuilder) buildCluster() *aws.Cluster {
 	cluster := new(aws.Cluster)
 
-	cluster.SetName(spotinst.String(x.opts.Name))
-	cluster.SetRegion(spotinst.String(x.opts.Region))
+	if x.fs.Changed(flags.FlagOceanClusterID) {
+		cluster.SetId(spotinst.String(x.opts.ClusterID))
+	}
+
+	if x.fs.Changed(flags.FlagOceanName) {
+		cluster.SetName(spotinst.String(x.opts.Name))
+	}
+
+	if x.fs.Changed(flags.FlagOceanRegion) {
+		cluster.SetRegion(spotinst.String(x.opts.Region))
+	}
+
 	cluster.SetStrategy(x.buildStrategy())
 	cluster.SetCapacity(x.buildCapacity())
 	cluster.SetAutoScaler(x.buildAutoScaler())
@@ -505,12 +515,16 @@ func (x *oceanKubernetesAWSLaunchSpecBuilder) Build() (*OceanLaunchSpec, error) 
 func (x *oceanKubernetesAWSLaunchSpecBuilder) buildSpec() *aws.LaunchSpec {
 	spec := new(aws.LaunchSpec)
 
+	if x.fs.Changed(flags.FlagOceanSpecID) {
+		spec.SetId(spotinst.String(x.opts.SpecID))
+	}
+
 	if x.fs.Changed(flags.FlagOceanName) {
 		spec.SetName(spotinst.String(x.opts.Name))
 	}
 
 	if x.fs.Changed(flags.FlagOceanClusterID) {
-		spec.SetOceanId(spotinst.String(x.opts.OceanID))
+		spec.SetOceanId(spotinst.String(x.opts.ClusterID))
 	}
 
 	if x.fs.Changed(flags.FlagOceanImageID) {

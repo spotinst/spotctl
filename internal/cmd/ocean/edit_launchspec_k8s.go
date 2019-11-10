@@ -146,12 +146,18 @@ func (x *CmdEditLaunchSpecKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdEditLaunchSpecKubernetesOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdEditLaunchSpecOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.LaunchSpecID == "" {
-		return errors.Required("LaunchSpecID")
+		errg.Add(errors.Required("LaunchSpecID"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil

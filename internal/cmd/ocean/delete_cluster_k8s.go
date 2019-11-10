@@ -111,12 +111,18 @@ func (x *CmdDeleteClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdDeleteClusterKubernetesOptions) Validate() error {
+	errg := errors.NewErrorGroup()
+
 	if err := x.CmdDeleteClusterOptions.Validate(); err != nil {
-		return err
+		errg.Add(err)
 	}
 
 	if x.ClusterID == "" {
-		return errors.Required("ClusterID")
+		errg.Add(errors.Required("ClusterID"))
+	}
+
+	if errg.Len() > 0 {
+		return errg
 	}
 
 	return nil
