@@ -2,6 +2,7 @@ package ocean
 
 import (
 	"context"
+	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -101,6 +102,8 @@ func (x *CmdGetClusterKubernetes) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	sort.Sort(&spotinst.OceanClustersSorter{Clusters: clusters})
 
 	return w.Write(clusters)
 }
