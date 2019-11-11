@@ -91,13 +91,20 @@ func (c *Cloud) createBucket(ctx context.Context, bucket string) (*cloud.Bucket,
 	// Create a new S3 service client.
 	svc := s3.New(c.session)
 
-	// Create the bucket.
-	_, err := svc.CreateBucketWithContext(ctx, &s3.CreateBucketInput{
+	// Create bucket configuration.
+	input := &s3.CreateBucketInput{
 		Bucket: aws.String(bucket),
-		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+	}
+
+	// Set the location constraint.
+	if c.options.Region != "us-east-1" {
+		input.CreateBucketConfiguration = &s3.CreateBucketConfiguration{
 			LocationConstraint: aws.String(c.options.Region),
-		},
-	})
+		}
+	}
+
+	// Create the bucket.
+	_, err := svc.CreateBucketWithContext(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create bucket %q: %v", bucket, err)
 	}
