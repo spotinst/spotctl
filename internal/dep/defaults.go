@@ -14,7 +14,7 @@ var (
 	// See: https://github.com/kubernetes/kops.
 	DependencyKops = Dependency{
 		Name:    "kops",
-		Version: "1.14.0-d6d8e1578",
+		Version: "1.15.0-beta.1-20f7d4c8c",
 		URL: "https://spotinst-public.s3.amazonaws.com/integrations/kubernetes/kops/" +
 			"v{{.version}}/{{.os}}/{{.arch}}/kops",
 	}
