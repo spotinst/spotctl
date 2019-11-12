@@ -79,7 +79,7 @@ func (x *Command) run(ctx context.Context, args ...string) error {
 		}
 	}
 	if !envFeatured {
-		env = append(env, fmt.Sprintf(`%s="+%s"`,
+		env = append(env, fmt.Sprintf(`%s=+%s`,
 			featureFlagKey,
 			featureFlagVal))
 	}
