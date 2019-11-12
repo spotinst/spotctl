@@ -421,9 +421,9 @@ func (x *CmdQuickstartClusterKubernetesAWS) buildKopsArgs() []string {
 
 	args := []string{
 		"create", "cluster",
-		"--state", x.opts.StateStore,
 		"--name", x.opts.ClusterName,
 		"--cloud", string(aws.CloudProviderName),
+		"--state", fmt.Sprintf("s3://%s", strings.TrimPrefix(x.opts.StateStore, "s3://")),
 		"--master-count", fmt.Sprintf("%d", x.opts.MasterCount),
 		"--node-count", fmt.Sprintf("%d", x.opts.NodeCount),
 	}
