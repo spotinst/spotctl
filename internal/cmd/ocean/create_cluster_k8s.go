@@ -119,7 +119,8 @@ func (x *CmdCreateClusterKubernetesOptions) initDefaults(opts *CmdCreateClusterO
 func (x *CmdCreateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 	// Base.
 	{
-		fs.StringVar(&x.Name, flags.FlagOceanName, x.Name, "name of the cluster")
+		fs.StringVar(&x.Name, flags.FlagOceanName, x.Name, "")
+		fs.StringVar(&x.ControllerID, flags.FlagOceanControllerID, x.ControllerID, "")
 		fs.StringVar(&x.Region, flags.FlagOceanRegion, x.Region, "")
 	}
 

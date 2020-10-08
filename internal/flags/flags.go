@@ -9,6 +9,7 @@ import (
 const (
 	FlagOceanName                       string = "name"
 	FlagOceanRegion                     string = "region"
+	FlagOceanControllerID               string = "controller-id"
 	FlagOceanClusterID                  string = "cluster-id"
 	FlagOceanSpecID                     string = "spec-id"
 	FlagOceanSpotPercentage             string = "spot-percentage"

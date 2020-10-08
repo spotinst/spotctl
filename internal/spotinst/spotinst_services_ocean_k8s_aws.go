@@ -296,6 +296,12 @@ func (x *oceanKubernetesAWSClusterBuilder) buildCluster() *aws.Cluster {
 		cluster.SetName(spotinst.String(x.opts.Name))
 	}
 
+	if x.fs.Changed(flags.FlagOceanControllerID) {
+		cluster.SetControllerClusterId(spotinst.String(x.opts.ControllerID))
+	} else if x.fs.Changed(flags.FlagOceanName) {
+		cluster.SetControllerClusterId(spotinst.String(x.opts.Name))
+	}
+
 	if x.fs.Changed(flags.FlagOceanRegion) {
 		cluster.SetRegion(spotinst.String(x.opts.Region))
 	}

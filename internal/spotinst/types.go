@@ -69,9 +69,10 @@ type (
 	// OceanClusterOptions represents an Ocean cluster.
 	OceanClusterOptions struct {
 		// Base.
-		ClusterID string
-		Name      string
-		Region    string
+		ClusterID    string
+		ControllerID string
+		Name         string
+		Region       string
 
 		// Strategy.
 		SpotPercentage           float64
