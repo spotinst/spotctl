@@ -21,6 +21,7 @@ type Cluster struct {
 	Strategy            *Strategy   `json:"strategy,omitempty"`
 	Capacity            *Capacity   `json:"capacity,omitempty"`
 	Compute             *Compute    `json:"compute,omitempty"`
+	Scheduling          *Scheduling `json:"scheduling,omitempty"`
 	AutoScaler          *AutoScaler `json:"autoScaler,omitempty"`
 
 	// Read-only fields.
@@ -49,6 +50,7 @@ type Strategy struct {
 	UtilizeReservedInstances *bool    `json:"utilizeReservedInstances,omitempty"`
 	FallbackToOnDemand       *bool    `json:"fallbackToOd,omitempty"`
 	DrainingTimeout          *int     `json:"drainingTimeout,omitempty"`
+	GracePeriod              *int     `json:"gracePeriod,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -67,6 +69,31 @@ type Compute struct {
 	InstanceTypes       *InstanceTypes       `json:"instanceTypes,omitempty"`
 	LaunchSpecification *LaunchSpecification `json:"launchSpecification,omitempty"`
 	SubnetIDs           []string             `json:"subnetIds,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Scheduling struct {
+	ShutdownHours *ShutdownHours `json:"shutdownHours,omitempty"`
+	Tasks         []*Task        `json:"tasks,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Task struct {
+	IsEnabled      *bool   `json:"isEnabled,omitempty"`
+	Type           *string `json:"taskType,omitempty"`
+	CronExpression *string `json:"cronExpression,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -115,12 +142,13 @@ type LoadBalancer struct {
 }
 
 type AutoScaler struct {
-	IsEnabled      *bool                     `json:"isEnabled,omitempty"`
-	IsAutoConfig   *bool                     `json:"isAutoConfig,omitempty"`
-	Cooldown       *int                      `json:"cooldown,omitempty"`
-	Headroom       *AutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down           *AutoScalerDown           `json:"down,omitempty"`
+	IsEnabled              *bool                     `json:"isEnabled,omitempty"`
+	IsAutoConfig           *bool                     `json:"isAutoConfig,omitempty"`
+	Cooldown               *int                      `json:"cooldown,omitempty"`
+	AutoHeadroomPercentage *int                      `json:"autoHeadroomPercentage,omitempty"`
+	Headroom               *AutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits         *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                   *AutoScalerDown           `json:"down,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -145,7 +173,8 @@ type AutoScalerResourceLimits struct {
 }
 
 type AutoScalerDown struct {
-	EvaluationPeriods *int `json:"evaluationPeriods,omitempty"`
+	EvaluationPeriods      *int     `json:"evaluationPeriods,omitempty"`
+	MaxScaleDownPercentage *float64 `json:"maxScaleDownPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -187,19 +216,30 @@ type DeleteClusterInput struct {
 
 type DeleteClusterOutput struct{}
 
+// Deprecated: Use CreateRollInput instead.
 type RollClusterInput struct {
 	Roll *Roll `json:"roll,omitempty"`
 }
 
+// Deprecated: Use CreateRollOutput instead.
 type RollClusterOutput struct {
 	RollClusterStatus *RollClusterStatus `json:"clusterDeploymentStatus,omitempty"`
 }
 
+// Deprecated: Use RollSpec instead.
 type Roll struct {
-	ClusterID           *string `json:"clusterId,omitempty"`
-	BatchSizePercentage *int    `json:"batchSizePercentage,omitempty"`
+	ClusterID                    *string  `json:"clusterId,omitempty"`
+	Comment                      *string  `json:"comment,omitempty"`
+	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
+	DisableLaunchSpecAutoscaling *bool    `json:"disableLaunchSpecAutoscaling,omitempty"`
+	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
+	InstanceIDs                  []string `json:"instanceIds,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
 }
 
+// Deprecated: Use RollStatus instead.
 type RollClusterStatus struct {
 	OceanID      *string   `json:"oceanId,omitempty"`
 	RollID       *string   `json:"id,omitempty"`
@@ -211,9 +251,69 @@ type RollClusterStatus struct {
 	UpdatedAt    *string   `json:"updatedAt,omitempty"`
 }
 
+type RollSpec struct {
+	ID                           *string  `json:"id,omitempty"`
+	ClusterID                    *string  `json:"clusterId,omitempty"`
+	Comment                      *string  `json:"comment,omitempty"`
+	BatchSizePercentage          *int     `json:"batchSizePercentage,omitempty"`
+	DisableLaunchSpecAutoScaling *bool    `json:"disableLaunchSpecAutoScaling,omitempty"`
+	LaunchSpecIDs                []string `json:"launchSpecIds,omitempty"`
+	InstanceIDs                  []string `json:"instanceIds,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type RollStatus struct {
+	ID            *string   `json:"id,omitempty"`
+	ClusterID     *string   `json:"oceanId,omitempty"`
+	Comment       *string   `json:"comment,omitempty"`
+	Status        *string   `json:"status,omitempty"`
+	Progress      *Progress `json:"progress,omitempty"`
+	CurrentBatch  *int      `json:"currentBatch,omitempty"`
+	NumOfBatches  *int      `json:"numOfBatches,omitempty"`
+	LaunchSpecIDs []string  `json:"launchSpecIds,omitempty"`
+	InstanceIDs   []string  `json:"instanceIds,omitempty"`
+	CreatedAt     *string   `json:"createdAt,omitempty"`
+	UpdatedAt     *string   `json:"updatedAt,omitempty"`
+}
+
 type Progress struct {
-	Unit  *string `json:"unit,omitempty"`
-	Value *int    `json:"value,omitempty"`
+	Unit  *string  `json:"unit,omitempty"`
+	Value *float64 `json:"value,omitempty"`
+}
+
+type ListRollsInput struct {
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ListRollsOutput struct {
+	Rolls []*RollStatus `json:"rolls,omitempty"`
+}
+
+type CreateRollInput struct {
+	Roll *RollSpec `json:"roll,omitempty"`
+}
+
+type CreateRollOutput struct {
+	Roll *RollStatus `json:"roll,omitempty"`
+}
+
+type ReadRollInput struct {
+	RollID    *string `json:"rollId,omitempty"`
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ReadRollOutput struct {
+	Roll *RollStatus `json:"roll,omitempty"`
+}
+
+type UpdateRollInput struct {
+	Roll *RollSpec `json:"roll,omitempty"`
+}
+
+type UpdateRollOutput struct {
+	Roll *RollStatus `json:"roll,omitempty"`
 }
 
 func clusterFromJSON(in []byte) (*Cluster, error) {
@@ -251,21 +351,74 @@ func clustersFromHttpResponse(resp *http.Response) ([]*Cluster, error) {
 	return clustersFromJSON(body)
 }
 
-func rollStatusFromJSON(in []byte) (*RollClusterStatus, error) {
+func rollClusterStatusFromJSON(in []byte) (*RollClusterStatus, error) {
 	b := new(RollClusterStatus)
-
 	if err := json.Unmarshal(in, b); err != nil {
 		return nil, err
 	}
 	return b, nil
 }
 
-func rollStatusFromHttpResponse(resp *http.Response) (*RollClusterStatus, error) {
+func rollClusterStatusesFromJSON(in []byte) ([]*RollClusterStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*RollClusterStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := rollClusterStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollClusterStatusesFromHttpResponse(resp *http.Response) ([]*RollClusterStatus, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return rollStatusFromJSON(body)
+	return rollClusterStatusesFromJSON(body)
+}
+
+func rollStatusFromJSON(in []byte) (*RollStatus, error) {
+	b := new(RollStatus)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+func rollStatusesFromJSON(in []byte) ([]*RollStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*RollStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := rollStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollStatusesFromHttpResponse(resp *http.Response) ([]*RollStatus, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return rollStatusesFromJSON(body)
 }
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
@@ -387,6 +540,130 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 	return &DeleteClusterOutput{}, nil
 }
 
+func (s *ServiceOp) ListRolls(ctx context.Context, input *ListRollsInput) (*ListRollsOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ListRollsOutput)
+	if len(v) > 0 {
+		output.Rolls = v
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) CreateRoll(ctx context.Context, input *CreateRollInput) (*CreateRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.Roll.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.Roll.ClusterID = nil
+
+	r := client.NewRequest(http.MethodPost, path)
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(CreateRollOutput)
+	if len(v) > 0 {
+		output.Roll = v[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) ReadRoll(ctx context.Context, input *ReadRollInput) (*ReadRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll/{rollId}", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+		"rollId":    spotinst.StringValue(input.RollID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ReadRollOutput)
+	if len(v) > 0 {
+		output.Roll = v[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) UpdateRoll(ctx context.Context, input *UpdateRollInput) (*UpdateRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll/{rollId}", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.Roll.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.Roll.ClusterID = nil
+
+	r := client.NewRequest(http.MethodPut, path)
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(UpdateRollOutput)
+	if len(v) > 0 {
+		output.Roll = v[0]
+	}
+
+	return output, nil
+}
+
+// Deprecated: Use CreateRoll instead.
 func (s *ServiceOp) Roll(ctx context.Context, input *RollClusterInput) (*RollClusterOutput, error) {
 	path, err := uritemplates.Expand("/ocean/aws/k8s/cluster/{clusterId}/roll", uritemplates.Values{
 		"clusterId": spotinst.StringValue(input.Roll.ClusterID),
@@ -407,12 +684,17 @@ func (s *ServiceOp) Roll(ctx context.Context, input *RollClusterInput) (*RollClu
 	}
 	defer resp.Body.Close()
 
-	_, err = rollStatusFromHttpResponse(resp)
+	rs, err := rollClusterStatusesFromHttpResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &RollClusterOutput{}, nil
+	output := new(RollClusterOutput)
+	if len(rs) > 0 {
+		output.RollClusterStatus = rs[0]
+	}
+
+	return output, nil
 }
 
 // region Cluster
@@ -472,6 +754,13 @@ func (o *Cluster) SetCompute(v *Compute) *Cluster {
 	return o
 }
 
+func (o *Cluster) SetScheduling(v *Scheduling) *Cluster {
+	if o.Scheduling = v; o.Scheduling == nil {
+		o.nullFields = append(o.nullFields, "Scheduling")
+	}
+	return o
+}
+
 func (o *Cluster) SetAutoScaler(v *AutoScaler) *Cluster {
 	if o.AutoScaler = v; o.AutoScaler == nil {
 		o.nullFields = append(o.nullFields, "AutoScaler")
@@ -513,6 +802,13 @@ func (o *Strategy) SetFallbackToOnDemand(v *bool) *Strategy {
 func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
 	if o.DrainingTimeout = v; o.DrainingTimeout == nil {
 		o.nullFields = append(o.nullFields, "DrainingTimeout")
+	}
+	return o
+}
+
+func (o *Strategy) SetGracePeriod(v *int) *Strategy {
+	if o.GracePeriod = v; o.GracePeriod == nil {
+		o.nullFields = append(o.nullFields, "GracePeriod")
 	}
 	return o
 }
@@ -575,6 +871,85 @@ func (o *Compute) SetLaunchSpecification(v *LaunchSpecification) *Compute {
 func (o *Compute) SetSubnetIDs(v []string) *Compute {
 	if o.SubnetIDs = v; o.SubnetIDs == nil {
 		o.nullFields = append(o.nullFields, "SubnetIDs")
+	}
+	return o
+}
+
+// endregion
+
+// region Scheduling
+
+func (o Scheduling) MarshalJSON() ([]byte, error) {
+	type noMethod Scheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Scheduling) SetShutdownHours(v *ShutdownHours) *Scheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+func (o *Scheduling) SetTasks(v []*Task) *Scheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+// endregion
+
+// region Tasks
+
+func (o Task) MarshalJSON() ([]byte, error) {
+	type noMethod Task
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Task) SetIsEnabled(v *bool) *Task {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *Task) SetType(v *string) *Task {
+	if o.Type = v; o.Type == nil {
+		o.nullFields = append(o.nullFields, "Type")
+	}
+	return o
+}
+
+func (o *Task) SetCronExpression(v *string) *Task {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+// endregion
+
+// region ShutdownHours
+
+func (o ShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod ShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShutdownHours) SetIsEnabled(v *bool) *ShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *ShutdownHours) SetTimeWindows(v []string) *ShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
 	}
 	return o
 }
@@ -770,6 +1145,13 @@ func (o *AutoScaler) SetCooldown(v *int) *AutoScaler {
 	return o
 }
 
+func (o *AutoScaler) SetAutoHeadroomPercentage(v *int) *AutoScaler {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
+	}
+	return o
+}
+
 func (o *AutoScaler) SetHeadroom(v *AutoScalerHeadroom) *AutoScaler {
 	if o.Headroom = v; o.Headroom == nil {
 		o.nullFields = append(o.nullFields, "Headroom")
@@ -866,6 +1248,58 @@ func (o AutoScalerDown) MarshalJSON() ([]byte, error) {
 func (o *AutoScalerDown) SetEvaluationPeriods(v *int) *AutoScalerDown {
 	if o.EvaluationPeriods = v; o.EvaluationPeriods == nil {
 		o.nullFields = append(o.nullFields, "EvaluationPeriods")
+	}
+	return o
+}
+
+func (o *AutoScalerDown) SetMaxScaleDownPercentage(v *float64) *AutoScalerDown {
+	if o.MaxScaleDownPercentage = v; o.MaxScaleDownPercentage == nil {
+		o.nullFields = append(o.nullFields, "MaxScaleDownPercentage")
+	}
+	return o
+}
+
+// endregion
+
+// region Roll
+
+func (o Roll) MarshalJSON() ([]byte, error) {
+	type noMethod Roll
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Roll) SetComment(v *string) *Roll {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+
+func (o *Roll) SetBatchSizePercentage(v *int) *Roll {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *Roll) SetDisableLaunchSpecAutoscaling(v *bool) *Roll {
+	if o.DisableLaunchSpecAutoscaling = v; o.DisableLaunchSpecAutoscaling == nil {
+		o.nullFields = append(o.nullFields, "DisableLaunchSpecAutoscaling")
+	}
+	return o
+}
+
+func (o *Roll) SetLaunchSpecIDs(v []string) *Roll {
+	if o.LaunchSpecIDs = v; o.LaunchSpecIDs == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecIDs")
+	}
+	return o
+}
+
+func (o *Roll) SetInstanceIDs(v []string) *Roll {
+	if o.InstanceIDs = v; o.InstanceIDs == nil {
+		o.nullFields = append(o.nullFields, "InstanceIDs")
 	}
 	return o
 }

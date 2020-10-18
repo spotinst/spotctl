@@ -14,15 +14,24 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                 *string             `json:"id,omitempty"`
-	Name               *string             `json:"name,omitempty"`
-	OceanID            *string             `json:"oceanId,omitempty"`
-	ImageID            *string             `json:"imageId,omitempty"`
-	UserData           *string             `json:"userData,omitempty"`
-	SecurityGroupIDs   []string            `json:"securityGroupIds,omitempty"`
-	IAMInstanceProfile *IAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
-	Labels             []*Label            `json:"labels,omitempty"`
-	Taints             []*Taint            `json:"taints,omitempty"`
+	ID                  *string               `json:"id,omitempty"`
+	Name                *string               `json:"name,omitempty"`
+	OceanID             *string               `json:"oceanId,omitempty"`
+	ImageID             *string               `json:"imageId,omitempty"`
+	UserData            *string               `json:"userData,omitempty"`
+	RootVolumeSize      *int                  `json:"rootVolumeSize,omitempty"`
+	SecurityGroupIDs    []string              `json:"securityGroupIds,omitempty"`
+	SubnetIDs           []string              `json:"subnetIds,omitempty"`
+	InstanceTypes       []string              `json:"instanceTypes,omitempty"`
+	Strategy            *LaunchSpecStrategy   `json:"strategy,omitempty"`
+	ResourceLimits      *ResourceLimits       `json:"resourceLimits,omitempty"`
+	IAMInstanceProfile  *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
+	AutoScale           *AutoScale            `json:"autoScale,omitempty"`
+	ElasticIPPool       *ElasticIPPool        `json:"elasticIpPool,omitempty"`
+	BlockDeviceMappings []*BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
+	Labels              []*Label              `json:"labels,omitempty"`
+	Taints              []*Taint              `json:"taints,omitempty"`
+	Tags                []*Tag                `json:"tags,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -45,6 +54,46 @@ type LaunchSpec struct {
 	nullFields []string
 }
 
+type ResourceLimits struct {
+	MaxInstanceCount *int `json:"maxInstanceCount,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type BlockDeviceMapping struct {
+	DeviceName  *string `json:"deviceName,omitempty"`
+	NoDevice    *string `json:"noDevice,omitempty"`
+	VirtualName *string `json:"virtualName,omitempty"`
+	EBS         *EBS    `json:"ebs,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type EBS struct {
+	DeleteOnTermination *bool              `json:"deleteOnTermination,omitempty"`
+	Encrypted           *bool              `json:"encrypted,omitempty"`
+	KMSKeyID            *string            `json:"kmsKeyId,omitempty"`
+	SnapshotID          *string            `json:"snapshotId,omitempty"`
+	VolumeType          *string            `json:"volumeType,omitempty"`
+	IOPS                *int               `json:"iops,omitempty"`
+	VolumeSize          *int               `json:"volumeSize,omitempty"`
+	DynamicVolumeSize   *DynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type DynamicVolumeSize struct {
+	BaseSize            *int    `json:"baseSize,omitempty"`
+	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
+	Resource            *string `json:"resource,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
 type Label struct {
 	Key   *string `json:"key,omitempty"`
 	Value *string `json:"value,omitempty"`
@@ -57,6 +106,45 @@ type Taint struct {
 	Key    *string `json:"key,omitempty"`
 	Value  *string `json:"value,omitempty"`
 	Effect *string `json:"effect,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScale struct {
+	Headrooms []*AutoScaleHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AutoScaleHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ElasticIPPool struct {
+	TagSelector *TagSelector `json:"tagSelector,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TagSelector struct {
+	Key   *string `json:"tagKey,omitempty"`
+	Value *string `json:"tagValue,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecStrategy struct {
+	SpotPercentage *int `json:"spotPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -311,6 +399,27 @@ func (o *LaunchSpec) SetSecurityGroupIDs(v []string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
+	if o.SubnetIDs = v; o.SubnetIDs == nil {
+		o.nullFields = append(o.nullFields, "SubnetIDs")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
+	if o.InstanceTypes = v; o.InstanceTypes == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRootVolumeSize(v *int) *LaunchSpec {
+	if o.RootVolumeSize = v; o.RootVolumeSize == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeSize")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetIAMInstanceProfile(v *IAMInstanceProfile) *LaunchSpec {
 	if o.IAMInstanceProfile = v; o.IAMInstanceProfile == nil {
 		o.nullFields = append(o.nullFields, "IAMInstanceProfile")
@@ -328,6 +437,200 @@ func (o *LaunchSpec) SetLabels(v []*Label) *LaunchSpec {
 func (o *LaunchSpec) SetTaints(v []*Taint) *LaunchSpec {
 	if o.Taints = v; o.Taints == nil {
 		o.nullFields = append(o.nullFields, "Taints")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetAutoScale(v *AutoScale) *LaunchSpec {
+	if o.AutoScale = v; o.AutoScale == nil {
+		o.nullFields = append(o.nullFields, "AutoScale")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetElasticIPPool(v *ElasticIPPool) *LaunchSpec {
+	if o.ElasticIPPool = v; o.ElasticIPPool == nil {
+		o.nullFields = append(o.nullFields, "ElasticIPPool")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetBlockDeviceMappings(v []*BlockDeviceMapping) *LaunchSpec {
+	if o.BlockDeviceMappings = v; o.BlockDeviceMappings == nil {
+		o.nullFields = append(o.nullFields, "BlockDeviceMappings")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
+	if o.ResourceLimits = v; o.ResourceLimits == nil {
+		o.nullFields = append(o.nullFields, "ResourceLimits")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "Strategy")
+	}
+	return o
+}
+
+// endregion
+
+// region BlockDeviceMapping
+
+func (o BlockDeviceMapping) MarshalJSON() ([]byte, error) {
+	type noMethod BlockDeviceMapping
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *BlockDeviceMapping) SetDeviceName(v *string) *BlockDeviceMapping {
+	if o.DeviceName = v; o.DeviceName == nil {
+		o.nullFields = append(o.nullFields, "DeviceName")
+	}
+	return o
+}
+
+func (o *BlockDeviceMapping) SetNoDevice(v *string) *BlockDeviceMapping {
+	if o.NoDevice = v; o.NoDevice == nil {
+		o.nullFields = append(o.nullFields, "NoDevice")
+	}
+	return o
+}
+
+func (o *BlockDeviceMapping) SetVirtualName(v *string) *BlockDeviceMapping {
+	if o.VirtualName = v; o.VirtualName == nil {
+		o.nullFields = append(o.nullFields, "VirtualName")
+	}
+	return o
+}
+
+func (o *BlockDeviceMapping) SetEBS(v *EBS) *BlockDeviceMapping {
+	if o.EBS = v; o.EBS == nil {
+		o.nullFields = append(o.nullFields, "EBS")
+	}
+	return o
+}
+
+// endregion
+
+// region EBS
+
+func (o EBS) MarshalJSON() ([]byte, error) {
+	type noMethod EBS
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *EBS) SetEncrypted(v *bool) *EBS {
+	if o.Encrypted = v; o.Encrypted == nil {
+		o.nullFields = append(o.nullFields, "Encrypted")
+	}
+	return o
+}
+
+func (o *EBS) SetIOPS(v *int) *EBS {
+	if o.IOPS = v; o.IOPS == nil {
+		o.nullFields = append(o.nullFields, "IOPS")
+	}
+	return o
+}
+
+func (o *EBS) SetKMSKeyId(v *string) *EBS {
+	if o.KMSKeyID = v; o.KMSKeyID == nil {
+		o.nullFields = append(o.nullFields, "KMSKeyID")
+	}
+	return o
+}
+
+func (o *EBS) SetSnapshotId(v *string) *EBS {
+	if o.SnapshotID = v; o.SnapshotID == nil {
+		o.nullFields = append(o.nullFields, "SnapshotID")
+	}
+	return o
+}
+
+func (o *EBS) SetVolumeType(v *string) *EBS {
+	if o.VolumeType = v; o.VolumeType == nil {
+		o.nullFields = append(o.nullFields, "VolumeType")
+	}
+	return o
+}
+
+func (o *EBS) SetDeleteOnTermination(v *bool) *EBS {
+	if o.DeleteOnTermination = v; o.DeleteOnTermination == nil {
+		o.nullFields = append(o.nullFields, "DeleteOnTermination")
+	}
+	return o
+}
+
+func (o *EBS) SetVolumeSize(v *int) *EBS {
+	if o.VolumeSize = v; o.VolumeSize == nil {
+		o.nullFields = append(o.nullFields, "VolumeSize")
+	}
+	return o
+}
+
+func (o *EBS) SetDynamicVolumeSize(v *DynamicVolumeSize) *EBS {
+	if o.DynamicVolumeSize = v; o.DynamicVolumeSize == nil {
+		o.nullFields = append(o.nullFields, "DynamicVolumeSize")
+	}
+	return o
+}
+
+// endregion
+
+// region DynamicVolumeSize
+
+func (o DynamicVolumeSize) MarshalJSON() ([]byte, error) {
+	type noMethod DynamicVolumeSize
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *DynamicVolumeSize) SetBaseSize(v *int) *DynamicVolumeSize {
+	if o.BaseSize = v; o.BaseSize == nil {
+		o.nullFields = append(o.nullFields, "BaseSize")
+	}
+	return o
+}
+
+func (o *DynamicVolumeSize) SetResource(v *string) *DynamicVolumeSize {
+	if o.Resource = v; o.Resource == nil {
+		o.nullFields = append(o.nullFields, "Resource")
+	}
+	return o
+}
+
+func (o *DynamicVolumeSize) SetSizePerResourceUnit(v *int) *DynamicVolumeSize {
+	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
+		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
+	}
+	return o
+}
+
+// endregion
+
+// region ResourceLimits
+
+func (o ResourceLimits) MarshalJSON() ([]byte, error) {
+	type noMethod ResourceLimits
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ResourceLimits) SetMaxInstanceCount(v *int) *ResourceLimits {
+	if o.MaxInstanceCount = v; o.MaxInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MaxInstanceCount")
 	}
 	return o
 }
@@ -383,6 +686,119 @@ func (o *Taint) SetValue(v *string) *Taint {
 func (o *Taint) SetEffect(v *string) *Taint {
 	if o.Effect = v; o.Effect == nil {
 		o.nullFields = append(o.nullFields, "Effect")
+	}
+	return o
+}
+
+// endregion
+
+// region AutoScale
+
+func (o AutoScale) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScale
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScale) SetHeadrooms(v []*AutoScaleHeadroom) *AutoScale {
+	if o.Headrooms = v; o.Headrooms == nil {
+		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+// endregion
+
+// region AutoScaleHeadroom
+
+func (o AutoScaleHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScaleHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScaleHeadroom) SetCPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetGPUPerUnit(v *int) *AutoScaleHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetMemoryPerUnit(v *int) *AutoScaleHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
+	}
+	return o
+}
+
+// endregion
+
+// region ElasticIPPool
+
+func (o ElasticIPPool) MarshalJSON() ([]byte, error) {
+	type noMethod ElasticIPPool
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ElasticIPPool) SetTagSelector(v *TagSelector) *ElasticIPPool {
+	if o.TagSelector = v; o.TagSelector == nil {
+		o.nullFields = append(o.nullFields, "TagSelector")
+	}
+	return o
+}
+
+// endregion
+
+// region TagSelector
+
+func (o TagSelector) MarshalJSON() ([]byte, error) {
+	type noMethod TagSelector
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TagSelector) SetTagKey(v *string) *TagSelector {
+	if o.Key = v; o.Key == nil {
+		o.nullFields = append(o.nullFields, "Key")
+	}
+	return o
+}
+
+func (o *TagSelector) SetTagValue(v *string) *TagSelector {
+	if o.Value = v; o.Value == nil {
+		o.nullFields = append(o.nullFields, "Value")
+	}
+	return o
+}
+
+// endregion
+
+// region Strategy
+
+func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecStrategy) SetSpotPercentage(v *int) *LaunchSpecStrategy {
+	if o.SpotPercentage = v; o.SpotPercentage == nil {
+		o.nullFields = append(o.nullFields, "SpotPercentage")
 	}
 	return o
 }

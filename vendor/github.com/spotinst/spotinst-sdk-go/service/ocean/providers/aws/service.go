@@ -8,10 +8,17 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
 )
 
-// Service provides the API operation methods for making requests to
-// endpoints of the Spotinst API. See this package's package overview docs
-// for details on the service.
+// Service provides the API operation methods for making requests to endpoints
+// of the Spotinst API. See this package's package overview docs for details on
+// the service.
 type Service interface {
+	serviceKubernetes
+	serviceECS
+
+	ListResourceSuggestions(context.Context, *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error)
+}
+
+type serviceKubernetes interface {
 	ListClusters(context.Context, *ListClustersInput) (*ListClustersOutput, error)
 	CreateCluster(context.Context, *CreateClusterInput) (*CreateClusterOutput, error)
 	ReadCluster(context.Context, *ReadClusterInput) (*ReadClusterOutput, error)
@@ -27,7 +34,17 @@ type Service interface {
 	ListClusterInstances(context.Context, *ListClusterInstancesInput) (*ListClusterInstancesOutput, error)
 	DetachClusterInstances(context.Context, *DetachClusterInstancesInput) (*DetachClusterInstancesOutput, error)
 
+	ListRolls(context.Context, *ListRollsInput) (*ListRollsOutput, error)
+	CreateRoll(context.Context, *CreateRollInput) (*CreateRollOutput, error)
+	ReadRoll(context.Context, *ReadRollInput) (*ReadRollOutput, error)
+	UpdateRoll(context.Context, *UpdateRollInput) (*UpdateRollOutput, error)
+
+	// Deprecated: Roll is obsolete, exists for backward compatibility only,
+	// and should not be used. Please use CreateRoll instead.
 	Roll(context.Context, *RollClusterInput) (*RollClusterOutput, error)
+}
+
+type serviceECS interface {
 	ListECSClusters(context.Context, *ListECSClustersInput) (*ListECSClustersOutput, error)
 	CreateECSCluster(context.Context, *CreateECSClusterInput) (*CreateECSClusterOutput, error)
 	ReadECSCluster(context.Context, *ReadECSClusterInput) (*ReadECSClusterOutput, error)

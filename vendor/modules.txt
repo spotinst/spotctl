@@ -45,7 +45,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/dustin/go-humanize
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.48.0
+# github.com/go-ini/ini v1.51.0
 github.com/go-ini/ini
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -79,17 +79,19 @@ github.com/sirupsen/logrus
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
-# github.com/spotinst/spotinst-sdk-go v0.0.0-20190925085030-e4a2ed790d91
+# github.com/spotinst/spotinst-sdk-go v1.64.0
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
 github.com/spotinst/spotinst-sdk-go/spotinst
 github.com/spotinst/spotinst-sdk-go/spotinst/client
 github.com/spotinst/spotinst-sdk-go/spotinst/credentials
+github.com/spotinst/spotinst-sdk-go/spotinst/featureflag
 github.com/spotinst/spotinst-sdk-go/spotinst/log
 github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
+github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
 # golang.org/x/sys v0.0.0-20190530182044-ad28b68e88f1
 golang.org/x/sys/unix
 # gopkg.in/yaml.v2 v2.2.2
