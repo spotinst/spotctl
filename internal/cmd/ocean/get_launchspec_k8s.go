@@ -34,6 +34,7 @@ func newCmdGetLaunchSpecKubernetes(opts *CmdGetLaunchSpecOptions) *CmdGetLaunchS
 		Short:         "Display one or many Kubernetes launch specs",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

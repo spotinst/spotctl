@@ -31,9 +31,10 @@ func newCmdUpdateLaunchSpecKubernetes(opts *CmdUpdateLaunchSpecOptions) *CmdUpda
 
 	cmd.cmd = &cobra.Command{
 		Use:           "kubernetes",
-		Short:         "Update an existing Kubernetes launchspec",
+		Short:         "Update an existing Kubernetes launch spec",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

@@ -35,6 +35,7 @@ func newCmdUpdateClusterKubernetes(opts *CmdUpdateClusterOptions) *CmdUpdateClus
 		Short:         "Update an existing Kubernetes cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

@@ -39,6 +39,7 @@ func newCmdRolloutHistoryKubernetes(opts *CmdRolloutHistoryOptions) *CmdRolloutH
 		Short:         "View rollout history of a Kubernetes cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

@@ -35,6 +35,7 @@ func newCmdDeleteClusterKubernetes(opts *CmdDeleteClusterOptions) *CmdDeleteClus
 		Short:         "Delete a Kubernetes cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

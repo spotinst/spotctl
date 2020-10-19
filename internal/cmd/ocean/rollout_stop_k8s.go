@@ -35,6 +35,7 @@ func newCmdRolloutStopKubernetes(opts *CmdRolloutStopOptions) *CmdRolloutStopKub
 		Short:         "Stop an in-progress rollout of a Kubernetes cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

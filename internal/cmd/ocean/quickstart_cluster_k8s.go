@@ -28,6 +28,7 @@ func newCmdQuickstartClusterKubernetes(opts *CmdQuickstartClusterOptions) *CmdQu
 		Short:         "Create a quickstart Ocean cluster (Kubernetes)",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 	}
 
 	cmd.opts.Init(cmd.cmd.Flags(), opts)

@@ -37,6 +37,7 @@ func newCmdRolloutStatusKubernetes(opts *CmdRolloutStatusOptions) *CmdRolloutSta
 		Short:         "Show the status of a Kubernetes rollout",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},

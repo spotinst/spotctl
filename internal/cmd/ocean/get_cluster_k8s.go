@@ -34,6 +34,7 @@ func newCmdGetClusterKubernetes(opts *CmdGetClusterOptions) *CmdGetClusterKubern
 		Short:         "Display one or many Kubernetes clusters",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"k8s", "kube", "k"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},
