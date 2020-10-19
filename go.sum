@@ -94,6 +94,10 @@ github.com/spotinst/spotinst-sdk-go v0.0.0-20190925085030-e4a2ed790d91 h1:jJj6uP
 github.com/spotinst/spotinst-sdk-go v0.0.0-20190925085030-e4a2ed790d91/go.mod h1:nTYZW3xgZeomIqQ1JNTQDINT9a9ij/PAKaqzStlgMdE=
 github.com/spotinst/spotinst-sdk-go v1.64.0 h1:1PMdbuQFnIJwMlWYSNpBLcvh/+hfaW0nYZY+KepQzzo=
 github.com/spotinst/spotinst-sdk-go v1.64.0/go.mod h1:nWi2DyjUi1WUZclpsqZFXvImsU0T39ppqqHwC4/T5mw=
+github.com/spotinst/spotinst-sdk-go v1.65.0 h1:NOc7V8mrXwFVaJm7UfVwsKCBl2ELEMCXZO3aIJFEOdo=
+github.com/spotinst/spotinst-sdk-go v1.65.0/go.mod h1:nWi2DyjUi1WUZclpsqZFXvImsU0T39ppqqHwC4/T5mw=
+github.com/spotinst/spotinst-sdk-go v1.66.0 h1:VzJpD/gYb4jM0GfWp63i6hYIi82WWJUabZ4PA8YTzoA=
+github.com/spotinst/spotinst-sdk-go v1.66.0/go.mod h1:nWi2DyjUi1WUZclpsqZFXvImsU0T39ppqqHwC4/T5mw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.1/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=

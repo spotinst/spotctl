@@ -66,6 +66,18 @@ type (
 		Obj interface{} `json:"-"`
 	}
 
+	// OceanRollout represents an Ocean rollout.
+	OceanRollout struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		// Obj holds the raw object which is an orchestrator-specific implementation.
+		Obj interface{} `json:"-"`
+	}
+
 	// OceanClusterOptions represents an Ocean cluster.
 	OceanClusterOptions struct {
 		// Base.
@@ -128,6 +140,21 @@ type (
 		ImageID          string
 		UserData         string
 		SecurityGroupIDs []string
+	}
+
+	// OceanRolloutOptions represents an Ocean rollout.
+	OceanRolloutOptions struct {
+		// Base.
+		RolloutID string
+		ClusterID string
+		Comment   string
+		Status    string
+
+		// Parameters.
+		BatchSizePercentage int
+		DisableAutoScaling  bool
+		SpecIDs             []string
+		InstanceIDs         []string
 	}
 )
 

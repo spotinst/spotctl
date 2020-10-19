@@ -46,6 +46,12 @@ const (
 	FlagOceanResourceLimitMaxMemory     string = "resource-limit-max-memory"
 	FlagOceanEvaluationPeriods          string = "evaluation-periods"
 	FlagOceanMaxScaleDownPercentage     string = "max-scale-down-percentage"
+	FlagOceanRolloutID                  string = "rollout-id"
+	FlagOceanRolloutComment             string = "comment"
+	FlagOceanRolloutBatchSizePercentage string = "batch-size-percentage"
+	FlagOceanRolloutDisableAutoScaling  string = "disable-auto-scaling"
+	FlagOceanRolloutSpecIDs             string = "spec-ids"
+	FlagOceanRolloutInstanceIDs         string = "instance-ids"
 )
 
 func Log(cmd *cobra.Command) {

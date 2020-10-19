@@ -31,3 +31,19 @@ func (s *OceanLaunchSpecsSorter) Swap(i, j int) {
 func (s *OceanLaunchSpecsSorter) Less(i, j int) bool {
 	return s.LaunchSpecs[i].UpdatedAt.After(s.LaunchSpecs[j].UpdatedAt)
 }
+
+type OceanRolloutsSorter struct {
+	Rollouts []*OceanRollout
+}
+
+func (s *OceanRolloutsSorter) Len() int {
+	return len(s.Rollouts)
+}
+
+func (s *OceanRolloutsSorter) Swap(i, j int) {
+	s.Rollouts[i], s.Rollouts[j] = s.Rollouts[j], s.Rollouts[i]
+}
+
+func (s *OceanRolloutsSorter) Less(i, j int) bool {
+	return s.Rollouts[i].UpdatedAt.After(s.Rollouts[j].UpdatedAt)
+}

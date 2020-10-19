@@ -43,11 +43,18 @@ type (
 		// interface for defining fresh Ocean launch spec.
 		NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *OceanLaunchSpecOptions) OceanLaunchSpecBuilder
 
+		// NewRolloutBuilder returns new instance of OceanRolloutBuilder
+		// interface for defining fresh Ocean rollout.
+		NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRolloutOptions) OceanRolloutBuilder
+
 		// ListClusters returns a list of Ocean clusters.
 		ListClusters(ctx context.Context) ([]*OceanCluster, error)
 
 		// ListLaunchSpecs returns a list of Ocean launch specs.
 		ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, error)
+
+		// ListRollouts returns a list of Ocean rollouts.
+		ListRollouts(ctx context.Context, clusterID string) ([]*OceanRollout, error)
 
 		// GetCluster returns an Ocean cluster spec by ID.
 		GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error)
@@ -55,17 +62,26 @@ type (
 		// GetLaunchSpec returns an Ocean launch spec by ID.
 		GetLaunchSpec(ctx context.Context, specID string) (*OceanLaunchSpec, error)
 
+		// GetRollout returns an Ocean rollout by ID.
+		GetRollout(ctx context.Context, clusterID, rolloutID string) (*OceanRollout, error)
+
 		// CreateCluster creates a new Ocean cluster.
 		CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error)
 
 		// CreateLaunchSpec creates a new Ocean launch spec.
 		CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error)
 
+		// CreateRollout creates a new Ocean rollout.
+		CreateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error)
+
 		// UpdateCluster updates an existing Ocean cluster by ID.
 		UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error)
 
 		// UpdateLaunchSpec updates an existing Ocean launch spec by ID.
 		UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error)
+
+		// UpdateRollout updates an existing Ocean rollout by ID.
+		UpdateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error)
 
 		// DeleteCluster deletes an Ocean cluster spec by ID.
 		DeleteCluster(ctx context.Context, clusterID string) error
@@ -84,6 +100,12 @@ type (
 	// concrete implementation should obey.
 	OceanLaunchSpecBuilder interface {
 		Build() (*OceanLaunchSpec, error)
+	}
+
+	// OceanRolloutBuilder is the interface that every Ocean rollout
+	// concrete implementation should obey.
+	OceanRolloutBuilder interface {
+		Build() (*OceanRollout, error)
 	}
 
 	// CloudProviderName represents the name of a cloud provider.

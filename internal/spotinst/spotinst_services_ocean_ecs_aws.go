@@ -21,6 +21,10 @@ func (x *oceanECS) NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *OceanLaunchSpec
 	return &oceanECSLaunchSpecBuilder{fs, opts}
 }
 
+func (x *oceanECS) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRolloutOptions) OceanRolloutBuilder {
+	return &oceanECSRolloutBuilder{fs, opts}
+}
+
 func (x *oceanECS) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
 	log.Debugf("Listing all ECS clusters")
 
@@ -73,6 +77,10 @@ func (x *oceanECS) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, err
 	}
 
 	return specs, nil
+}
+
+func (x *oceanECS) ListRollouts(ctx context.Context, clusterID string) ([]*OceanRollout, error) {
+	return nil, ErrNotImplemented
 }
 
 func (x *oceanECS) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
@@ -131,6 +139,10 @@ func (x *oceanECS) GetLaunchSpec(ctx context.Context, specID string) (*OceanLaun
 	return spec, nil
 }
 
+func (x *oceanECS) GetRollout(ctx context.Context, clusterID, rolloutID string) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
+}
+
 func (x *oceanECS) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
 	log.Debugf("Creating a new ECS cluster")
 
@@ -185,6 +197,10 @@ func (x *oceanECS) CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) 
 	}
 
 	return created, nil
+}
+
+func (x *oceanECS) CreateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
 }
 
 func (x *oceanECS) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
@@ -252,6 +268,10 @@ func (x *oceanECS) UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) 
 	return updated, nil
 }
 
+func (x *oceanECS) UpdateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
+}
+
 func (x *oceanECS) DeleteCluster(ctx context.Context, clusterID string) error {
 	log.Debugf("Deleting a ECS cluster by ID: %s", clusterID)
 
@@ -289,5 +309,14 @@ type oceanECSLaunchSpecBuilder struct {
 }
 
 func (x *oceanECSLaunchSpecBuilder) Build() (*OceanLaunchSpec, error) {
+	return nil, ErrNotImplemented
+}
+
+type oceanECSRolloutBuilder struct {
+	fs   *pflag.FlagSet
+	opts *OceanRolloutOptions
+}
+
+func (x *oceanECSRolloutBuilder) Build() (*OceanRollout, error) {
 	return nil, ErrNotImplemented
 }

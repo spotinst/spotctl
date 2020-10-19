@@ -23,6 +23,10 @@ func (x *oceanKubernetesAWS) NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *Ocean
 	return &oceanKubernetesAWSLaunchSpecBuilder{fs, opts}
 }
 
+func (x *oceanKubernetesAWS) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRolloutOptions) OceanRolloutBuilder {
+	return &oceanKubernetesAWSRolloutBuilder{fs, opts}
+}
+
 func (x *oceanKubernetesAWS) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
 	log.Debugf("Listing all Kubernetes clusters")
 
@@ -75,6 +79,37 @@ func (x *oceanKubernetesAWS) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunc
 	}
 
 	return specs, nil
+}
+
+func (x *oceanKubernetesAWS) ListRollouts(ctx context.Context, clusterID string) ([]*OceanRollout, error) {
+	log.Debugf("Listing all Kubernetes rollouts")
+
+	input := &aws.ListRollsInput{
+		ClusterID: spotinst.String(clusterID),
+	}
+
+	output, err := x.svc.ListRolls(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	rollouts := make([]*OceanRollout, len(output.Rolls))
+	for i, rollout := range output.Rolls {
+		rollouts[i] = &OceanRollout{
+			TypeMeta: TypeMeta{
+				Kind: typeOf(OceanRollout{}),
+			},
+			ObjectMeta: ObjectMeta{
+				ID:        spotinst.StringValue(rollout.ID),
+				Name:      spotinst.StringValue(rollout.Comment),
+				CreatedAt: spotinst.TimeValue(rollout.CreatedAt),
+				UpdatedAt: spotinst.TimeValue(rollout.UpdatedAt),
+			},
+			Obj: rollout,
+		}
+	}
+
+	return rollouts, nil
 }
 
 func (x *oceanKubernetesAWS) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
@@ -133,6 +168,35 @@ func (x *oceanKubernetesAWS) GetLaunchSpec(ctx context.Context, specID string) (
 	return spec, nil
 }
 
+func (x *oceanKubernetesAWS) GetRollout(ctx context.Context, clusterID, rolloutID string) (*OceanRollout, error) {
+	log.Debugf("Getting a Kubernetes rollout by ID: %s", rolloutID)
+
+	input := &aws.ReadRollInput{
+		ClusterID: spotinst.String(clusterID),
+		RollID:    spotinst.String(rolloutID),
+	}
+
+	output, err := x.svc.ReadRoll(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	rollout := &OceanRollout{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(OceanRollout{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(output.Roll.ID),
+			Name:      spotinst.StringValue(output.Roll.Comment),
+			CreatedAt: spotinst.TimeValue(output.Roll.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(output.Roll.UpdatedAt),
+		},
+		Obj: output.Roll,
+	}
+
+	return rollout, nil
+}
+
 func (x *oceanKubernetesAWS) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
 	log.Debugf("Creating a new Kubernetes cluster")
 
@@ -184,6 +248,34 @@ func (x *oceanKubernetesAWS) CreateLaunchSpec(ctx context.Context, spec *OceanLa
 			UpdatedAt: spotinst.TimeValue(output.LaunchSpec.UpdatedAt),
 		},
 		Obj: output.LaunchSpec,
+	}
+
+	return created, nil
+}
+
+func (x *oceanKubernetesAWS) CreateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	log.Debugf("Creating a new Kubernetes rollout")
+
+	input := &aws.CreateRollInput{
+		Roll: rollout.Obj.(*aws.RollSpec),
+	}
+
+	output, err := x.svc.CreateRoll(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	created := &OceanRollout{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(OceanRollout{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(output.Roll.ID),
+			Name:      spotinst.StringValue(output.Roll.Comment),
+			CreatedAt: spotinst.TimeValue(output.Roll.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(output.Roll.UpdatedAt),
+		},
+		Obj: output.Roll,
 	}
 
 	return created, nil
@@ -249,6 +341,34 @@ func (x *oceanKubernetesAWS) UpdateLaunchSpec(ctx context.Context, spec *OceanLa
 			UpdatedAt: spotinst.TimeValue(output.LaunchSpec.UpdatedAt),
 		},
 		Obj: output.LaunchSpec,
+	}
+
+	return updated, nil
+}
+
+func (x *oceanKubernetesAWS) UpdateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	log.Debugf("Updating a Kubernetes rollout by ID: %s", rollout.ID)
+
+	input := &aws.UpdateRollInput{
+		Roll: rollout.Obj.(*aws.RollSpec),
+	}
+
+	output, err := x.svc.UpdateRoll(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	updated := &OceanRollout{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(OceanRollout{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(output.Roll.ID),
+			Name:      spotinst.StringValue(output.Roll.Comment),
+			CreatedAt: spotinst.TimeValue(output.Roll.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(output.Roll.UpdatedAt),
+		},
+		Obj: output.Roll,
 	}
 
 	return updated, nil
@@ -547,6 +667,53 @@ func (x *oceanKubernetesAWSLaunchSpecBuilder) buildSpec() *aws.LaunchSpec {
 
 	if x.fs.Changed(flags.FlagOceanSecurityGroupIDs) {
 		spec.SetSecurityGroupIDs(x.opts.SecurityGroupIDs)
+	}
+
+	return spec
+}
+
+type oceanKubernetesAWSRolloutBuilder struct {
+	fs   *pflag.FlagSet
+	opts *OceanRolloutOptions
+}
+
+func (x *oceanKubernetesAWSRolloutBuilder) Build() (*OceanRollout, error) {
+	return &OceanRollout{Obj: x.buildRollout()}, nil
+}
+
+func (x *oceanKubernetesAWSRolloutBuilder) buildRollout() *aws.RollSpec {
+	spec := new(aws.RollSpec)
+
+	if x.fs.Changed(flags.FlagOceanClusterID) {
+		spec.ClusterID = spotinst.String(x.opts.ClusterID)
+	}
+
+	if x.fs.Changed(flags.FlagOceanRolloutID) {
+		spec.ID = spotinst.String(x.opts.RolloutID)
+	}
+
+	if x.fs.Changed(flags.FlagOceanRolloutBatchSizePercentage) {
+		spec.SetBatchSizePercentage(spotinst.Int(x.opts.BatchSizePercentage))
+	}
+
+	if x.fs.Changed(flags.FlagOceanRolloutDisableAutoScaling) {
+		spec.SetDisableLaunchSpecAutoScaling(spotinst.Bool(x.opts.DisableAutoScaling))
+	}
+
+	if x.fs.Changed(flags.FlagOceanRolloutSpecIDs) {
+		spec.SetLaunchSpecIDs(x.opts.SpecIDs)
+	}
+
+	if x.fs.Changed(flags.FlagOceanRolloutInstanceIDs) {
+		spec.SetInstanceIDs(x.opts.InstanceIDs)
+	}
+
+	if len(x.opts.Comment) > 0 {
+		spec.SetComment(spotinst.String(x.opts.Comment))
+	}
+
+	if len(x.opts.Status) > 0 {
+		spec.SetStatus(spotinst.String(x.opts.Status))
 	}
 
 	return spec

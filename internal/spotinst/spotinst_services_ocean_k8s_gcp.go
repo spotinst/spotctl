@@ -21,6 +21,10 @@ func (x *oceanKubernetesGCP) NewLaunchSpecBuilder(fs *pflag.FlagSet, opts *Ocean
 	return &oceanKubernetesGCPLaunchSpecBuilder{fs, opts}
 }
 
+func (x *oceanKubernetesGCP) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRolloutOptions) OceanRolloutBuilder {
+	return &oceanKubernetesGCPRolloutBuilder{fs, opts}
+}
+
 func (x *oceanKubernetesGCP) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
 	log.Debugf("Listing all Kubernetes clusters")
 
@@ -73,6 +77,10 @@ func (x *oceanKubernetesGCP) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunc
 	}
 
 	return specs, nil
+}
+
+func (x *oceanKubernetesGCP) ListRollouts(ctx context.Context, clusterID string) ([]*OceanRollout, error) {
+	return nil, ErrNotImplemented
 }
 
 func (x *oceanKubernetesGCP) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
@@ -131,6 +139,10 @@ func (x *oceanKubernetesGCP) GetLaunchSpec(ctx context.Context, specID string) (
 	return spec, nil
 }
 
+func (x *oceanKubernetesGCP) GetRollout(ctx context.Context, clusterID, rolloutID string) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
+}
+
 func (x *oceanKubernetesGCP) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
 	log.Debugf("Creating a new Kubernetes cluster")
 
@@ -185,6 +197,10 @@ func (x *oceanKubernetesGCP) CreateLaunchSpec(ctx context.Context, spec *OceanLa
 	}
 
 	return created, nil
+}
+
+func (x *oceanKubernetesGCP) CreateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
 }
 
 func (x *oceanKubernetesGCP) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
@@ -251,6 +267,10 @@ func (x *oceanKubernetesGCP) UpdateLaunchSpec(ctx context.Context, spec *OceanLa
 	return updated, nil
 }
 
+func (x *oceanKubernetesGCP) UpdateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
+	return nil, ErrNotImplemented
+}
+
 func (x *oceanKubernetesGCP) DeleteCluster(ctx context.Context, clusterID string) error {
 	log.Debugf("Deleting a Kubernetes cluster by ID: %s", clusterID)
 
@@ -288,5 +308,14 @@ type oceanKubernetesGCPLaunchSpecBuilder struct {
 }
 
 func (x *oceanKubernetesGCPLaunchSpecBuilder) Build() (*OceanLaunchSpec, error) {
+	return nil, ErrNotImplemented
+}
+
+type oceanKubernetesGCPRolloutBuilder struct {
+	fs   *pflag.FlagSet
+	opts *OceanRolloutOptions
+}
+
+func (x *oceanKubernetesGCPRolloutBuilder) Build() (*OceanRollout, error) {
 	return nil, ErrNotImplemented
 }

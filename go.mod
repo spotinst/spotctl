@@ -18,5 +18,5 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
-	github.com/spotinst/spotinst-sdk-go v1.64.0
+	github.com/spotinst/spotinst-sdk-go v1.66.0
 )

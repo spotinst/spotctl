@@ -75,6 +75,7 @@ func (x *Cmd) initSubCommands() {
 		NewCmdUpdate,
 		NewCmdEdit,
 		NewCmdDelete,
+		NewCmdRollout,
 	}
 
 	for _, cmd := range commands {
