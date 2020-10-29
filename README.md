@@ -2,7 +2,7 @@
 
 A unified command-line interface to manage your [Spot](https://spot.io/) resources.
 
-## Contents
+## Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
