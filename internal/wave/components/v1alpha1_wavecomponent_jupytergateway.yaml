@@ -1,0 +1,24 @@
+apiVersion: wave.spot.io/v1alpha1
+kind: WaveComponent
+metadata:
+  name: enterprise-gateway
+spec:
+  type: helm
+  name: enterprise-gateway
+  url: https://ntfrnzn.github.io/charts
+  state: present
+  version: 2.3.0
+  valuesConfiguration: |
+    ingress:
+      enabled: true
+      hostName: ""
+      traefik:
+        enabled: false
+      nginx:
+        enabled: true
+        path: /gateway/?(.*)
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          nginx.ingress.kubernetes.io/rewrite-target: /$1
+          nginx.ingress.kubernetes.io/ssl-redirect: "false"
+          nginx.ingress.kubernetes.io/force-ssl-redirect: "false"

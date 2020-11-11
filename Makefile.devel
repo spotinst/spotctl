@@ -18,6 +18,9 @@ endef
 
 ##@ Development
 
+generate:
+	@$(GO) generate github.com/spotinst/spotctl/internal/wave/...
+
 .PHONY: build
 build: fmt ## Build all commands
 	@$(GO) build \

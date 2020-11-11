@@ -14,6 +14,7 @@ import (
 	"github.com/spotinst/spotctl/internal/cmd/ocean"
 	"github.com/spotinst/spotctl/internal/cmd/options"
 	"github.com/spotinst/spotctl/internal/cmd/version"
+	"github.com/spotinst/spotctl/internal/cmd/wave"
 	"github.com/spotinst/spotctl/internal/log"
 
 	_ "github.com/spotinst/spotctl/internal/cloud/providers"
@@ -91,6 +92,7 @@ func (x *CmdRoot) initSubCommands() {
 	commands := []func(*options.CommonOptions) *cobra.Command{
 		// Resource management commands.
 		ocean.NewCmd,
+		wave.NewCmd,
 
 		// Settings commands.
 		completion.NewCmd,

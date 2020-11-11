@@ -1,0 +1,12 @@
+apiVersion: wave.spot.io/v1alpha1
+kind: WaveComponent
+metadata:
+  name: ingress-nginx
+spec:
+  type: helm
+  name: ingress-nginx
+  url: https://kubernetes.github.io/ingress-nginx
+  state: present
+  version: 3.7.1
+  valuesConfiguration: ""
+
