@@ -44,7 +44,7 @@ func fmtByteSlice(s []byte) string {
 func main() {
 	// Checking directory with files
 	if _, err := os.Stat(embedFolder); os.IsNotExist(err) {
-		log.Fatal("Static directory "+embedFolder+" does not exists!")
+		log.Fatal("Static directory " + embedFolder + " does not exists!")
 	}
 
 	// Create map for filenames

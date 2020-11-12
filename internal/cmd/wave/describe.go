@@ -7,7 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/flags"
+	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDescribe struct {
@@ -95,12 +97,23 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 	spotinstClientOpts := []spotinst.ClientOption{
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
-
-	_, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	spotClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	if err != nil {
+		return err
+	}
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spotinst.OrchestratorKubernetes)
+	if err != nil {
+		return err
+	}
+	c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+	if err != nil {
+		return err
+	}
+	log.Infof("Verified cluster %s", c.Name)
+	manager, err := wave.NewManager(c.Name, getWaveLogger()) // pass in name to validate ocean controller configuration
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintln(x.opts.Out, fmt.Sprintf("blah blah blah"))
-	return nil
+	return manager.Describe()
 }

@@ -26,6 +26,8 @@ require (
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
 	golang.org/x/sys v0.0.0-20200622214017-ed371f2e16b4 // indirect
 	google.golang.org/protobuf v1.24.0 // indirect
+	helm.sh/helm/v3 v3.3.4
+	k8s.io/api v0.18.8
 	k8s.io/apiextensions-apiserver v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/cli-runtime v0.18.8

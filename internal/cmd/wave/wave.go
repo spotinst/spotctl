@@ -60,9 +60,9 @@ func (x *Cmd) preRun(ctx context.Context) error {
 func (x *Cmd) initSubCommands() {
 	commands := []func(*CmdOptions) *cobra.Command{
 		NewCmdCreate,
-		NewCmdGet,
+		// NewCmdGet,
 		NewCmdDescribe,
-		NewCmdDelete,
+		// NewCmdDelete,
 	}
 
 	for _, cmd := range commands {

@@ -94,10 +94,10 @@ func (x *CmdCreate) validate(ctx context.Context) error {
 }
 
 func (x *CmdCreate) run(ctx context.Context) error {
+
 	spotinstClientOpts := []spotinst.ClientOption{
 		spotinst.WithCredentialsProfile(x.opts.Profile),
 	}
-
 	spotClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return err
 	}
 	log.Infof("Verified cluster %s", c.Name)
-	manager, err := wave.NewManager(c.Name, getWaveLogger())
+	manager, err := wave.NewManager(c.Name, getWaveLogger()) // pass in name to validate ocean controller configuration
 	if err != nil {
 		return err
 	}

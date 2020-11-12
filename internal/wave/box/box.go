@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-type Box interface{
+type Box interface {
 
 	// Add a file content to box
 	Add(file string, content []byte)
@@ -19,7 +19,6 @@ type Box interface{
 
 	// List  files in box
 	List() []string
-
 }
 
 type embedBox struct {
@@ -28,7 +27,6 @@ type embedBox struct {
 
 // Embed box expose
 var Boxed Box = newEmbedBox()
-
 
 // Create new box for embed files
 func newEmbedBox() *embedBox {
@@ -60,7 +58,7 @@ func (e *embedBox) Has(file string) bool {
 
 func (e *embedBox) List() []string {
 	filenames := make([]string, len(e.storage))
-	i:=0
+	i := 0
 	for key, _ := range e.storage {
 		filenames[i] = key
 		i++
