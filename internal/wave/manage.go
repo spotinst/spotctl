@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	// "gopkg.in/yaml.v3"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -28,7 +28,7 @@ import (
 const (
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://ntfrnzn.github.io/charts/"
-	WaveOperatorVersion    = "0.1.1"
+	WaveOperatorVersion    = "0.1.3"
 )
 
 var (
