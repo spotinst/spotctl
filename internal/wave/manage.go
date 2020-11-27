@@ -29,7 +29,7 @@ import (
 const (
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://ntfrnzn.github.io/charts/"
-	WaveOperatorVersion    = "0.1.5"
+	WaveOperatorVersion    = "0.1.6"
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
@@ -173,8 +173,8 @@ func (m *manager) Create() error {
 			return fmt.Errorf("cannot install cert manager, %w", err)
 		}
 
-		m.log.Info("SO BAD sleeping 15 seconds to wait for cert-manager installation")
-		time.Sleep(15 * time.Second)
+		m.log.Info("SO BAD sleeping 30 seconds to wait for cert-manager installation")
+		time.Sleep(30 * time.Second)
 		m.log.Info("yes, so terrible, ok let's see ...")
 		time.Sleep(1 * time.Second)
 	}
@@ -223,7 +223,9 @@ func (m *manager) Describe() error {
 			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
 		})
 		m.log.Info("component", "name", wc.Name)
-		m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
+		if len(wc.Status.Conditions) > 0 {
+			m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
+		}
 		for k, v := range wc.Status.Properties {
 			m.log.Info("         ", k, v)
 		}
