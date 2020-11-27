@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/spotinst/spotctl/internal/wave/box"
@@ -28,7 +29,12 @@ import (
 const (
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://ntfrnzn.github.io/charts/"
-	WaveOperatorVersion    = "0.1.3"
+	WaveOperatorVersion    = "0.1.5"
+
+	CertManagerChart      = "cert-manager"
+	CertManagerRepository = "https://charts.jetstack.io"
+	CertManagerVersion    = "v1.0.4"
+	CertManagerValues     = "installCRDs: true"
 )
 
 var (
@@ -152,6 +158,26 @@ func (m *manager) Create() error {
 	}
 
 	ctx := context.TODO()
+
+	{
+		certNS := CertManagerChart // same thin
+		_, _ = kc.CoreV1().Namespaces().Create(
+			ctx,
+			&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: certNS}},
+			metav1.CreateOptions{},
+		)
+		certInstaller := install.GetHelm("", m.kubeClientGetter, m.log)
+		certInstaller.SetNamespace(certNS)
+		err = certInstaller.Install(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
+		if err != nil {
+			return fmt.Errorf("cannot install cert manager, %w", err)
+		}
+
+		m.log.Info("SO BAD sleeping 15 seconds to wait for cert-manager installation")
+		time.Sleep(15 * time.Second)
+		m.log.Info("yes, so terrible, ok let's see ...")
+		time.Sleep(1 * time.Second)
+	}
 
 	_, _ = kc.CoreV1().Namespaces().Create(
 		ctx,

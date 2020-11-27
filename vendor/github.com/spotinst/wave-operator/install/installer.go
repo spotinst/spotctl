@@ -37,6 +37,12 @@ const (
 
 type Installer interface {
 
+	// Namespace where components are installed, the namespace must exist before Install() is called
+	GetNamespace() string
+
+	// Set the namespace where components are installed
+	SetNamespace(namespace string)
+
 	// returns the release name for a given chart
 	GetReleaseName(chartName string) string
 
@@ -80,6 +86,7 @@ func NewInstallation(name, version, status, description string, vals map[string]
 
 type HelmInstaller struct {
 	prefix       string
+	namespace    string
 	ClientGetter genericclioptions.RESTClientGetter
 	Log          logr.Logger
 }
@@ -93,13 +100,22 @@ func (i *HelmInstaller) logForHelm(format string, v ...interface{}) {
 var GetHelm = func(name string, getter genericclioptions.RESTClientGetter, log logr.Logger) Installer {
 	return &HelmInstaller{
 		prefix:       name,
+		namespace:    catalog.SystemNamespace,
 		ClientGetter: getter,
 		Log:          log,
 	}
 }
 
+func (i *HelmInstaller) GetNamespace() string {
+	return i.namespace
+}
+
+func (i *HelmInstaller) SetNamespace(namespace string) {
+	i.namespace = namespace
+}
+
 func (i *HelmInstaller) Get(name string) (*Installation, error) {
-	cfg, err := i.getActionConfig(catalog.SystemNamespace)
+	cfg, err := i.getActionConfig(i.namespace)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get action config, %w", err)
 	}
@@ -159,7 +175,7 @@ func (i *HelmInstaller) Upgrade(chartName string, repository string, version str
 		i.Log.Info("values", k, v)
 	}
 
-	cfg, err := i.getActionConfig(catalog.SystemNamespace)
+	cfg, err := i.getActionConfig(i.namespace)
 	if err != nil {
 		return fmt.Errorf("failed to get action config, %w", err)
 	}
@@ -167,7 +183,7 @@ func (i *HelmInstaller) Upgrade(chartName string, repository string, version str
 	upgradeAction := action.NewUpgrade(cfg)
 
 	releaseName := i.GetReleaseName(chartName)
-	upgradeAction.Namespace = catalog.SystemNamespace
+	upgradeAction.Namespace = i.namespace
 	upgradeAction.ChartPathOptions.RepoURL = repository
 	upgradeAction.ChartPathOptions.Version = version
 
@@ -209,7 +225,7 @@ func (i *HelmInstaller) Install(chartName string, repository string, version str
 
 	releaseName := i.GetReleaseName(chartName)
 
-	cfg, err := i.getActionConfig(catalog.SystemNamespace)
+	cfg, err := i.getActionConfig(i.namespace)
 	if err != nil {
 		return fmt.Errorf("failed to get action config, %w", err)
 	}
@@ -228,7 +244,7 @@ func (i *HelmInstaller) Install(chartName string, repository string, version str
 	installAction := action.NewInstall(cfg)
 
 	installAction.ReleaseName = releaseName
-	installAction.Namespace = catalog.SystemNamespace
+	installAction.Namespace = i.namespace
 	installAction.ChartPathOptions.RepoURL = repository
 	installAction.ChartPathOptions.Version = version
 
@@ -275,13 +291,16 @@ func (i *HelmInstaller) Delete(chartName string, repository string, version stri
 
 	releaseName := i.GetReleaseName(chartName)
 
-	cfg, err := i.getActionConfig(catalog.SystemNamespace)
+	cfg, err := i.getActionConfig(i.namespace)
 	if err != nil {
 		return fmt.Errorf("failed to get action config, %w", err)
 	}
 
 	getAction := action.NewUninstall(cfg)
 	rel, err := getAction.Run(releaseName)
+	if err != nil {
+		i.Log.Error(err, "ignoring deletion error sorry")
+	}
 	//
 	// if err != nil && err != driver.ErrReleaseNotFound {
 	// 	return fmt.Errorf("existing release check failed, %w", err)
