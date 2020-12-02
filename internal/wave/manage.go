@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -152,43 +153,16 @@ func (m *manager) Create() error {
 		return err
 	}
 
-	kc, err := m.getKubernetesClient()
+	ctx := context.TODO()
+
+	err = m.installCertManager(ctx)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.TODO()
-
-	{
-		certNS := CertManagerChart // same thin
-		_, _ = kc.CoreV1().Namespaces().Create(
-			ctx,
-			&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: certNS}},
-			metav1.CreateOptions{},
-		)
-		certInstaller := install.GetHelm("", m.kubeClientGetter, m.log)
-		certInstaller.SetNamespace(certNS)
-		err = certInstaller.Install(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
-		if err != nil {
-			return fmt.Errorf("cannot install cert manager, %w", err)
-		}
-
-		m.log.Info("SO BAD sleeping 30 seconds to wait for cert-manager installation")
-		time.Sleep(30 * time.Second)
-		m.log.Info("yes, so terrible, ok let's see ...")
-		time.Sleep(1 * time.Second)
-	}
-
-	_, _ = kc.CoreV1().Namespaces().Create(
-		ctx,
-		&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: catalog.SystemNamespace}},
-		metav1.CreateOptions{},
-	)
-
-	installer := install.GetHelm("spotctl", m.kubeClientGetter, m.log)
-	err = installer.Install(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, "")
+	err = m.installWaveOperator(ctx)
 	if err != nil {
-		return fmt.Errorf("cannot install wave operator, %w", err)
+		return err
 	}
 
 	rc, err := m.getControllerRuntimeClient()
@@ -205,6 +179,72 @@ func (m *manager) Create() error {
 	}
 
 	return nil
+}
+
+func (m *manager) installCertManager(ctx context.Context) error {
+	kc, err := m.getKubernetesClient()
+	if err != nil {
+		return err
+	}
+	certNS := CertManagerChart // chart name == namespace
+	_, _ = kc.CoreV1().Namespaces().Create(
+		ctx,
+		&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: certNS}},
+		metav1.CreateOptions{},
+	)
+	installer := install.GetHelm("", m.kubeClientGetter, m.log)
+	installer.SetNamespace(certNS)
+	err = installer.Install(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
+	if err != nil {
+		return fmt.Errorf("cannot install cert manager, %w", err)
+	}
+	err = wait.Poll(time.Second, 60*time.Second, func() (bool, error) {
+		wh, err := kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
+		if err != nil {
+			return false, nil
+		}
+		if wh.Webhooks[0].ClientConfig.CABundle == nil {
+			return false, nil
+		}
+		m.log.Info("polled", "webhook", "cert-manager-webhook", "name", wh.Webhooks[0].Name)
+
+		return true, nil
+	})
+	return err
+}
+
+func (m *manager) installWaveOperator(ctx context.Context) error {
+	kc, err := m.getKubernetesClient()
+	if err != nil {
+		return err
+	}
+
+	_, _ = kc.CoreV1().Namespaces().Create(
+		ctx,
+		&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: catalog.SystemNamespace}},
+		metav1.CreateOptions{},
+	)
+
+	installer := install.GetHelm("spotctl", m.kubeClientGetter, m.log)
+	err = installer.Install(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, "")
+	if err != nil {
+		return fmt.Errorf("cannot install wave operator, %w", err)
+	}
+
+	err = wait.Poll(time.Second, 60*time.Second, func() (bool, error) {
+		dep, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
+
+		if err != nil {
+			return false, nil
+		}
+		if dep.Status.AvailableReplicas == 0 {
+			return false, nil
+		}
+		m.log.Info("polled", "deployment", "spotctl-wave-operator", "replicas", dep.Status.AvailableReplicas)
+
+		return true, nil
+	})
+	return err
 }
 
 func (m *manager) Describe() error {

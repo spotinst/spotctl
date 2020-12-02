@@ -20,7 +20,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spotinst/spotinst-sdk-go v1.66.0
-	github.com/spotinst/wave-operator v0.0.0-20201127075024-f82b4b0abfc4
+	github.com/spotinst/wave-operator v0.0.0-20201201060623-504764e3ad07
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3

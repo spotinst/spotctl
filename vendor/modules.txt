@@ -387,7 +387,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/spotinst/wave-operator v0.0.0-20201127075024-f82b4b0abfc4
+# github.com/spotinst/wave-operator v0.0.0-20201201060623-504764e3ad07
 ## explicit
 github.com/spotinst/wave-operator/api/v1alpha1
 github.com/spotinst/wave-operator/catalog
