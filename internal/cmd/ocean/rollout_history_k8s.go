@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/writer"
 )
 
@@ -85,16 +85,16 @@ func (x *CmdRolloutHistoryKubernetes) validate(ctx context.Context) error {
 }
 
 func (x *CmdRolloutHistoryKubernetes) run(ctx context.Context) error {
-	spotinstClientOpts := []spotinst.ClientOption{
-		spotinst.WithCredentialsProfile(x.opts.Profile),
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err
 	}
 
-	oceanClient, err := spotinstClient.Services().Ocean(x.opts.CloudProvider, spotinst.OrchestratorKubernetes)
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (x *CmdRolloutHistoryKubernetes) run(ctx context.Context) error {
 		return err
 	}
 
-	sort.Sort(&spotinst.OceanRolloutsSorter{Rollouts: rollouts})
+	sort.Sort(&spot.OceanRolloutsSorter{Rollouts: rollouts})
 
 	return w.Write(rollouts)
 }

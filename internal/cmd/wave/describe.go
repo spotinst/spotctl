@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/wave"
 )
 
@@ -35,7 +35,7 @@ func newCmdDescribe(opts *CmdOptions) *CmdDescribe {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "describe",
-		Short:         "Describe a wave installation",
+		Short:         "Describe a Wave installation",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -94,14 +94,14 @@ func (x *CmdDescribe) validate(ctx context.Context) error {
 }
 
 func (x *CmdDescribe) run(ctx context.Context) error {
-	spotinstClientOpts := []spotinst.ClientOption{
-		spotinst.WithCredentialsProfile(x.opts.Profile),
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
 	}
-	spotClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err
 	}
-	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spotinst.OrchestratorKubernetes)
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 	if err != nil {
 		return err
 	}

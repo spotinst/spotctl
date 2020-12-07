@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 )
 
 type CmdGet struct {
@@ -33,7 +33,7 @@ func newCmdGet(opts *CmdOptions) *CmdGet {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "get",
-		Short:         "Get a wave installation",
+		Short:         "Get a Wave installation",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -92,11 +92,11 @@ func (x *CmdGet) validate(ctx context.Context) error {
 }
 
 func (x *CmdGet) run(ctx context.Context) error {
-	spotinstClientOpts := []spotinst.ClientOption{
-		spotinst.WithCredentialsProfile(x.opts.Profile),
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	_, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	_, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err
 	}

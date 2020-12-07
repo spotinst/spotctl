@@ -7,7 +7,7 @@ import (
 	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/editor"
 	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/survey"
 	"github.com/spotinst/spotctl/internal/thirdparty"
 	"github.com/spotinst/spotctl/internal/writer"
@@ -26,9 +26,9 @@ func NewFactory(in io.Reader, out, err io.Writer) Factory {
 	}
 }
 
-func (x *factory) NewSpotinst(options ...spotinst.ClientOption) (spotinst.Interface, error) {
-	log.Debugf("Instantiating new spotinst client")
-	return spotinst.New(options...), nil
+func (x *factory) NewSpotClient(options ...spot.ClientOption) (spot.Client, error) {
+	log.Debugf("Instantiating new spot client")
+	return spot.New(options...), nil
 }
 
 func (x *factory) NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Interface, error) {
@@ -46,9 +46,9 @@ func (x *factory) NewSurvey() (survey.Interface, error) {
 	return survey.New(x.in, x.out, x.err), nil
 }
 
-func (x *factory) NewDep() (dep.Interface, error) {
+func (x *factory) NewDepManager() (dep.Manager, error) {
 	log.Debugf("Instantiating new dependency manager")
-	return dep.New(survey.New(x.in, x.out, x.err)), nil
+	return dep.NewManager(survey.New(x.in, x.out, x.err)), nil
 }
 
 func (x *factory) NewEditor() (editor.Editor, error) {

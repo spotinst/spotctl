@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/writer/writers/json"
 )
 
@@ -82,16 +82,16 @@ func (x *CmdDescribeClusterKubernetes) validate(ctx context.Context) error {
 }
 
 func (x *CmdDescribeClusterKubernetes) run(ctx context.Context) error {
-	spotinstClientOpts := []spotinst.ClientOption{
-		spotinst.WithCredentialsProfile(x.opts.Profile),
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err
 	}
 
-	oceanClient, err := spotinstClient.Services().Ocean(x.opts.CloudProvider, spotinst.OrchestratorKubernetes)
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 	if err != nil {
 		return err
 	}

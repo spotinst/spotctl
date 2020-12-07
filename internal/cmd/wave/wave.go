@@ -6,7 +6,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/options"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/dep"
+	"github.com/spotinst/spotctl/internal/spot"
 )
 
 type Cmd struct {
@@ -16,7 +17,7 @@ type Cmd struct {
 
 type CmdOptions struct {
 	*options.CommonOptions
-	CloudProvider spotinst.CloudProviderName
+	CloudProvider spot.CloudProviderName
 }
 
 func NewCmd(opts *options.CommonOptions) *cobra.Command {
@@ -52,9 +53,27 @@ func (x *Cmd) preRun(ctx context.Context) error {
 	}
 
 	// ... yeah, no
-	x.opts.CloudProvider = spotinst.CloudProviderAWS
+	x.opts.CloudProvider = spot.CloudProviderAWS
 
-	return nil
+	return x.installDeps(ctx)
+}
+
+func (x *Cmd) installDeps(ctx context.Context) error {
+	// Initialize a new dependency manager.
+	dm, err := x.opts.Clientset.NewDepManager()
+	if err != nil {
+		return err
+	}
+
+	// Install options.
+	installOpts := []dep.InstallOption{
+		dep.WithInstallPolicy(dep.InstallPolicy(x.opts.InstallPolicy)),
+		dep.WithNoninteractive(x.opts.Noninteractive),
+		dep.WithDryRun(x.opts.DryRun),
+	}
+
+	// Install!
+	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
 func (x *Cmd) initSubCommands() {

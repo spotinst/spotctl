@@ -42,10 +42,10 @@ func newCmd(in io.Reader, out, err io.Writer) *CmdRoot {
 
 	cmd.cmd = &cobra.Command{
 		Use:   "spotctl",
-		Short: `A unified command-line interface to manage your Spotinst resources`,
+		Short: `A unified command-line interface to manage your Spot resources`,
 		Long: `
-A unified command-line interface to manage your Spotinst resources. 
-See the home page (https://api.spotinst.com/spotctl/) for installation, 
+A unified command-line interface to manage your Spot by NetApp resources. 
+See the home page (https://github.com/spotinst/spotctl) for installation, 
 usage, documentation, changelog and configuration walkthroughs.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,

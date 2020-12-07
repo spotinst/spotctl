@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 )
 
 type CmdDelete struct {
@@ -33,7 +33,7 @@ func newCmdDelete(opts *CmdOptions) *CmdDelete {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "delete",
-		Short:         "Delete a wave installation",
+		Short:         "Delete a Wave installation",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -92,11 +92,11 @@ func (x *CmdDelete) validate(ctx context.Context) error {
 }
 
 func (x *CmdDelete) run(ctx context.Context) error {
-	spotinstClientOpts := []spotinst.ClientOption{
-		spotinst.WithCredentialsProfile(x.opts.Profile),
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	_, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+	_, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err
 	}
