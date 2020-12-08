@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// Ocean.
 	FlagOceanName                       string = "name"
 	FlagOceanRegion                     string = "region"
 	FlagOceanControllerID               string = "controller-id"
@@ -52,6 +53,12 @@ const (
 	FlagOceanRolloutDisableAutoScaling  string = "disable-auto-scaling"
 	FlagOceanRolloutSpecIDs             string = "spec-ids"
 	FlagOceanRolloutInstanceIDs         string = "instance-ids"
+
+	// Wave.
+	FlagWaveRegion      string = "region"
+	FlagWaveClusterID   string = "cluster-id"
+	FlagWaveClusterName string = "cluster-name"
+	FlagWaveConfigFile  string = "config-file"
 )
 
 func Log(cmd *cobra.Command) {

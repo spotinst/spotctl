@@ -15,7 +15,7 @@ type apiAccounts struct {
 }
 
 func (x *apiAccounts) ListAccounts(ctx context.Context) ([]*Account, error) {
-	log.Debugf("Listing all accounts")
+	log.Debugf("Listing accounts")
 
 	req := client.NewRequest(http.MethodGet, "/setup/account")
 	resp, err := client.RequireOK(x.client.Do(ctx, req))

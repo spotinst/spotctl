@@ -89,6 +89,7 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/restxml
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/ec2
+github.com/aws/aws-sdk-go/service/iam
 github.com/aws/aws-sdk-go/service/s3
 github.com/aws/aws-sdk-go/service/s3/internal/arn
 github.com/aws/aws-sdk-go/service/sts
@@ -205,7 +206,7 @@ github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 ## explicit
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.51.0
+# github.com/go-ini/ini v1.62.0
 ## explicit
 github.com/go-ini/ini
 # github.com/go-logr/logr v0.3.0
@@ -405,7 +406,7 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
-# github.com/spotinst/spotinst-sdk-go v1.66.0
+# github.com/spotinst/spotinst-sdk-go v1.71.0
 ## explicit
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws

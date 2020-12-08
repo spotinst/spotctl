@@ -2,10 +2,10 @@ package wave
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/spot"
@@ -19,11 +19,13 @@ type CmdDescribe struct {
 
 type CmdDescribeOptions struct {
 	*CmdOptions
-	ClusterID string
+	ClusterID   string
+	ClusterName string
 }
 
 func (x *CmdDescribeOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
+	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
+	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
 }
 
 func NewCmdDescribe(opts *CmdOptions) *cobra.Command {
@@ -61,8 +63,8 @@ func (x *CmdDescribe) survey(ctx context.Context) error {
 }
 
 func (x *CmdDescribeOptions) Validate() error {
-	if x.ClusterID == "" {
-		return fmt.Errorf("--cluster-id must be specified")
+	if x.ClusterID == "" && x.ClusterName == "" {
+		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
 	}
 	return x.CmdOptions.Validate()
 }
@@ -94,23 +96,31 @@ func (x *CmdDescribe) validate(ctx context.Context) error {
 }
 
 func (x *CmdDescribe) run(ctx context.Context) error {
-	spotClientOpts := []spot.ClientOption{
-		spot.WithCredentialsProfile(x.opts.Profile),
+	if x.opts.ClusterID != "" {
+		spotClientOpts := []spot.ClientOption{
+			spot.WithCredentialsProfile(x.opts.Profile),
+		}
+
+		spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+		if err != nil {
+			return err
+		}
+
+		oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+		if err != nil {
+			return err
+		}
+
+		c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+		if err != nil {
+			return err
+		}
+
+		x.opts.ClusterName = c.Name
+		log.Infof("Verified cluster %q", x.opts.ClusterName)
 	}
-	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
-	if err != nil {
-		return err
-	}
-	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
-	if err != nil {
-		return err
-	}
-	c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
-	if err != nil {
-		return err
-	}
-	log.Infof("Verified cluster %s", c.Name)
-	manager, err := wave.NewManager(c.Name, getWaveLogger()) // pass in name to validate ocean controller configuration
+
+	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
 	if err != nil {
 		return err
 	}

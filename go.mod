@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.27.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-ini/ini v1.51.0
+	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.3.0
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-version v1.2.0
@@ -20,7 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.66.0
+	github.com/spotinst/spotinst-sdk-go v1.71.0
 	github.com/spotinst/wave-operator v0.0.0-20201201060623-504764e3ad07
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3

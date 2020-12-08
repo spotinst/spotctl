@@ -5,11 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/spotinst/spotctl/internal/dep"
-
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/clientset"
-	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
+	"github.com/spotinst/spotctl/internal/dep"
 )
 
 // CommonOptions contains common options and helper methods.
@@ -82,7 +80,6 @@ func (x *CommonOptions) Init(fs *pflag.FlagSet) {
 func (x *CommonOptions) initDefaults() {
 	x.PprofProfile = "none"
 	x.PprofOutput = "profile.pprof"
-	x.Profile = credentials.DefaultProfile()
 	x.Timeout = time.Minute
 	x.InstallPolicy = string(dep.InstallIfNotPresent)
 }

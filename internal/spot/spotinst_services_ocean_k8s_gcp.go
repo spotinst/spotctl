@@ -26,7 +26,7 @@ func (x *oceanKubernetesGCP) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRol
 }
 
 func (x *oceanKubernetesGCP) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
-	log.Debugf("Listing all Kubernetes clusters")
+	log.Debugf("Listing Ocean (Kubernetes) clusters")
 
 	output, err := x.svc.ListClusters(ctx, &gcp.ListClustersInput{})
 	if err != nil {
@@ -53,7 +53,7 @@ func (x *oceanKubernetesGCP) ListClusters(ctx context.Context) ([]*OceanCluster,
 }
 
 func (x *oceanKubernetesGCP) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, error) {
-	log.Debugf("Listing all Kubernetes launch specs")
+	log.Debugf("Listing Ocean (Kubernetes) launch specs")
 
 	output, err := x.svc.ListLaunchSpecs(ctx, &gcp.ListLaunchSpecsInput{})
 	if err != nil {
@@ -84,7 +84,7 @@ func (x *oceanKubernetesGCP) ListRollouts(ctx context.Context, clusterID string)
 }
 
 func (x *oceanKubernetesGCP) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
-	log.Debugf("Getting a Kubernetes cluster by ID: %s", clusterID)
+	log.Debugf("Getting Ocean (Kubernetes) cluster by ID: %s", clusterID)
 
 	input := &gcp.ReadClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -112,7 +112,7 @@ func (x *oceanKubernetesGCP) GetCluster(ctx context.Context, clusterID string) (
 }
 
 func (x *oceanKubernetesGCP) GetLaunchSpec(ctx context.Context, specID string) (*OceanLaunchSpec, error) {
-	log.Debugf("Getting a Kubernetes launch spec by ID: %s", specID)
+	log.Debugf("Getting Ocean (Kubernetes) launch spec by ID: %s", specID)
 
 	input := &gcp.ReadLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),
@@ -144,7 +144,7 @@ func (x *oceanKubernetesGCP) GetRollout(ctx context.Context, clusterID, rolloutI
 }
 
 func (x *oceanKubernetesGCP) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Creating a new Kubernetes cluster")
+	log.Debugf("Creating Ocean (Kubernetes) cluster")
 
 	input := &gcp.CreateClusterInput{
 		Cluster: cluster.Obj.(*gcp.Cluster),
@@ -172,7 +172,7 @@ func (x *oceanKubernetesGCP) CreateCluster(ctx context.Context, cluster *OceanCl
 }
 
 func (x *oceanKubernetesGCP) CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Creating a new Kubernetes launch spec")
+	log.Debugf("Creating Ocean (Kubernetes) launch spec")
 
 	input := &gcp.CreateLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*gcp.LaunchSpec),
@@ -204,7 +204,7 @@ func (x *oceanKubernetesGCP) CreateRollout(ctx context.Context, rollout *OceanRo
 }
 
 func (x *oceanKubernetesGCP) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Updating a Kubernetes cluster by ID: %s", cluster.ID)
+	log.Debugf("Updating Ocean (Kubernetes) cluster by ID: %s", cluster.ID)
 
 	input := &gcp.UpdateClusterInput{
 		Cluster: cluster.Obj.(*gcp.Cluster),
@@ -236,7 +236,7 @@ func (x *oceanKubernetesGCP) UpdateCluster(ctx context.Context, cluster *OceanCl
 }
 
 func (x *oceanKubernetesGCP) UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Updating a Kubernetes launch spec by ID: %s", spec.ID)
+	log.Debugf("Updating Ocean (Kubernetes) launch spec by ID: %s", spec.ID)
 
 	input := &gcp.UpdateLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*gcp.LaunchSpec),
@@ -272,7 +272,7 @@ func (x *oceanKubernetesGCP) UpdateRollout(ctx context.Context, rollout *OceanRo
 }
 
 func (x *oceanKubernetesGCP) DeleteCluster(ctx context.Context, clusterID string) error {
-	log.Debugf("Deleting a Kubernetes cluster by ID: %s", clusterID)
+	log.Debugf("Deleting Ocean (Kubernetes) cluster by ID: %s", clusterID)
 
 	input := &gcp.DeleteClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -283,7 +283,7 @@ func (x *oceanKubernetesGCP) DeleteCluster(ctx context.Context, clusterID string
 }
 
 func (x *oceanKubernetesGCP) DeleteLaunchSpec(ctx context.Context, specID string) error {
-	log.Debugf("Deleting a Kubernetes launch spec by ID: %s", specID)
+	log.Debugf("Deleting Ocean (Kubernetes) launch spec by ID: %s", specID)
 
 	input := &gcp.DeleteLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),

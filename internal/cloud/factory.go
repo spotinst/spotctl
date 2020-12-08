@@ -44,7 +44,7 @@ func GetFactory(name ProviderName) (Factory, error) {
 }
 
 // GetInstance returns an instance of cloud provider by name.
-func GetInstance(name ProviderName, options ...ProviderOption) (Interface, error) {
+func GetInstance(name ProviderName, options ...ProviderOption) (Provider, error) {
 	factory, err := GetFactory(name)
 	if err != nil {
 		return nil, err

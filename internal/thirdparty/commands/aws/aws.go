@@ -32,13 +32,13 @@ func (x *Command) Name() thirdparty.CommandName {
 func (x *Command) Run(ctx context.Context, args ...string) error {
 	log.Debugf("Executing command: %s %s", CommandName, strings.Join(args, " "))
 
-	fns := []func(ctx context.Context, args ...string) error{
+	steps := []func(ctx context.Context, args ...string) error{
 		x.runVersion,
 		x.run,
 	}
 
-	for _, fn := range fns {
-		if err := fn(ctx, args...); err != nil {
+	for _, step := range steps {
+		if err := step(ctx, args...); err != nil {
 			return err
 		}
 	}

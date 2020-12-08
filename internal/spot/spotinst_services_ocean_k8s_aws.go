@@ -28,7 +28,7 @@ func (x *oceanKubernetesAWS) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRol
 }
 
 func (x *oceanKubernetesAWS) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
-	log.Debugf("Listing all Kubernetes clusters")
+	log.Debugf("Listing Ocean (Kubernetes) clusters")
 
 	output, err := x.svc.ListClusters(ctx, &aws.ListClustersInput{})
 	if err != nil {
@@ -55,7 +55,7 @@ func (x *oceanKubernetesAWS) ListClusters(ctx context.Context) ([]*OceanCluster,
 }
 
 func (x *oceanKubernetesAWS) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, error) {
-	log.Debugf("Listing all Kubernetes launch specs")
+	log.Debugf("Listing Ocean (Kubernetes) launch specs")
 
 	output, err := x.svc.ListLaunchSpecs(ctx, &aws.ListLaunchSpecsInput{})
 	if err != nil {
@@ -82,7 +82,7 @@ func (x *oceanKubernetesAWS) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunc
 }
 
 func (x *oceanKubernetesAWS) ListRollouts(ctx context.Context, clusterID string) ([]*OceanRollout, error) {
-	log.Debugf("Listing all Kubernetes rollouts")
+	log.Debugf("Listing Kubernetes rollouts")
 
 	input := &aws.ListRollsInput{
 		ClusterID: spotinst.String(clusterID),
@@ -113,7 +113,7 @@ func (x *oceanKubernetesAWS) ListRollouts(ctx context.Context, clusterID string)
 }
 
 func (x *oceanKubernetesAWS) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
-	log.Debugf("Getting a Kubernetes cluster by ID: %s", clusterID)
+	log.Debugf("Getting Ocean (Kubernetes) cluster by ID: %s", clusterID)
 
 	input := &aws.ReadClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -141,7 +141,7 @@ func (x *oceanKubernetesAWS) GetCluster(ctx context.Context, clusterID string) (
 }
 
 func (x *oceanKubernetesAWS) GetLaunchSpec(ctx context.Context, specID string) (*OceanLaunchSpec, error) {
-	log.Debugf("Getting a Kubernetes launch spec by ID: %s", specID)
+	log.Debugf("Getting Ocean (Kubernetes) launch spec by ID: %s", specID)
 
 	input := &aws.ReadLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),
@@ -169,7 +169,7 @@ func (x *oceanKubernetesAWS) GetLaunchSpec(ctx context.Context, specID string) (
 }
 
 func (x *oceanKubernetesAWS) GetRollout(ctx context.Context, clusterID, rolloutID string) (*OceanRollout, error) {
-	log.Debugf("Getting a Kubernetes rollout by ID: %s", rolloutID)
+	log.Debugf("GettingKubernetes rollout by ID: %s", rolloutID)
 
 	input := &aws.ReadRollInput{
 		ClusterID: spotinst.String(clusterID),
@@ -198,7 +198,7 @@ func (x *oceanKubernetesAWS) GetRollout(ctx context.Context, clusterID, rolloutI
 }
 
 func (x *oceanKubernetesAWS) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Creating a new Kubernetes cluster")
+	log.Debugf("Creating Ocean (Kubernetes) cluster")
 
 	input := &aws.CreateClusterInput{
 		Cluster: cluster.Obj.(*aws.Cluster),
@@ -226,7 +226,7 @@ func (x *oceanKubernetesAWS) CreateCluster(ctx context.Context, cluster *OceanCl
 }
 
 func (x *oceanKubernetesAWS) CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Creating a new Kubernetes launch spec")
+	log.Debugf("Creating Ocean (Kubernetes) launch spec")
 
 	input := &aws.CreateLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*aws.LaunchSpec),
@@ -254,7 +254,7 @@ func (x *oceanKubernetesAWS) CreateLaunchSpec(ctx context.Context, spec *OceanLa
 }
 
 func (x *oceanKubernetesAWS) CreateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
-	log.Debugf("Creating a new Kubernetes rollout")
+	log.Debugf("Creating Kubernetes rollout")
 
 	input := &aws.CreateRollInput{
 		Roll: rollout.Obj.(*aws.RollSpec),
@@ -282,7 +282,7 @@ func (x *oceanKubernetesAWS) CreateRollout(ctx context.Context, rollout *OceanRo
 }
 
 func (x *oceanKubernetesAWS) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Updating a Kubernetes cluster by ID: %s", cluster.ID)
+	log.Debugf("Updating Ocean (Kubernetes) cluster by ID: %s", cluster.ID)
 
 	input := &aws.UpdateClusterInput{
 		Cluster: cluster.Obj.(*aws.Cluster),
@@ -315,7 +315,7 @@ func (x *oceanKubernetesAWS) UpdateCluster(ctx context.Context, cluster *OceanCl
 }
 
 func (x *oceanKubernetesAWS) UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Updating a Kubernetes launch spec by ID: %s", spec.ID)
+	log.Debugf("Updating Ocean (Kubernetes) launch spec by ID: %s", spec.ID)
 
 	input := &aws.UpdateLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*aws.LaunchSpec),
@@ -347,7 +347,7 @@ func (x *oceanKubernetesAWS) UpdateLaunchSpec(ctx context.Context, spec *OceanLa
 }
 
 func (x *oceanKubernetesAWS) UpdateRollout(ctx context.Context, rollout *OceanRollout) (*OceanRollout, error) {
-	log.Debugf("Updating a Kubernetes rollout by ID: %s", rollout.ID)
+	log.Debugf("Updating Kubernetes rollout by ID: %s", rollout.ID)
 
 	input := &aws.UpdateRollInput{
 		Roll: rollout.Obj.(*aws.RollSpec),
@@ -375,7 +375,7 @@ func (x *oceanKubernetesAWS) UpdateRollout(ctx context.Context, rollout *OceanRo
 }
 
 func (x *oceanKubernetesAWS) DeleteCluster(ctx context.Context, clusterID string) error {
-	log.Debugf("Deleting a Kubernetes cluster by ID: %s", clusterID)
+	log.Debugf("Deleting Ocean (Kubernetes) cluster by ID: %s", clusterID)
 
 	input := &aws.DeleteClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -386,7 +386,7 @@ func (x *oceanKubernetesAWS) DeleteCluster(ctx context.Context, clusterID string
 }
 
 func (x *oceanKubernetesAWS) DeleteLaunchSpec(ctx context.Context, specID string) error {
-	log.Debugf("Deleting a Kubernetes launch spec by ID: %s", specID)
+	log.Debugf("Deleting Ocean (Kubernetes) launch spec by ID: %s", specID)
 
 	input := &aws.DeleteLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),

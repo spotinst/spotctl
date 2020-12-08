@@ -2,10 +2,10 @@ package wave
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 )
@@ -17,11 +17,13 @@ type CmdDelete struct {
 
 type CmdDeleteOptions struct {
 	*CmdOptions
-	ClusterID string
+	ClusterID   string
+	ClusterName string
 }
 
 func (x *CmdDeleteOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ClusterID, flags.FlagOceanClusterID, x.ClusterID, "id of the cluster")
+	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
+	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
 }
 
 func NewCmdDelete(opts *CmdOptions) *cobra.Command {
@@ -59,8 +61,8 @@ func (x *CmdDelete) survey(ctx context.Context) error {
 }
 
 func (x *CmdDeleteOptions) Validate() error {
-	if x.ClusterID == "" {
-		return fmt.Errorf("--cluster-id must be specified")
+	if x.ClusterID == "" && x.ClusterName == "" {
+		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
 	}
 	return x.CmdOptions.Validate()
 }
@@ -101,6 +103,5 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	fmt.Fprintln(x.opts.Out, fmt.Sprintf("blah blah blah"))
-	return nil
+	return errors.NotImplemented()
 }

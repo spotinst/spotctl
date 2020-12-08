@@ -24,7 +24,7 @@ type (
 		NewSpotClient(options ...spot.ClientOption) (spot.Client, error)
 
 		// NewCloud returns an instance of cloud.Interface.
-		NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Interface, error)
+		NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Provider, error)
 
 		// NewCommand returns an instance of thirdparty.Command.
 		NewCommand(name thirdparty.CommandName) (thirdparty.Command, error)

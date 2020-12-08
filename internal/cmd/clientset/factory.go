@@ -31,7 +31,7 @@ func (x *factory) NewSpotClient(options ...spot.ClientOption) (spot.Client, erro
 	return spot.New(options...), nil
 }
 
-func (x *factory) NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Interface, error) {
+func (x *factory) NewCloud(name cloud.ProviderName, options ...cloud.ProviderOption) (cloud.Provider, error) {
 	log.Debugf("Instantiating new cloud: %s", name)
 	return cloud.GetInstance(name, options...)
 }

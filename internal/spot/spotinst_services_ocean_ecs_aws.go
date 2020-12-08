@@ -26,7 +26,7 @@ func (x *oceanECS) NewRolloutBuilder(fs *pflag.FlagSet, opts *OceanRolloutOption
 }
 
 func (x *oceanECS) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
-	log.Debugf("Listing all ECS clusters")
+	log.Debugf("Listing Ocean (ECS) clusters")
 
 	output, err := x.svc.ListECSClusters(ctx, &aws.ListECSClustersInput{})
 	if err != nil {
@@ -53,7 +53,7 @@ func (x *oceanECS) ListClusters(ctx context.Context) ([]*OceanCluster, error) {
 }
 
 func (x *oceanECS) ListLaunchSpecs(ctx context.Context) ([]*OceanLaunchSpec, error) {
-	log.Debugf("Listing all ECS launch specs")
+	log.Debugf("Listing Ocean (ECS) launch specs")
 
 	output, err := x.svc.ListECSLaunchSpecs(ctx, &aws.ListECSLaunchSpecsInput{})
 	if err != nil {
@@ -84,7 +84,7 @@ func (x *oceanECS) ListRollouts(ctx context.Context, clusterID string) ([]*Ocean
 }
 
 func (x *oceanECS) GetCluster(ctx context.Context, clusterID string) (*OceanCluster, error) {
-	log.Debugf("Getting a ECS cluster by ID: %s", clusterID)
+	log.Debugf("Getting Ocean (ECS) cluster by ID: %s", clusterID)
 
 	input := &aws.ReadECSClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -112,7 +112,7 @@ func (x *oceanECS) GetCluster(ctx context.Context, clusterID string) (*OceanClus
 }
 
 func (x *oceanECS) GetLaunchSpec(ctx context.Context, specID string) (*OceanLaunchSpec, error) {
-	log.Debugf("Getting a ECS launch spec by ID: %s", specID)
+	log.Debugf("Getting Ocean (ECS) launch spec by ID: %s", specID)
 
 	input := &aws.ReadECSLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),
@@ -144,7 +144,7 @@ func (x *oceanECS) GetRollout(ctx context.Context, clusterID, rolloutID string) 
 }
 
 func (x *oceanECS) CreateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Creating a new ECS cluster")
+	log.Debugf("Creating Ocean (ECS) cluster")
 
 	input := &aws.CreateECSClusterInput{
 		Cluster: cluster.Obj.(*aws.ECSCluster),
@@ -172,7 +172,7 @@ func (x *oceanECS) CreateCluster(ctx context.Context, cluster *OceanCluster) (*O
 }
 
 func (x *oceanECS) CreateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Creating a new ECS launch spec")
+	log.Debugf("Creating Ocean (ECS) launch spec")
 
 	input := &aws.CreateECSLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*aws.ECSLaunchSpec),
@@ -204,7 +204,7 @@ func (x *oceanECS) CreateRollout(ctx context.Context, rollout *OceanRollout) (*O
 }
 
 func (x *oceanECS) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*OceanCluster, error) {
-	log.Debugf("Updating a ECS cluster by ID: %s", cluster.ID)
+	log.Debugf("Updating Ocean (ECS) cluster by ID: %s", cluster.ID)
 
 	input := &aws.UpdateECSClusterInput{
 		Cluster: cluster.Obj.(*aws.ECSCluster),
@@ -237,7 +237,7 @@ func (x *oceanECS) UpdateCluster(ctx context.Context, cluster *OceanCluster) (*O
 }
 
 func (x *oceanECS) UpdateLaunchSpec(ctx context.Context, spec *OceanLaunchSpec) (*OceanLaunchSpec, error) {
-	log.Debugf("Updating a ECS launch spec by ID: %s", spec.ID)
+	log.Debugf("Updating Ocean (ECS) launch spec by ID: %s", spec.ID)
 
 	input := &aws.UpdateECSLaunchSpecInput{
 		LaunchSpec: spec.Obj.(*aws.ECSLaunchSpec),
@@ -273,7 +273,7 @@ func (x *oceanECS) UpdateRollout(ctx context.Context, rollout *OceanRollout) (*O
 }
 
 func (x *oceanECS) DeleteCluster(ctx context.Context, clusterID string) error {
-	log.Debugf("Deleting a ECS cluster by ID: %s", clusterID)
+	log.Debugf("Deleting Ocean (ECS) cluster by ID: %s", clusterID)
 
 	input := &aws.DeleteECSClusterInput{
 		ClusterID: spotinst.String(clusterID),
@@ -284,7 +284,7 @@ func (x *oceanECS) DeleteCluster(ctx context.Context, clusterID string) error {
 }
 
 func (x *oceanECS) DeleteLaunchSpec(ctx context.Context, specID string) error {
-	log.Debugf("Deleting a ECS launch spec by ID: %s", specID)
+	log.Debugf("Deleting Ocean (ECS) launch spec by ID: %s", specID)
 
 	input := &aws.DeleteECSLaunchSpecInput{
 		LaunchSpecID: spotinst.String(specID),
