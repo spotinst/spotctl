@@ -119,6 +119,7 @@ type LaunchSpecification struct {
 	RootVolumeSize           *int                `json:"rootVolumeSize,omitempty"`
 	Monitoring               *bool               `json:"monitoring,omitempty"`
 	EBSOptimized             *bool               `json:"ebsOptimized,omitempty"`
+	UseAsTemplateOnly        *bool               `json:"useAsTemplateOnly,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1064,6 +1065,13 @@ func (o *LaunchSpecification) SetMonitoring(v *bool) *LaunchSpecification {
 func (o *LaunchSpecification) SetEBSOptimized(v *bool) *LaunchSpecification {
 	if o.EBSOptimized = v; o.EBSOptimized == nil {
 		o.nullFields = append(o.nullFields, "EBSOptimized")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetUseAsTemplateOnly(v *bool) *LaunchSpecification {
+	if o.UseAsTemplateOnly = v; o.UseAsTemplateOnly == nil {
+		o.nullFields = append(o.nullFields, "UseAsTemplateOnly")
 	}
 	return o
 }

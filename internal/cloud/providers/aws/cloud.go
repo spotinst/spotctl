@@ -12,7 +12,7 @@ func init() {
 	cloud.Register(CloudProviderName, factory)
 }
 
-func factory(options ...cloud.ProviderOption) (cloud.Interface, error) {
+func factory(options ...cloud.ProviderOption) (cloud.Provider, error) {
 	opts := cloud.DefaultProviderOptions()
 
 	for _, opt := range options {
@@ -32,14 +32,10 @@ type Cloud struct {
 	session *session.Session
 }
 
-func (c *Cloud) Name() cloud.ProviderName {
-	return CloudProviderName
-}
-
-func (c *Cloud) Compute() cloud.ComputeInterface {
-	return c
-}
-
-func (c *Cloud) Storage() cloud.StorageInterface {
-	return c
+func (c *Cloud) Name() cloud.ProviderName { return CloudProviderName }
+func (c *Cloud) Compute() cloud.Compute   { return c }
+func (c *Cloud) Storage() cloud.Storage   { return c }
+func (c *Cloud) IAM() cloud.IAM           { return c }
+func (c *Cloud) Session(region, profile string) (interface{}, error) {
+	return newSession(region, profile)
 }

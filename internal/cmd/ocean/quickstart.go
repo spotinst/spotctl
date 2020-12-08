@@ -69,7 +69,7 @@ func (x *CmdQuickstart) preRun(ctx context.Context) error {
 
 func (x *CmdQuickstart) installDeps(ctx context.Context) error {
 	// Initialize a new dependency manager.
-	dm, err := x.opts.Clientset.NewDep()
+	dm, err := x.opts.Clientset.NewDepManager()
 	if err != nil {
 		return err
 	}

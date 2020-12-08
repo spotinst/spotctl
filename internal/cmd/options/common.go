@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/clientset"
-	"github.com/spotinst/spotinst-sdk-go/spotinst/credentials"
+	"github.com/spotinst/spotctl/internal/dep"
 )
 
 // CommonOptions contains common options and helper methods.
@@ -22,6 +22,9 @@ type CommonOptions struct {
 	// client type. For example, to create an instance of the cloud provider
 	// client interface, call the following method Clientset.CloudProvider().
 	Clientset clientset.Factory
+
+	// InstallPolicy configures a policy for if/when to install a dependency.
+	InstallPolicy string
 
 	// Noninteractive disables the interactive mode user interface by quieting the
 	// configuration prompts.
@@ -77,14 +80,15 @@ func (x *CommonOptions) Init(fs *pflag.FlagSet) {
 func (x *CommonOptions) initDefaults() {
 	x.PprofProfile = "none"
 	x.PprofOutput = "profile.pprof"
-	x.Profile = credentials.DefaultProfile()
 	x.Timeout = time.Minute
+	x.InstallPolicy = string(dep.InstallIfNotPresent)
 }
 
 func (x *CommonOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&x.Profile, "profile", "p", x.Profile, "name of credentials profile to use")
 	fs.StringVar(&x.PprofProfile, "pprof-profile", x.PprofProfile, "name of profile to capture (none|cpu|heap|goroutine|threadcreate|block|mutex)")
 	fs.StringVar(&x.PprofOutput, "pprof-output", x.PprofOutput, "name of the file to write the profile to")
+	fs.StringVar(&x.InstallPolicy, "install-policy", x.InstallPolicy, "policy for if/when to install a dependency")
 	fs.BoolVarP(&x.Verbose, "verbose", "v", x.Verbose, "enable verbose logging")
 	fs.BoolVarP(&x.Noninteractive, "noninteractive", "n", x.Noninteractive, "disable interactive mode user interface")
 	fs.BoolVarP(&x.DryRun, "dry-run", "d", x.DryRun, "only print the actions that would be executed, without executing them")

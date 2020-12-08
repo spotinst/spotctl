@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 )
 
 // ErrorType represents the type of an error.
@@ -58,6 +59,32 @@ func Internal(err error) error {
 // parameter is missing.
 func Required(name string) error {
 	return NewError(ErrorTypeRequired, fmt.Sprintf("missing value for argument: %s", name))
+}
+
+// RequiredOr generates an instance representing an error that occurs when at
+// least one parameter must appear. Or defines a relationship between parameters
+// where one of the peers is required (and more than one is allowed).
+func RequiredOr(names ...string) error {
+	return NewError(ErrorTypeRequired, fmt.Sprintf("at least one "+
+		"argument is required: [ %s ]", strings.Join(names, " | ")))
+}
+
+// RequiredXor generates an instance representing an error that occurs when
+// exclusive parameters must not appear together but where one of them is
+// required. Or defines an exclusive relationship between a set of
+// parameters where one of them is required but not at the same time.
+func RequiredXor(names ...string) error {
+	return NewError(ErrorTypeRequired, fmt.Sprintf("mutually "+
+		"exclusive arguments: [ %s ]", strings.Join(names, " | ")))
+}
+
+// RequiredAnd generates an instance representing an error that occurs when
+// all parameters must appear together. And defines an all-or-nothing
+// relationship between parameters where if one of the peers is present, all of
+// them are required as well.
+func RequiredAnd(names ...string) error {
+	return NewError(ErrorTypeRequired, fmt.Sprintf("required "+
+		"arguments: [ %s ]", strings.Join(names, " | ")))
 }
 
 // Invalid generates an instance representing an error that occurs when a string

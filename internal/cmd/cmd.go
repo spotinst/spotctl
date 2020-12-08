@@ -14,6 +14,7 @@ import (
 	"github.com/spotinst/spotctl/internal/cmd/ocean"
 	"github.com/spotinst/spotctl/internal/cmd/options"
 	"github.com/spotinst/spotctl/internal/cmd/version"
+	"github.com/spotinst/spotctl/internal/cmd/wave"
 	"github.com/spotinst/spotctl/internal/log"
 
 	_ "github.com/spotinst/spotctl/internal/cloud/providers"
@@ -41,10 +42,10 @@ func newCmd(in io.Reader, out, err io.Writer) *CmdRoot {
 
 	cmd.cmd = &cobra.Command{
 		Use:   "spotctl",
-		Short: `A unified command-line interface to manage your Spotinst resources`,
+		Short: `A unified command-line interface to manage your Spot resources`,
 		Long: `
-A unified command-line interface to manage your Spotinst resources. 
-See the home page (https://api.spotinst.com/spotctl/) for installation, 
+A unified command-line interface to manage your Spot by NetApp resources. 
+See the home page (https://github.com/spotinst/spotctl) for installation, 
 usage, documentation, changelog and configuration walkthroughs.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -91,6 +92,7 @@ func (x *CmdRoot) initSubCommands() {
 	commands := []func(*options.CommonOptions) *cobra.Command{
 		// Resource management commands.
 		ocean.NewCmd,
+		wave.NewCmd,
 
 		// Settings commands.
 		completion.NewCmd,

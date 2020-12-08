@@ -4,28 +4,37 @@ import "path/filepath"
 
 var (
 	// See: https://kubernetes.io/docs/reference/kubectl.
-	DependencyKubectl = Dependency{
-		Name:    "kubectl",
-		Version: "1.16.2",
-		URL: "https://storage.googleapis.com/kubernetes-release/" +
+	DependencyKubectl Dependency = &dependency{
+		name:    "kubectl",
+		version: "1.19.0",
+		url: "https://storage.googleapis.com/kubernetes-release/" +
 			"release/v{{.version}}/bin/{{.os}}/{{.arch}}/kubectl{{.extension}}",
 	}
 
 	// See: https://github.com/kubernetes/kops.
-	DependencyKops = Dependency{
-		Name:    "kops",
-		Version: "1.15.0-beta.1-20f7d4c8c",
-		URL: "https://spotinst-public.s3.amazonaws.com/integrations/kubernetes/kops/" +
-			"v{{.version}}/{{.os}}/{{.arch}}/kops",
+	DependencyKops Dependency = &dependency{
+		name:    "kops",
+		version: "1.18.2",
+		url: "https://github.com/kubernetes/kops/releases/download/" +
+			"v{{.version}}/kops-{{.os}}-{{.arch}}",
+	}
+
+	// See: https://github.com/weaveworks/eksctl.
+	DependencyEksctl Dependency = &dependency{
+		name:    "eksctl",
+		version: "0.31.0-fc20af78",
+		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
+			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}
 )
 
-// DefaultDependencyListKubernetes returns default list of required dependencies
-// to work with Kubernetes.
+// DefaultDependencyListKubernetes returns the default list of packages needed
+// to work with Kubernetes-based products, such as Ocean and Wave.
 func DefaultDependencyListKubernetes() []Dependency {
 	return []Dependency{
 		DependencyKubectl,
 		DependencyKops,
+		DependencyEksctl,
 	}
 }
 

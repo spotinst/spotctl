@@ -5,6 +5,9 @@ type InstallOptions struct {
 	// and install the binary to.
 	BinaryDir string
 
+	// InstallPolicy describes a policy for if/when to install a dependency.
+	InstallPolicy InstallPolicy
+
 	// Noninteractive disables the interactive mode user interface by quieting the
 	// configuration prompts.
 	Noninteractive bool
@@ -25,6 +28,13 @@ func WithBinaryDir(path string) InstallOption {
 	}
 }
 
+// WithInstallPolicy configures the install policy.
+func WithInstallPolicy(value InstallPolicy) InstallOption {
+	return func(opts *InstallOptions) {
+		opts.InstallPolicy = value
+	}
+}
+
 // WithNoninteractive toggles the noninteractive mode on/off.
 func WithNoninteractive(value bool) InstallOption {
 	return func(opts *InstallOptions) {
@@ -42,6 +52,7 @@ func WithDryRun(value bool) InstallOption {
 func initDefaultOptions() *InstallOptions {
 	return &InstallOptions{
 		BinaryDir:      DefaultBinaryDir(),
+		InstallPolicy:  InstallIfNotPresent,
 		Noninteractive: false,
 		DryRun:         false,
 	}

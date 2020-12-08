@@ -32,13 +32,13 @@ func (x *Command) Name() thirdparty.CommandName {
 func (x *Command) Run(ctx context.Context, args ...string) error {
 	log.Debugf("Executing command: %s %s", CommandName, strings.Join(args, " "))
 
-	fns := []func(ctx context.Context, args ...string) error{
+	steps := []func(ctx context.Context, args ...string) error{
 		x.runVersion,
 		x.run,
 	}
 
-	for _, fn := range fns {
-		if err := fn(ctx, args...); err != nil {
+	for _, step := range steps {
+		if err := step(ctx, args...); err != nil {
 			return err
 		}
 	}
@@ -49,6 +49,7 @@ func (x *Command) Run(ctx context.Context, args ...string) error {
 func (x *Command) runVersion(ctx context.Context, args ...string) error {
 	var buf bytes.Buffer
 
+	// TODO(liran/dep-awscli): Configure the local execution path.
 	cmdOptions := []child.CommandOption{
 		child.WithArgs("--version"),
 		child.WithStdio(nil, &buf, nil),
@@ -63,6 +64,7 @@ func (x *Command) runVersion(ctx context.Context, args ...string) error {
 }
 
 func (x *Command) run(ctx context.Context, args ...string) error {
+	// TODO(liran/dep-awscli): Configure the local execution path.
 	cmdOptions := []child.CommandOption{
 		child.WithArgs(args...),
 		child.WithStdio(x.opts.In, x.opts.Out, x.opts.Err),

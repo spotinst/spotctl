@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"os/exec"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -64,34 +65,30 @@ func (x *Command) Start(ctx context.Context) error {
 		}
 	}
 
+	// Path of the command to run.
+	name := x.Name
+	if x.Path != "" {
+		name = filepath.Join(x.Path, name)
+	}
+
 	// Initialize the internal command object.
-	x.cmd = exec.CommandContext(ctx, x.Name, x.Args...)
+	x.cmd = exec.CommandContext(ctx, name, x.Args...)
 
 	// Set up the command options.
-	{
-		if x.Stdin != nil {
-			x.cmd.Stdin = x.Stdin
-		}
-
-		if x.Stdout != nil {
-			x.cmd.Stdout = x.Stdout
-		}
-
-		if x.Stderr != nil {
-			x.cmd.Stderr = x.Stderr
-		}
-
-		if x.Env != nil {
-			x.cmd.Env = x.Env
-		}
-
-		if x.Path != "" {
-			x.cmd.Path = x.Path
-		}
-
-		if x.Dir != "" {
-			x.cmd.Dir = x.Dir
-		}
+	if x.Stdin != nil {
+		x.cmd.Stdin = x.Stdin
+	}
+	if x.Stdout != nil {
+		x.cmd.Stdout = x.Stdout
+	}
+	if x.Stderr != nil {
+		x.cmd.Stderr = x.Stderr
+	}
+	if x.Env != nil {
+		x.cmd.Env = x.Env
+	}
+	if x.Dir != "" {
+		x.cmd.Dir = x.Dir
 	}
 
 	// Finally, start the command.

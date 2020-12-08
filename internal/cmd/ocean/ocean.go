@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/options"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 )
 
 type (
@@ -22,7 +22,7 @@ type (
 		// the account.
 		//
 		// Populated by a pre-run function.
-		CloudProvider spotinst.CloudProviderName
+		CloudProvider spot.CloudProviderName
 	}
 )
 
@@ -61,7 +61,7 @@ func (x *Cmd) preRun(ctx context.Context) error {
 	// TODO(liran): Use the Spotinst API to figure out the cloud provider
 	//  associated with the configured account. We support a single cloud
 	//  provider (AWS) it's okay to to hard coded it here for now.
-	x.opts.CloudProvider = spotinst.CloudProviderAWS
+	x.opts.CloudProvider = spot.CloudProviderAWS
 
 	return nil
 }

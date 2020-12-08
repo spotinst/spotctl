@@ -1,0 +1,20 @@
+apiVersion: wave.spot.io/v1alpha1
+kind: WaveComponent
+metadata:
+  name: spark-history-server
+spec:
+  type: helm
+  name: spark-history-server
+  url: https://kubernetes-charts.storage.googleapis.com
+  state: present
+  version: 1.4.0
+  valuesConfiguration: |
+    nfs:
+      enableExampleNFS: false
+    pvc:
+      enablePVC: false
+    s3:
+      enableS3: true
+      enableIAM: true
+      logDirectory: s3a://spark-hs-natef/
+

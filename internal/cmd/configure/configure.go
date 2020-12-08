@@ -12,7 +12,7 @@ import (
 	"github.com/spotinst/spotctl/internal/cmd/options"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/spotinst"
+	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/survey"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/aws"
 
@@ -107,16 +107,16 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 		{
 			if x.opts.CredentialsSpotinst.Account == "" {
 				// Instantiate a Spotinst client instance.
-				spotinstClientOpts := []spotinst.ClientOption{
-					spotinst.WithCredentialsStatic(x.opts.CredentialsSpotinst.Token, ""),
+				spotClientOpts := []spot.ClientOption{
+					spot.WithCredentialsStatic(x.opts.CredentialsSpotinst.Token, ""),
 				}
 
-				spotinstClient, err := x.opts.Clientset.NewSpotinst(spotinstClientOpts...)
+				spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 				if err != nil {
 					return err
 				}
 
-				accounts, err := spotinstClient.Accounts().ListAccounts(ctx)
+				accounts, err := spotClient.Accounts().ListAccounts(ctx)
 				if err != nil {
 					return err
 				}
@@ -249,7 +249,7 @@ func (x *Cmd) configureCredentialsAWS(ctx context.Context) error {
 
 	// Configure.
 	{
-		// TODO(liran): Use the dependency manager to install the AWS CLI, if needed.
+		// TODO(liran/dep-awscli): Use the dependency manager to install the AWS CLI.
 		cmd, err := x.opts.Clientset.NewCommand(aws.CommandName)
 		if err != nil {
 			return err

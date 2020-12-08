@@ -13,7 +13,7 @@ var (
 	//
 	// Populated by the compiler.
 	// Read-only.
-	Version string
+	Version string = "0.0.0"
 
 	// Prerelease represents an optional pre-release label for the version.
 	// If this is "" (empty string) then it means that it is a final release.
@@ -21,7 +21,7 @@ var (
 	//
 	// Populated by the compiler.
 	// Read-only.
-	Prerelease string
+	Prerelease string = "dev"
 
 	// Metadata represents an optional build metadata.
 	//

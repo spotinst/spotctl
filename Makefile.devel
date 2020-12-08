@@ -18,6 +18,9 @@ endef
 
 ##@ Development
 
+generate:
+	@$(GO) generate github.com/spotinst/spotctl/internal/wave/...
+
 .PHONY: build
 build: fmt ## Build all commands
 	@$(GO) build \
@@ -36,11 +39,11 @@ release: fmt ## Release all commands
 ifneq ($(strip $(GIT_DIRTY)),)
 	@echo "Git is currently in a dirty state. Please commit your changes or stash them before you release."; exit 1;
 else
-	@echo $(shell bash -c 'read -p "Bump version: $(VERSION_FULL) → " version; echo $$version') > VERSION && \
-	git commit -am "release: v$(VERSION)" && \
-	git tag v$(VERSION) && \
-	git push && \
-	$(call goreleaser_release)
+	@echo $(shell bash -c 'read -p "Bump version: $(VERSION_FULL) → " version; echo $$version') > VERSION
+	@git commit -am "chore(release): v$(VERSION)"
+	@git tag -f -m  "chore(release): v$(VERSION)" v$(VERSION)
+	@git push --follow-tags
+	@$(call goreleaser_release)
 endif
 
 .PHONY: test

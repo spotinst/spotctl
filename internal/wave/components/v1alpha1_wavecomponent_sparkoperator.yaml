@@ -1,0 +1,14 @@
+apiVersion: wave.spot.io/v1alpha1
+kind: WaveComponent
+metadata:
+  name: sparkoperator
+spec:
+  type: helm
+  name: sparkoperator
+  url: http://storage.googleapis.com/kubernetes-charts-incubator
+  state: present
+  version: 0.8.4
+  valuesConfiguration: |
+    sparkJobNamespace: spark-jobs
+    enableWebhook: true
+
