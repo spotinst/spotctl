@@ -13,15 +13,16 @@ import (
 	"github.com/spotinst/wave-operator/install"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/apimachinery/pkg/util/wait"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrlrt "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -116,7 +117,6 @@ func (m *manager) getControllerRuntimeClient() (ctrlrt.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return rc, nil
 }
 
@@ -145,6 +145,7 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 }
 
 func (m *manager) Create() error {
+
 	waveComponents, err := m.loadWaveComponents()
 	if err != nil {
 		return err
@@ -203,6 +204,7 @@ func (m *manager) installCertManager(ctx context.Context) error {
 			return false, nil
 		}
 		m.log.Info("polled", "webhook", "cert-manager-webhook", "name", wh.Webhooks[0].Name)
+
 		return true, nil
 	})
 	return err
@@ -236,6 +238,7 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 			return false, nil
 		}
 		m.log.Info("polled", "deployment", "spotctl-wave-operator", "replicas", dep.Status.AvailableReplicas)
+
 		return true, nil
 	})
 	return err
