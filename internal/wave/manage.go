@@ -3,7 +3,10 @@ package wave
 import (
 	"context"
 	"fmt"
+	"os"
 	"sort"
+	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -13,28 +16,27 @@ import (
 	"github.com/spotinst/wave-operator/install"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/wait"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrlrt "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 const (
 	WaveOperatorChart      = "wave-operator"
-	WaveOperatorRepository = "https://ntfrnzn.github.io/charts/"
-	WaveOperatorVersion    = "0.1.6"
+	WaveOperatorRepository = "https://charts.spot.io"
+	WaveOperatorVersion    = "0.1.7"
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
-	CertManagerVersion    = "v1.0.4"
+	CertManagerVersion    = "v1.1.0"
 	CertManagerValues     = "installCRDs: true"
 )
 
@@ -245,6 +247,7 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 }
 
 func (m *manager) Describe() error {
+
 	rc, err := m.getControllerRuntimeClient()
 	if err != nil {
 		return fmt.Errorf("kubernetes config error, %w", err)
@@ -255,17 +258,33 @@ func (m *manager) Describe() error {
 	if err != nil {
 		return fmt.Errorf("cannot list wave components, %w", err)
 	}
+
+	width := 20
+	writer := tabwriter.NewWriter(os.Stdout, width, 8, 1, '\t', tabwriter.AlignRight)
+	bar := strings.Repeat("-", width)
+	boundary := bar + "\t" + bar + "\t" + bar + "\t" + bar
+	fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
+	fmt.Fprintln(writer, boundary)
 	for _, wc := range components.Items {
 		sort.Slice(wc.Status.Conditions, func(i, j int) bool {
 			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
 		})
-		m.log.Info("component", "name", wc.Name)
+		condition := "Unknown"
 		if len(wc.Status.Conditions) > 0 {
-			m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
+			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
+			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
 		}
-		for k, v := range wc.Status.Properties {
-			m.log.Info("         ", k, v)
+		if len(wc.Status.Properties) == 0 {
+			fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
+		} else {
+			h := wc.Name + "\t" + condition
+			for k, v := range wc.Status.Properties {
+				fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
+				h = "\t"
+			}
 		}
+		fmt.Fprintln(writer, boundary)
 	}
+	writer.Flush()
 	return nil
 }

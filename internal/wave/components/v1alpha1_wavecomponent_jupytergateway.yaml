@@ -5,9 +5,9 @@ metadata:
 spec:
   type: helm
   name: enterprise-gateway
-  url: https://ntfrnzn.github.io/charts
+  url: https://charts.spot.io/charts
   state: present
-  version: 2.3.0
+  version: 2.3.1
   valuesConfiguration: |
     ingress:
       enabled: true
