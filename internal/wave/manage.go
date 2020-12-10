@@ -197,7 +197,7 @@ func (m *manager) installCertManager(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("cannot install cert manager, %w", err)
 	}
-	err = wait.Poll(time.Second, 300*time.Second, func() (bool, error) {
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		wh, err := kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
 		if err != nil {
 			return false, nil
@@ -230,7 +230,7 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 		return fmt.Errorf("cannot install wave operator, %w", err)
 	}
 
-	err = wait.Poll(time.Second, 300*time.Second, func() (bool, error) {
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		dep, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
 
 		if err != nil {
