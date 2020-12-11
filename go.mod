@@ -20,8 +20,8 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.71.0
-	github.com/spotinst/wave-operator v0.0.0-20201201060623-504764e3ad07
+	github.com/spotinst/spotinst-sdk-go v1.74.0
+	github.com/spotinst/wave-operator v0.0.0-20201209225733-6abb04aa590a
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3

@@ -299,7 +299,7 @@ func (i *HelmInstaller) Delete(chartName string, repository string, version stri
 	getAction := action.NewUninstall(cfg)
 	rel, err := getAction.Run(releaseName)
 	if err != nil {
-		i.Log.Error(err, "ignoring deletion error sorry")
+		i.Log.Error(err, "ignoring deletion error")
 	}
 	//
 	// if err != nil && err != driver.ErrReleaseNotFound {

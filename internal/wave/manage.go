@@ -16,6 +16,7 @@ import (
 	"github.com/spotinst/wave-operator/install"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -127,10 +128,8 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 	waveComponents := make([]*v1alpha1.WaveComponent, len(manifests))
 
 	for i, mm := range manifests {
-		m.log.Info("loading wave component", "manifest", mm)
 		comp := &v1alpha1.WaveComponent{}
 		b := box.Boxed.Get(mm)
-
 		serializer := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 		_, _, err := serializer.Decode(b, &schema.GroupVersionKind{
 			Group:   "wave.spot.io",
@@ -141,7 +140,6 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 			return waveComponents, fmt.Errorf("cannot load wave component, %w", err)
 		}
 		waveComponents[i] = comp
-		m.log.Info("loaded wave component", "name", comp.Name)
 	}
 	return waveComponents, nil
 }
@@ -170,10 +168,15 @@ func (m *manager) Create() error {
 	}
 
 	for _, wc := range waveComponents {
+		m.log.Info("installing wave component", "name", wc.Name)
 		wc.Namespace = catalog.SystemNamespace
 		err = rc.Create(ctx, wc)
 		if err != nil {
-			return fmt.Errorf("cannot install component %s, %w", wc.Name, err)
+			if kerrors.IsAlreadyExists(err) {
+				m.log.Info("wave component already exists", "name", wc.Name)
+			} else {
+				return fmt.Errorf("cannot install component %s, %w", wc.Name, err)
+			}
 		}
 	}
 
@@ -197,12 +200,17 @@ func (m *manager) installCertManager(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("cannot install cert manager, %w", err)
 	}
+
+	// webhook must have cert and endpoint before we can proceed
+	// Exited with error: cannot install wave operator, installation error, Internal error occurred: failed calling webhook "webhook.cert-manager.io": Post https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s: no endpoints available for service "cert-manager-webhook"
+
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		wh, err := kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
-		if err != nil {
+		if err != nil || wh.Webhooks[0].ClientConfig.CABundle == nil {
 			return false, nil
 		}
-		if wh.Webhooks[0].ClientConfig.CABundle == nil {
+		ep, err := kc.CoreV1().Endpoints(certNS).Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
+		if err != nil || len(ep.Subsets) == 0 {
 			return false, nil
 		}
 		m.log.Info("polled", "webhook", "cert-manager-webhook", "name", wh.Webhooks[0].Name)
@@ -232,11 +240,7 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		dep, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
-
-		if err != nil {
-			return false, nil
-		}
-		if dep.Status.AvailableReplicas == 0 {
+		if err != nil || dep.Status.AvailableReplicas == 0 {
 			return false, nil
 		}
 		m.log.Info("polled", "deployment", "spotctl-wave-operator", "replicas", dep.Status.AvailableReplicas)

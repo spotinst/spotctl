@@ -79,6 +79,7 @@ type EBS struct {
 	VolumeType          *string            `json:"volumeType,omitempty"`
 	IOPS                *int               `json:"iops,omitempty"`
 	VolumeSize          *int               `json:"volumeSize,omitempty"`
+	Throughput          *int               `json:"throughput,omitempty"`
 	DynamicVolumeSize   *DynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
 
 	forceSendFields []string
@@ -590,6 +591,13 @@ func (o *EBS) SetVolumeSize(v *int) *EBS {
 func (o *EBS) SetDynamicVolumeSize(v *DynamicVolumeSize) *EBS {
 	if o.DynamicVolumeSize = v; o.DynamicVolumeSize == nil {
 		o.nullFields = append(o.nullFields, "DynamicVolumeSize")
+	}
+	return o
+}
+
+func (o *EBS) SetThroughput(v *int) *EBS {
+	if o.Throughput = v; o.Throughput == nil {
+		o.nullFields = append(o.nullFields, "Throughput")
 	}
 	return o
 }

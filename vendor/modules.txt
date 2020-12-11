@@ -407,7 +407,7 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
-# github.com/spotinst/spotinst-sdk-go v1.71.0
+# github.com/spotinst/spotinst-sdk-go v1.74.0
 ## explicit
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
@@ -421,7 +421,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/spotinst/wave-operator v0.0.0-20201201060623-504764e3ad07
+# github.com/spotinst/wave-operator v0.0.0-20201209225733-6abb04aa590a
 ## explicit
 github.com/spotinst/wave-operator/api/v1alpha1
 github.com/spotinst/wave-operator/catalog

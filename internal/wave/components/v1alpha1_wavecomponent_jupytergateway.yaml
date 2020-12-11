@@ -5,7 +5,7 @@ metadata:
 spec:
   type: helm
   name: enterprise-gateway
-  url: https://charts.spot.io/charts
+  url: https://charts.spot.io
   state: present
   version: 2.3.1
   valuesConfiguration: |
