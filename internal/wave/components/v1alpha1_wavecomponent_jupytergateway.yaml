@@ -22,3 +22,5 @@ spec:
           nginx.ingress.kubernetes.io/rewrite-target: /$1
           nginx.ingress.kubernetes.io/ssl-redirect: "false"
           nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    kernel:
+      kernelNamespace: jupyter-notebooks

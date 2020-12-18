@@ -210,7 +210,7 @@ func (m *manager) installCertManager(ctx context.Context) error {
 			return false, nil
 		}
 		ep, err := kc.CoreV1().Endpoints(certNS).Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
-		if err != nil || len(ep.Subsets) == 0 {
+		if err != nil || len(ep.Subsets) == 0 || len(ep.Subsets[0].Addresses) == 0 {
 			return false, nil
 		}
 		m.log.Info("polled", "webhook", "cert-manager-webhook", "name", wh.Webhooks[0].Name)

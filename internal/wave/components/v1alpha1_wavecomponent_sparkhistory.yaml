@@ -5,16 +5,18 @@ metadata:
 spec:
   type: helm
   name: spark-history-server
-  url: https://kubernetes-charts.storage.googleapis.com
+  url: https://charts.spot.io
   state: present
-  version: 1.4.0
+  version: 1.4.6
   valuesConfiguration: |
-    nfs:
-      enableExampleNFS: false
-    pvc:
-      enablePVC: false
     s3:
       enableS3: true
       enableIAM: true
-      logDirectory: s3a://spark-hs-natef/
+      logDirectory: s3a://spark-history/
+    gcs:
+      enableGCS: false
+    pvc:
+      enablePVC: false
+    wasbs:
+      enableWASBS: false
 
