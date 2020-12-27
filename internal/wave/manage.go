@@ -3,7 +3,10 @@ package wave
 import (
 	"context"
 	"fmt"
+	"os"
 	"sort"
+	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -13,6 +16,7 @@ import (
 	"github.com/spotinst/wave-operator/install"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,12 +32,12 @@ import (
 
 const (
 	WaveOperatorChart      = "wave-operator"
-	WaveOperatorRepository = "https://ntfrnzn.github.io/charts/"
-	WaveOperatorVersion    = "0.1.6"
+	WaveOperatorRepository = "https://charts.spot.io"
+	WaveOperatorVersion    = "0.1.7"
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
-	CertManagerVersion    = "v1.0.4"
+	CertManagerVersion    = "v1.1.0"
 	CertManagerValues     = "installCRDs: true"
 )
 
@@ -116,7 +120,6 @@ func (m *manager) getControllerRuntimeClient() (ctrlrt.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return rc, nil
 }
 
@@ -125,10 +128,8 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 	waveComponents := make([]*v1alpha1.WaveComponent, len(manifests))
 
 	for i, mm := range manifests {
-		m.log.Info("loading wave component", "manifest", mm)
 		comp := &v1alpha1.WaveComponent{}
 		b := box.Boxed.Get(mm)
-
 		serializer := yaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 		_, _, err := serializer.Decode(b, &schema.GroupVersionKind{
 			Group:   "wave.spot.io",
@@ -139,12 +140,12 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 			return waveComponents, fmt.Errorf("cannot load wave component, %w", err)
 		}
 		waveComponents[i] = comp
-		m.log.Info("loaded wave component", "name", comp.Name)
 	}
 	return waveComponents, nil
 }
 
 func (m *manager) Create() error {
+
 	waveComponents, err := m.loadWaveComponents()
 	if err != nil {
 		return err
@@ -167,10 +168,15 @@ func (m *manager) Create() error {
 	}
 
 	for _, wc := range waveComponents {
+		m.log.Info("installing wave component", "name", wc.Name)
 		wc.Namespace = catalog.SystemNamespace
 		err = rc.Create(ctx, wc)
 		if err != nil {
-			return fmt.Errorf("cannot install component %s, %w", wc.Name, err)
+			if kerrors.IsAlreadyExists(err) {
+				m.log.Info("wave component already exists", "name", wc.Name)
+			} else {
+				return fmt.Errorf("cannot install component %s, %w", wc.Name, err)
+			}
 		}
 	}
 
@@ -194,15 +200,21 @@ func (m *manager) installCertManager(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("cannot install cert manager, %w", err)
 	}
-	err = wait.Poll(time.Second, 300*time.Second, func() (bool, error) {
+
+	// webhook must have cert and endpoint before we can proceed
+	// Exited with error: cannot install wave operator, installation error, Internal error occurred: failed calling webhook "webhook.cert-manager.io": Post https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s: no endpoints available for service "cert-manager-webhook"
+
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		wh, err := kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
-		if err != nil {
+		if err != nil || wh.Webhooks[0].ClientConfig.CABundle == nil {
 			return false, nil
 		}
-		if wh.Webhooks[0].ClientConfig.CABundle == nil {
+		ep, err := kc.CoreV1().Endpoints(certNS).Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
+		if err != nil || len(ep.Subsets) == 0 || len(ep.Subsets[0].Addresses) == 0 {
 			return false, nil
 		}
 		m.log.Info("polled", "webhook", "cert-manager-webhook", "name", wh.Webhooks[0].Name)
+
 		return true, nil
 	})
 	return err
@@ -226,22 +238,20 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 		return fmt.Errorf("cannot install wave operator, %w", err)
 	}
 
-	err = wait.Poll(time.Second, 300*time.Second, func() (bool, error) {
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
 		dep, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
-
-		if err != nil {
-			return false, nil
-		}
-		if dep.Status.AvailableReplicas == 0 {
+		if err != nil || dep.Status.AvailableReplicas == 0 {
 			return false, nil
 		}
 		m.log.Info("polled", "deployment", "spotctl-wave-operator", "replicas", dep.Status.AvailableReplicas)
+
 		return true, nil
 	})
 	return err
 }
 
 func (m *manager) Describe() error {
+
 	rc, err := m.getControllerRuntimeClient()
 	if err != nil {
 		return fmt.Errorf("kubernetes config error, %w", err)
@@ -252,17 +262,33 @@ func (m *manager) Describe() error {
 	if err != nil {
 		return fmt.Errorf("cannot list wave components, %w", err)
 	}
+
+	width := 20
+	writer := tabwriter.NewWriter(os.Stdout, width, 8, 1, '\t', tabwriter.AlignRight)
+	bar := strings.Repeat("-", width)
+	boundary := bar + "\t" + bar + "\t" + bar + "\t" + bar
+	fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
+	fmt.Fprintln(writer, boundary)
 	for _, wc := range components.Items {
 		sort.Slice(wc.Status.Conditions, func(i, j int) bool {
 			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
 		})
-		m.log.Info("component", "name", wc.Name)
+		condition := "Unknown"
 		if len(wc.Status.Conditions) > 0 {
-			m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
+			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
+			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
 		}
-		for k, v := range wc.Status.Properties {
-			m.log.Info("         ", k, v)
+		if len(wc.Status.Properties) == 0 {
+			fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
+		} else {
+			h := wc.Name + "\t" + condition
+			for k, v := range wc.Status.Properties {
+				fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
+				h = "\t"
+			}
 		}
+		fmt.Fprintln(writer, boundary)
 	}
+	writer.Flush()
 	return nil
 }

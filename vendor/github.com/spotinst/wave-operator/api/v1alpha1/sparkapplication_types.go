@@ -17,26 +17,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"bytes"
-	"fmt"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type SparkHeritage string
-type SparkApplicationState string
 
 const (
 	SparkHeritageSubmit   SparkHeritage = "spark-submit"
 	SparkHeritageOperator SparkHeritage = "spark-operator"
 	SparkHeritageJupyter  SparkHeritage = "jupyter-notebook"
-
-	SparkStateSubmitted SparkApplicationState = "SUBMITTED"
-	SparkStateRunning   SparkApplicationState = "RUNNING"
-	SparkStateCompleted SparkApplicationState = "COMPLETED"
-	SparkStateFailed    SparkApplicationState = "FAILED"
-	SparkStateUnknown   SparkApplicationState = "UNKNOWN"
 )
 
 // SparkApplicationSpec defines the desired state of SparkApplication
@@ -45,8 +35,8 @@ type SparkApplicationSpec struct {
 	//uniquely identifies the spark application, and is shared as a label on all driver and executor pods
 	ApplicationId string `json:"applicationId"`
 
-	//identity of the Ocean cluster in which the application is running
-	ClusterIdentifier string `json:"clusterIdentifier"`
+	//the name of the spark application
+	ApplicationName string `json:"applicationName"`
 
 	//specifies whether the application originates from spark-operator, from a jupyter notebook, or from spark-submit directly
 	Heritage SparkHeritage `json:"heritage"`
@@ -54,52 +44,24 @@ type SparkApplicationSpec struct {
 
 // SparkApplicationStatus defines the observed state of SparkApplication
 type SparkApplicationStatus struct {
-	//the current state of the spark application
-	State SparkApplicationState `json:"state"`
-
-	//summarizes the history of the spark application
+	//summarizes information about the spark application
 	Data SparkApplicationData `json:"data"`
 }
 
 //SparkApplicationData
 type SparkApplicationData struct {
 
-	//the runtime configuration of the driver and executors
-	SparkProperties Properties `json:"sparkProperties"`
+	//the runtime configuration of the spark application
+	SparkProperties map[string]string `json:"sparkProperties"`
 
-	//Rcollects statistics of the application runtoime
+	//collects statistics of the application run
 	RunStatistics Statistics `json:"runStatistics"`
 
-	// a reference to the driver pod
+	//a reference to the driver pod
 	Driver Pod `json:"driver"`
 
 	//a list of references to the executor pods
 	Executors []Pod `json:"executors"`
-}
-
-type MemoryMB int64
-
-func (m MemoryMB) MarshalText() (text []byte, err error) { // TODO remove, this is extra just to get the "m" into json
-	var b bytes.Buffer
-	fmt.Fprintf(&b, "%dm", m)
-	return b.Bytes(), nil
-}
-
-type Properties struct { // TODO replace with map[string]interface{} or map[string]string
-	//the count of executors
-	ExecutorInstances int `json:"spark.executor.instances"`
-
-	//the number of cores in the executor pods
-	ExecutorCores int `json:"spark.executor.cores"`
-
-	//the executor memory in MB
-	ExecutorMemory MemoryMB `json:"spark.executor.memory"`
-
-	//the number of cores in the driver pod
-	DriverCores int `json:"spark.driver.cores"`
-
-	//the driver memory in MB
-	DriverMemory MemoryMB `json:"spark.driver.memory"`
 }
 
 type Statistics struct {
@@ -144,8 +106,10 @@ type Pod struct {
 	UID string `json:"podUid"`
 	//the phase of the pod
 	Phase v1.PodPhase `json:"phase"`
-	//the set of container statues
+	//the set of container statuses
 	Statuses []v1.ContainerStatus `json:"containerStatuses"`
+	//has the pod been marked as deleted
+	Deleted bool `json:"deleted"`
 }
 
 // +kubebuilder:object:root=true

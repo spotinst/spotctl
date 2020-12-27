@@ -5,9 +5,9 @@ metadata:
 spec:
   type: helm
   name: enterprise-gateway
-  url: https://ntfrnzn.github.io/charts
+  url: https://charts.spot.io
   state: present
-  version: 2.3.0
+  version: 2.3.1
   valuesConfiguration: |
     ingress:
       enabled: true
@@ -22,3 +22,5 @@ spec:
           nginx.ingress.kubernetes.io/rewrite-target: /$1
           nginx.ingress.kubernetes.io/ssl-redirect: "false"
           nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    kernel:
+      kernelNamespace: jupyter-notebooks

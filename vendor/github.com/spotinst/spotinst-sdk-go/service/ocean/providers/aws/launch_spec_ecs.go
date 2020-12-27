@@ -90,6 +90,7 @@ type ECSEBS struct {
 	VolumeType          *string               `json:"volumeType,omitempty"`
 	IOPS                *int                  `json:"iops,omitempty"`
 	VolumeSize          *int                  `json:"volumeSize,omitempty"`
+	Throughput          *int                  `json:"throughput,omitempty"`
 	DynamicVolumeSize   *ECSDynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
 
 	forceSendFields []string
@@ -568,6 +569,13 @@ func (o *ECSEBS) SetVolumeSize(v *int) *ECSEBS {
 func (o *ECSEBS) SetDynamicVolumeSize(v *ECSDynamicVolumeSize) *ECSEBS {
 	if o.DynamicVolumeSize = v; o.DynamicVolumeSize == nil {
 		o.nullFields = append(o.nullFields, "DynamicVolumeSize")
+	}
+	return o
+}
+
+func (o *ECSEBS) SetThroughput(v *int) *ECSEBS {
+	if o.Throughput = v; o.Throughput == nil {
+		o.nullFields = append(o.nullFields, "Throughput")
 	}
 	return o
 }

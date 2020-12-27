@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/wave"
 )
@@ -117,7 +116,6 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 		}
 
 		x.opts.ClusterName = c.Name
-		log.Infof("Verified cluster %q", x.opts.ClusterName)
 	}
 
 	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration

@@ -22,7 +22,7 @@ generate:
 	@$(GO) generate github.com/spotinst/spotctl/internal/wave/...
 
 .PHONY: build
-build: fmt ## Build all commands
+build: fmt generate ## Build all commands
 	@$(GO) build \
 		-ldflags "-extldflags '-static' \
 			-X $(VERSION_PKG).Version=$(VERSION) \

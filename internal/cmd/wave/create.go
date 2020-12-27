@@ -23,6 +23,7 @@ import (
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
 	"github.com/spotinst/spotctl/internal/wave"
+	"github.com/theckman/yacspin"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
@@ -126,7 +127,21 @@ func (x *CmdCreate) validate(ctx context.Context) error {
 
 // TODO(liran): WARNING: This is the ugliest code in the world, but it seems to work (for now).
 func (x *CmdCreate) run(ctx context.Context) error {
+
+	cfg := yacspin.Config{
+		Frequency:       250 * time.Millisecond,
+		CharSet:         yacspin.CharSets[33],
+		Suffix:          " wave",
+		SuffixAutoColon: true,
+		Message:         "start",
+		StopCharacter:   "✓",
+		StopColors:      []string{"green"},
+	}
+	spinner, err := yacspin.New(cfg)
+	spinner.Start()
+
 	if x.opts.ClusterID == "" { // create a new cluster
+		spinner.Message("creating")
 		if x.opts.ConfigFile != "" { // extract from config
 			type clusterConfig struct {
 				Metadata struct {
@@ -195,16 +210,20 @@ func (x *CmdCreate) run(ctx context.Context) error {
 			return err
 		}
 
+		spinner.Message("creating eks cluster " + x.opts.ClusterName)
 		if createCluster {
 			if err = cmdEksctl.Run(ctx, x.buildEksctlCreateClusterArgs()...); err != nil {
 				return err
 			}
 		}
 
+		spinner.Message("creating node groups")
 		if err = cmdEksctl.Run(ctx, x.buildEksctlCreateNodeGroupArgs()...); err != nil {
 			return err
 		}
 	} else { // import an existing cluster
+		spinner.Message("importing")
+
 		// TODO(liran/validation): Validate it elsewhere.
 		if x.opts.Region == "" {
 			return errors.Required(flags.FlagWaveRegion)
@@ -232,7 +251,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		x.opts.ClusterName = c.Name
 	}
 
-	log.Infof("Verified cluster %q", x.opts.ClusterName)
+	spinner.Message(fmt.Sprintf("Verified cluster %q", x.opts.ClusterName))
 
 	cloudProviderOpts := []cloud.ProviderOption{
 		cloud.WithProfile(x.opts.Profile),
@@ -244,6 +263,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return err
 	}
 
+	spinner.Message("setting roles")
 	var stacks []*Stack
 	sc, err := x.newStackCollection(cloudProvider)
 	if err != nil {
@@ -274,12 +294,19 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		}
 	}
 
-	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
+	spinner.Message("installing wave")
+	manager, err := wave.NewManager(x.opts.ClusterName, getSpinnerLogger(x.opts.ClusterName, spinner)) // pass in name to validate ocean controller configuration
 	if err != nil {
 		return err
 	}
 
-	return manager.Create()
+	err = manager.Create()
+	if err != nil {
+		spinner.StopFail()
+		return err
+	}
+	spinner.Stop()
+	return nil
 }
 
 func (x *CmdCreate) buildEksctlCreateClusterArgs() []string {
