@@ -21,7 +21,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spotinst/spotinst-sdk-go v1.74.0
-	github.com/spotinst/wave-operator v0.0.0-20201221234036-c08d5666ebc5
+	github.com/spotinst/wave-operator v0.0.0-20201209225733-6abb04aa590a
 	github.com/theckman/yacspin v0.8.0
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3

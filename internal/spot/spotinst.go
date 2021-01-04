@@ -40,11 +40,10 @@ func New(options ...ClientOption) Client {
 
 	// Configure credentials.
 	{
-		if opts.Profile != "" {
+		if opts.Profile != "" && opts.Profile != credentials.DefaultProfile() {
 			cfg.WithCredentials(credentials.NewFileCredentials(opts.Profile, credentials.DefaultFilename()))
 			log.Debugf("Configured file credentials")
 		}
-
 		if opts.Token != "" || opts.Account != "" {
 			cfg.WithCredentials(credentials.NewStaticCredentials(opts.Token, opts.Account))
 			log.Debugf("Configured static credentials")
