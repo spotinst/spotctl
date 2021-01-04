@@ -17,11 +17,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/yaml"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
@@ -54,6 +56,7 @@ func init() {
 type Manager interface {
 	Create() error
 	Describe() error
+	Delete() error
 	// create, get, describe, delete
 }
 
@@ -183,6 +186,67 @@ func (m *manager) Create() error {
 	return nil
 }
 
+func (m *manager) Delete() error {
+
+	ctx := context.TODO()
+
+	rc, err := m.getControllerRuntimeClient()
+	if err != nil {
+		return fmt.Errorf("kubernetes config error, %w", err)
+	}
+	// x, err := m.kubeClientGetter.ToDiscoveryClient()
+	//
+	// if err != nil {
+	// 	return fmt.Errorf("kubernetes config error, %w", err)
+	// }
+	// x.RESTClient().
+
+	components := &v1alpha1.WaveComponentList{}
+	err = rc.List(ctx, components)
+	if err != nil {
+		crdGone, ok := err.(*apimeta.NoKindMatchError)
+		if ok {
+			m.log.Info("WaveComponent CRD is not present", "message", crdGone.Error())
+		} else {
+			return err
+		}
+	} else {
+		for _, wc := range components.Items {
+			rc.Delete(ctx, &wc)
+		}
+	}
+
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
+		for _, wc := range components.Items {
+			obj := &v1alpha1.WaveComponent{}
+			key := types.NamespacedName{
+				Namespace: wc.Namespace,
+				Name:      wc.Name,
+			}
+			// wait for IsNotFound on all wavecomponents
+			err := rc.Get(ctx, key, obj)
+			if err == nil {
+				return false, nil
+			} else if !kerrors.IsNotFound(err) {
+				return false, err
+			}
+		}
+		return true, nil
+	})
+
+	err = m.deleteWaveOperator(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = m.deleteCertManager(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *manager) installCertManager(ctx context.Context) error {
 	kc, err := m.getKubernetesClient()
 	if err != nil {
@@ -291,4 +355,54 @@ func (m *manager) Describe() error {
 	}
 	writer.Flush()
 	return nil
+}
+
+func (m *manager) deleteWaveOperator(ctx context.Context) error {
+	kc, err := m.getKubernetesClient()
+	if err != nil {
+		return err
+	}
+
+	installer := install.GetHelm("spotctl", m.kubeClientGetter, m.log)
+	err = installer.Delete(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, "")
+	if err != nil {
+		return fmt.Errorf("cannot delete wave operator, %w", err)
+	}
+
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
+		_, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
+		if err == nil {
+			return false, nil
+		} else if !kerrors.IsNotFound(err) {
+			return false, err
+		}
+		return true, nil
+	})
+	return err
+}
+
+func (m *manager) deleteCertManager(ctx context.Context) error {
+	kc, err := m.getKubernetesClient()
+	if err != nil {
+		return err
+	}
+	certNS := CertManagerChart // chart name == namespace
+
+	installer := install.GetHelm("", m.kubeClientGetter, m.log)
+	installer.SetNamespace(certNS)
+	err = installer.Delete(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
+	if err != nil {
+		return fmt.Errorf("cannot delete wave operator, %w", err)
+	}
+
+	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
+		_, err := kc.AppsV1().Deployments(certNS).Get(ctx, "cert-manager", metav1.GetOptions{})
+		if err == nil {
+			return false, nil
+		} else if !kerrors.IsNotFound(err) {
+			return false, err
+		}
+		return true, nil
+	})
+	return err
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cmd/options"
-	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/spot"
 )
 
@@ -55,25 +54,7 @@ func (x *Cmd) preRun(ctx context.Context) error {
 	// ... yeah, no
 	x.opts.CloudProvider = spot.CloudProviderAWS
 
-	return x.installDeps(ctx)
-}
-
-func (x *Cmd) installDeps(ctx context.Context) error {
-	// Initialize a new dependency manager.
-	dm, err := x.opts.Clientset.NewDepManager()
-	if err != nil {
-		return err
-	}
-
-	// Install options.
-	installOpts := []dep.InstallOption{
-		dep.WithInstallPolicy(dep.InstallPolicy(x.opts.InstallPolicy)),
-		dep.WithNoninteractive(x.opts.Noninteractive),
-		dep.WithDryRun(x.opts.DryRun),
-	}
-
-	// Install!
-	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
+	return nil
 }
 
 func (x *Cmd) initSubCommands() {
@@ -81,7 +62,7 @@ func (x *Cmd) initSubCommands() {
 		NewCmdCreate,
 		// NewCmdGet,
 		NewCmdDescribe,
-		// NewCmdDelete,
+		NewCmdDelete,
 	}
 
 	for _, cmd := range commands {

@@ -215,7 +215,7 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 
 func (x *manager) confirm(dep Dependency) bool {
 	input := &survey.Input{
-		Message: fmt.Sprintf("Install missing required dependency: %s", dep.Name),
+		Message: fmt.Sprintf("Install missing required dependency: %s", dep.Name()),
 		Help:    "Spot CLI would like to install missing required dependency",
 		Default: "true",
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDelete struct {
@@ -103,5 +104,31 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	return errors.NotImplemented()
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+	if err != nil {
+		return err
+	}
+
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+	if err != nil {
+		return err
+	}
+
+	c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+	if err != nil {
+		return err
+	}
+
+	x.opts.ClusterName = c.Name
+
+	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
+	if err != nil {
+		return err
+	}
+
+	err = manager.Delete()
+	if err != nil {
+		return err
+	}
+	return nil
 }

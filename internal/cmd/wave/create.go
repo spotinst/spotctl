@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/cloud"
+	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
@@ -67,11 +68,43 @@ func newCmdCreate(opts *CmdOptions) *CmdCreate {
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},
+		PersistentPreRunE: func(*cobra.Command, []string) error {
+			return cmd.preRun(context.Background())
+		},
 	}
 
 	cmd.opts.Init(cmd.cmd.PersistentFlags(), opts)
 
 	return &cmd
+}
+
+func (x *CmdCreate) preRun(ctx context.Context) error {
+	// Call to the the parent command's PersistentPreRunE.
+	// See: https://github.com/spf13/cobra/issues/216.
+	if parent := x.cmd.Parent(); parent != nil && parent.PersistentPreRunE != nil {
+		if err := parent.PersistentPreRunE(parent, nil); err != nil {
+			return err
+		}
+	}
+	return x.installDeps(ctx)
+}
+
+func (x *CmdCreate) installDeps(ctx context.Context) error {
+	// Initialize a new dependency manager.
+	dm, err := x.opts.Clientset.NewDepManager()
+	if err != nil {
+		return err
+	}
+
+	// Install options.
+	installOpts := []dep.InstallOption{
+		dep.WithInstallPolicy(dep.InstallPolicy(x.opts.InstallPolicy)),
+		dep.WithNoninteractive(x.opts.Noninteractive),
+		dep.WithDryRun(x.opts.DryRun),
+	}
+
+	// Install!
+	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
 func (x *CmdCreateOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
@@ -305,6 +338,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		spinner.StopFail()
 		return err
 	}
+	spinner.StopMessage("wave operator is managing components")
 	spinner.Stop()
 	return nil
 }
