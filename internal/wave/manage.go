@@ -35,7 +35,7 @@ import (
 const (
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
-	WaveOperatorVersion    = "0.1.7"
+	WaveOperatorVersion    = "0.1.8"
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
