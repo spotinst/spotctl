@@ -1,7 +1,7 @@
 apiVersion: wave.spot.io/v1alpha1
 kind: WaveComponent
 metadata:
-  name: sparkoperator
+  name: spark-operator
 spec:
   type: helm
   name: spark-operator

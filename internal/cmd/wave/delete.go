@@ -119,6 +119,8 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
+	// TODO Remove option to specify cluster-name on command line, or look up Ocean cluster by name,
+	// This will override the user supplied command line flag
 	x.opts.ClusterName = c.Name
 
 	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
