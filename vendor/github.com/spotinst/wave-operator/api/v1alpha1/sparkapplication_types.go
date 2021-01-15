@@ -77,6 +77,9 @@ type Statistics struct {
 
 	//the total executor time in the attempt
 	TotalExecutorCpuTime int64 `json:"totalExecutorCpuTime"`
+
+	//details of the application's executors
+	Executors []Executor `json:"executors"`
 }
 
 type Attempt struct {
@@ -97,6 +100,15 @@ type Attempt struct {
 	AppSparkVersion string `json:"appSparkVersion"`
 }
 
+type Executor struct {
+
+	//the executor ID
+	Id string `json:"id"`
+
+	//the timestamp of executor added event
+	AddTime string `json:"addTime"`
+}
+
 type Pod struct {
 	//the name of the pod
 	Name string `json:"podName"`
@@ -108,8 +120,12 @@ type Pod struct {
 	Phase v1.PodPhase `json:"phase"`
 	//the set of container statuses
 	Statuses []v1.ContainerStatus `json:"containerStatuses"`
-	//has the pod been marked as deleted
-	Deleted bool `json:"deleted"`
+	//the pod's creation timestamp
+	CreationTimestamp metav1.Time `json:"creationTimestamp,omitempty"`
+	//the pod's deletion timestamp
+	DeletionTimestamp *metav1.Time `json:"deletionTimestamp,omitempty"`
+	//the pod's labels
+	Labels map[string]string `json:"labels"`
 }
 
 // +kubebuilder:object:root=true

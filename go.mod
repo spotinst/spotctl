@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
-	github.com/aws/aws-sdk-go v1.27.0
+	github.com/aws/aws-sdk-go v1.34.30
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.62.0
@@ -18,10 +18,10 @@ require (
 	github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.7.0
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spotinst/spotinst-sdk-go v1.74.0
-	github.com/spotinst/wave-operator v0.0.0-20201209225733-6abb04aa590a
+	github.com/spotinst/wave-operator v0.0.0-20210115185025-9d6b2f3765fe
 	github.com/theckman/yacspin v0.8.0
 	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3

@@ -190,10 +190,15 @@ func (i *HelmInstaller) Upgrade(chartName string, repository string, version str
 	settings := &cli.EnvSettings{}
 	cache, err := ioutil.TempDir(os.TempDir(), "wavecache-")
 	if err != nil {
-		return fmt.Errorf("unable to create cache directory, %s", err)
+		return fmt.Errorf("unable to create cache directory, %w", err)
 	}
-	defer os.RemoveAll(cache)
-	settings.RepositoryCache = os.TempDir()
+	defer func() {
+		err := os.RemoveAll(cache)
+		if err != nil {
+			i.Log.Error(err, "could not delete cache directory", "cacheDir", cache)
+		}
+	}()
+	settings.RepositoryCache = cache
 
 	cp, err := upgradeAction.ChartPathOptions.LocateChart(chartName, settings)
 	if err != nil {
@@ -251,11 +256,19 @@ func (i *HelmInstaller) Install(chartName string, repository string, version str
 	settings := &cli.EnvSettings{}
 	cache, err := ioutil.TempDir(os.TempDir(), "wavecache-")
 	if err != nil {
-		return fmt.Errorf("unable to create cache directory, %s", err)
+		return fmt.Errorf("unable to create cache directory, %w", err)
 	}
-	defer os.RemoveAll(cache)
-	settings.RepositoryCache = os.TempDir()
+	defer func() {
+		err := os.RemoveAll(cache)
+		if err != nil {
+			i.Log.Error(err, "could not delete cache directory", "cacheDir", cache)
+		}
+	}()
+	settings.RepositoryCache = cache
 
+	// Note:
+	// This will check for the existence of a file called 'chartName' in the current directory.
+	// If it exists, it will assume that is the chart and it won't download the chart.
 	cp, err := installAction.ChartPathOptions.LocateChart(chartName, settings)
 	if err != nil {
 		return fmt.Errorf("failed to locate chart %s, %w", chartName, err)
@@ -297,19 +310,13 @@ func (i *HelmInstaller) Delete(chartName string, repository string, version stri
 	}
 
 	getAction := action.NewUninstall(cfg)
-	rel, err := getAction.Run(releaseName)
+	_, err = getAction.Run(releaseName)
 	if err != nil {
-		i.Log.Error(err, "ignoring deletion error")
+		i.Log.Error(err, fmt.Sprintf("ignoring deletion error, %s", err.Error()))
+	} else {
+		i.Log.Info("removed", "release", releaseName)
 	}
-	//
-	// if err != nil && err != driver.ErrReleaseNotFound {
-	// 	return fmt.Errorf("existing release check failed, %w", err)
-	// } else if rel != nil {
-	// 	i.Log.Info("release already exists")
-	// 	return nil
-	// }
 
-	i.Log.Info("removed", "release", rel.Release.Name)
 	return nil
 }
 
