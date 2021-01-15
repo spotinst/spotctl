@@ -47,5 +47,5 @@ func (x *dependency) Extension() (ext string) {
 }
 
 func (x *dependency) Executable() string {
-	return fmt.Sprintf("%s%s", x.name, x.Extension())
+	return fmt.Sprintf("%s%s-%s", x.name, x.Extension(), x.Version())
 }

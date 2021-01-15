@@ -200,7 +200,7 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 			return fmt.Errorf("dep: unable to describe file: %w", err)
 		}
 		if fi.Mode().IsDir() {
-			intermediate = filepath.Join(d, dep.Executable())
+			intermediate = filepath.Join(d, dep.Name())
 		}
 	}
 
@@ -209,13 +209,24 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 		return fmt.Errorf("dep: unable to copy file: %w", err)
 	}
 
-	// Make it executable.
-	return os.Chmod(executable, 0755)
+	// Make it executable, symlink to command name
+	err = os.Chmod(executable, 0755)
+	if err != nil {
+		return fmt.Errorf("dep: unable to set file as executable: %w", err)
+	}
+	command := filepath.Join(opts.BinaryDir, dep.Name())
+	_, err = os.Stat(command)
+	if err == nil {
+		os.Remove(command)
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("dep: unable to stat %s: %w", command, err)
+	}
+	return os.Symlink(executable, command)
 }
 
 func (x *manager) confirm(dep Dependency) bool {
 	input := &survey.Input{
-		Message: fmt.Sprintf("Install missing required dependency: %s", dep.Name()),
+		Message: fmt.Sprintf("Install missing required dependency: %s, version %s", dep.Name(), dep.Version()),
 		Help:    "Spot CLI would like to install missing required dependency",
 		Default: "true",
 	}
