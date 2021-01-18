@@ -3,6 +3,9 @@ package wave
 import (
 	"context"
 	"fmt"
+	"os"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -10,6 +13,8 @@ import (
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/wave"
+	"github.com/spotinst/wave-operator/api/v1alpha1"
+	"text/tabwriter"
 )
 
 type CmdDescribe struct {
@@ -119,15 +124,46 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 		x.opts.ClusterName = c.Name
 	}
 
-	if err := validateClusterContext(x.opts.ClusterName); err != nil {
+	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
-	// TODO Move to tide
-	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger())
+	waveComponents, err := wave.ListComponents()
 	if err != nil {
 		return err
 	}
 
-	return manager.Describe()
+	return describe(waveComponents)
+}
+
+func describe(components *v1alpha1.WaveComponentList) error {
+	width := 20
+	writer := tabwriter.NewWriter(os.Stdout, width, 8, 1, '\t', tabwriter.AlignRight)
+	bar := strings.Repeat("-", width)
+	boundary := bar + "\t" + bar + "\t" + bar + "\t" + bar
+	fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
+	fmt.Fprintln(writer, boundary)
+	for _, wc := range components.Items {
+		sort.Slice(wc.Status.Conditions, func(i, j int) bool {
+			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
+		})
+		condition := "Unknown"
+		if len(wc.Status.Conditions) > 0 {
+			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
+			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
+		}
+		if len(wc.Status.Properties) == 0 {
+			fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
+		} else {
+			h := wc.Name + "\t" + condition
+			for k, v := range wc.Status.Properties {
+				fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
+				h = "\t"
+			}
+		}
+		fmt.Fprintln(writer, boundary)
+	}
+	writer.Flush()
+
+	return nil
 }

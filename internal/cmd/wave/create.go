@@ -27,6 +27,8 @@ import (
 	"github.com/theckman/yacspin"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/util/yaml"
+
+	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdCreate struct {
@@ -340,7 +342,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 
 	spinner.Message("installing wave")
 
-	if err := validateClusterContext(x.opts.ClusterName); err != nil {
+	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 

@@ -10,6 +10,8 @@ import (
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/wave-operator/tide"
+
+	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDelete struct {
@@ -127,7 +129,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 	// TODO Delete ocean cluster if it was provisioned
 	// TODO Delete kubernetes cluster if it was provisioned
 
-	if err := validateClusterContext(c.Name); err != nil {
+	if err := wave.ValidateClusterContext(c.Name); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
