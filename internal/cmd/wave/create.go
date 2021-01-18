@@ -15,6 +15,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/wave-operator/tide"
+	"github.com/theckman/yacspin"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/yaml"
+
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/errors"
@@ -23,11 +28,6 @@ import (
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
-	"github.com/spotinst/wave-operator/tide"
-	"github.com/theckman/yacspin"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/util/yaml"
-
 	"github.com/spotinst/spotctl/internal/wave"
 )
 

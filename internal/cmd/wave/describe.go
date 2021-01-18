@@ -9,12 +9,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/wave-operator/api/v1alpha1"
+	"text/tabwriter"
+
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/wave"
-	"github.com/spotinst/wave-operator/api/v1alpha1"
-	"text/tabwriter"
 )
 
 type CmdDescribe struct {
