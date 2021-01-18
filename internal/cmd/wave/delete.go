@@ -8,7 +8,7 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
-	"github.com/spotinst/spotctl/internal/wave"
+	"github.com/spotinst/wave-operator/tide"
 )
 
 type CmdDelete struct {
@@ -123,7 +123,10 @@ func (x *CmdDelete) run(ctx context.Context) error {
 	// This will override the user supplied command line flag
 	x.opts.ClusterName = c.Name
 
-	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
+	// TODO Delete ocean cluster if it was provisioned
+	// TODO Delete kubernetes cluster if it was provisioned
+
+	manager, err := tide.NewManager(getWaveLogger())
 	if err != nil {
 		return err
 	}
@@ -132,5 +135,6 @@ func (x *CmdDelete) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
