@@ -133,11 +133,14 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
-	manager, err := tide.NewManager(getWaveLogger())
+	logger := getWaveLogger()
+
+	manager, err := tide.NewManager(logger)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("Deleting Wave components")
 	err = manager.Delete()
 	if err != nil {
 		return err
