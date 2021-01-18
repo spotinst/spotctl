@@ -339,7 +339,12 @@ func (x *CmdCreate) run(ctx context.Context) error {
 	}
 
 	spinner.Message("installing wave")
-	manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner)) // pass in name to validate ocean controller configuration
+
+	if err := validateClusterContext(x.opts.ClusterName); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner))
 	if err != nil {
 		return err
 	}
@@ -354,8 +359,10 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		spinner.StopFail()
 		return err
 	}
+
 	spinner.StopMessage("wave operator is managing components")
 	spinner.Stop()
+
 	return nil
 }
 

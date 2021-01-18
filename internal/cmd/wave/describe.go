@@ -2,6 +2,7 @@ package wave
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -118,7 +119,12 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 		x.opts.ClusterName = c.Name
 	}
 
-	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
+	if err := validateClusterContext(x.opts.ClusterName); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	// TODO Move to tide
+	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger())
 	if err != nil {
 		return err
 	}

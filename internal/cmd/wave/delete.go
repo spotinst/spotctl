@@ -2,6 +2,7 @@ package wave
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -125,6 +126,10 @@ func (x *CmdDelete) run(ctx context.Context) error {
 
 	// TODO Delete ocean cluster if it was provisioned
 	// TODO Delete kubernetes cluster if it was provisioned
+
+	if err := validateClusterContext(c.Name); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
 
 	manager, err := tide.NewManager(getWaveLogger())
 	if err != nil {
