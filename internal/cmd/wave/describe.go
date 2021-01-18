@@ -133,37 +133,63 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 		return err
 	}
 
-	return describe(waveComponents)
+	return printWaveComponentDescriptions(waveComponents)
 }
 
-func describe(components *v1alpha1.WaveComponentList) error {
+func printWaveComponentDescriptions(components *v1alpha1.WaveComponentList) error {
+
 	width := 20
 	writer := tabwriter.NewWriter(os.Stdout, width, 8, 1, '\t', tabwriter.AlignRight)
 	bar := strings.Repeat("-", width)
 	boundary := bar + "\t" + bar + "\t" + bar + "\t" + bar
-	fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
-	fmt.Fprintln(writer, boundary)
+
+	_, err := fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintln(writer, boundary)
+	if err != nil {
+		return err
+	}
+
 	for _, wc := range components.Items {
 		sort.Slice(wc.Status.Conditions, func(i, j int) bool {
 			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
 		})
 		condition := "Unknown"
+
 		if len(wc.Status.Conditions) > 0 {
 			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
 			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
 		}
+
 		if len(wc.Status.Properties) == 0 {
-			fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
+			_, err = fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
+			if err != nil {
+				return err
+			}
 		} else {
 			h := wc.Name + "\t" + condition
 			for k, v := range wc.Status.Properties {
-				fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
+				_, err = fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
+				if err != nil {
+					return err
+				}
 				h = "\t"
 			}
 		}
-		fmt.Fprintln(writer, boundary)
+
+		_, err = fmt.Fprintln(writer, boundary)
+		if err != nil {
+			return err
+		}
 	}
-	writer.Flush()
+
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
