@@ -162,7 +162,6 @@ func printWaveComponentDescriptions(components *v1alpha1.WaveComponentList) erro
 
 		if len(wc.Status.Conditions) > 0 {
 			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
-			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
 		}
 
 		if len(wc.Status.Properties) == 0 {

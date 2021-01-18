@@ -140,7 +140,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	logger.Info("Deleting Wave components")
+	logger.Info("uninstalling wave")
 	err = manager.Delete()
 	if err != nil {
 		return err
