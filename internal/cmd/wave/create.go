@@ -15,6 +15,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/wave-operator/tide"
+	"github.com/theckman/yacspin"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/yaml"
+
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/errors"
@@ -24,9 +29,6 @@ import (
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
 	"github.com/spotinst/spotctl/internal/wave"
-	"github.com/theckman/yacspin"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
 type CmdCreate struct {
@@ -161,6 +163,9 @@ func (x *CmdCreate) validate(ctx context.Context) error {
 // TODO(liran): WARNING: This is the ugliest code in the world, but it seems to work (for now).
 func (x *CmdCreate) run(ctx context.Context) error {
 
+	var k8sClusterProvisioned bool
+	var oceanClusterProvisioned bool
+
 	cfg := yacspin.Config{
 		Frequency:       250 * time.Millisecond,
 		CharSet:         yacspin.CharSets[33],
@@ -233,6 +238,8 @@ func (x *CmdCreate) run(ctx context.Context) error {
 
 		createCluster := false
 		if _, err = sc.describeStacks(); err != nil {
+			// TODO Allow creation of cluster if previous stack failed
+			// TODO Check for in-progress stacks
 			if err.Error() == sc.errStackNotFound().Error() {
 				createCluster = true
 			}
@@ -243,19 +250,25 @@ func (x *CmdCreate) run(ctx context.Context) error {
 			return err
 		}
 
-		spinner.Message("creating eks cluster " + x.opts.ClusterName)
 		if createCluster {
+			spinner.Message("creating eks cluster " + x.opts.ClusterName)
+			k8sClusterProvisioned = true
 			if err = cmdEksctl.Run(ctx, x.buildEksctlCreateClusterArgs()...); err != nil {
 				return err
 			}
 		}
 
 		spinner.Message("creating node groups")
+		oceanClusterProvisioned = true
 		if err = cmdEksctl.Run(ctx, x.buildEksctlCreateNodeGroupArgs()...); err != nil {
 			return err
 		}
 	} else { // import an existing cluster
 		spinner.Message("importing")
+
+		// TODO Allow importing non-Ocean clusters
+		k8sClusterProvisioned = false
+		oceanClusterProvisioned = false
 
 		// TODO(liran/validation): Validate it elsewhere.
 		if x.opts.Region == "" {
@@ -328,18 +341,30 @@ func (x *CmdCreate) run(ctx context.Context) error {
 	}
 
 	spinner.Message("installing wave")
-	manager, err := wave.NewManager(x.opts.ClusterName, getSpinnerLogger(x.opts.ClusterName, spinner)) // pass in name to validate ocean controller configuration
+
+	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner))
 	if err != nil {
 		return err
 	}
 
-	err = manager.Create()
+	env, err := manager.SetConfiguration(k8sClusterProvisioned, oceanClusterProvisioned)
+	if err != nil {
+		return fmt.Errorf("unable to set wave configuration, %w", err)
+	}
+
+	err = manager.Create(env)
 	if err != nil {
 		spinner.StopFail()
 		return err
 	}
+
 	spinner.StopMessage("wave operator is managing components")
 	spinner.Stop()
+
 	return nil
 }
 

@@ -23,10 +23,8 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.74.0
 	github.com/spotinst/wave-operator v0.0.0-20210115185025-9d6b2f3765fe
 	github.com/theckman/yacspin v0.8.0
-	k8s.io/api v0.19.3
 	k8s.io/apiextensions-apiserver v0.19.3
 	k8s.io/apimachinery v0.19.3
-	k8s.io/cli-runtime v0.19.3
 	k8s.io/client-go v0.19.3
 	sigs.k8s.io/controller-runtime v0.7.0-alpha.6
 )

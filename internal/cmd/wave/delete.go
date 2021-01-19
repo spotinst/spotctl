@@ -2,9 +2,12 @@ package wave
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/wave-operator/tide"
+
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
@@ -123,14 +126,25 @@ func (x *CmdDelete) run(ctx context.Context) error {
 	// This will override the user supplied command line flag
 	x.opts.ClusterName = c.Name
 
-	manager, err := wave.NewManager(x.opts.ClusterName, getWaveLogger()) // pass in name to validate ocean controller configuration
+	// TODO Delete ocean cluster if it was provisioned
+	// TODO Delete kubernetes cluster if it was provisioned
+
+	if err := wave.ValidateClusterContext(c.Name); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	logger := getWaveLogger()
+
+	manager, err := tide.NewManager(logger)
 	if err != nil {
 		return err
 	}
 
+	logger.Info("uninstalling wave")
 	err = manager.Delete()
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
