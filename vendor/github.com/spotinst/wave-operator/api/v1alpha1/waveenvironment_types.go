@@ -6,8 +6,8 @@ import (
 
 type WaveEnvironmentSpec struct {
 
-	// cluster id
-	OceanClusterId string `json:"oceanClusterId"`
+	// environment namespace
+	EnvironmentNamespace string `json:"environmentNamespace"`
 
 	// version of Wave Operator
 	OperatorVersion string `json:"operatorVersion"`

@@ -3,20 +3,12 @@ package tide
 import (
 	"context"
 	"fmt"
-	"os"
-	"sort"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/spotinst/wave-operator/api/v1alpha1"
-	"github.com/spotinst/wave-operator/catalog"
-	"github.com/spotinst/wave-operator/install"
-	"github.com/spotinst/wave-operator/internal/version"
-	"github.com/spotinst/wave-operator/tide/box"
 	v1 "k8s.io/api/core/v1"
-
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,10 +24,17 @@ import (
 	ctrlrt "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"github.com/spotinst/wave-operator/api/v1alpha1"
+	"github.com/spotinst/wave-operator/catalog"
+	"github.com/spotinst/wave-operator/install"
+	"github.com/spotinst/wave-operator/internal/version"
+	"github.com/spotinst/wave-operator/tide/box"
 )
 
 const (
+
+	// TODO Read chart values from external source
+
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
 	WaveOperatorVersion    = "0.1.8"
@@ -44,6 +43,10 @@ const (
 	CertManagerRepository = "https://charts.jetstack.io"
 	CertManagerVersion    = "v1.1.0"
 	CertManagerValues     = "installCRDs: true"
+
+	spotConfigMapNamespace        = metav1.NamespaceSystem
+	spotConfigMapName             = "spotinst-kubernetes-cluster-controller-config"
+	clusterIdentifierConfigMapKey = "spotinst.cluster-identifier"
 )
 
 var (
@@ -58,6 +61,7 @@ func init() {
 
 type Manager interface {
 	SetConfiguration(k8sProvisioned, oceanClusterProvisioned bool) (*v1alpha1.WaveEnvironment, error)
+	DeleteConfiguration() error
 	GetConfiguration() (*v1alpha1.WaveEnvironment, error)
 
 	Create(env *v1alpha1.WaveEnvironment) error
@@ -65,33 +69,36 @@ type Manager interface {
 }
 
 type manager struct {
-	clusterID        string
-	log              logr.Logger
-	kubeClientGetter genericclioptions.RESTClientGetter
+	clusterIdentifier string
+	log               logr.Logger
+	kubeClientGetter  genericclioptions.RESTClientGetter
 }
 
 func NewManager(log logr.Logger) (Manager, error) {
+
+	ctx := context.TODO()
+
 	conf, err := config.GetConfig()
 	if err != nil {
 		return nil, fmt.Errorf("cannot get cluster configuration, %w", err)
 	}
 
-	ctx := context.TODO()
 	kc, err := kubernetes.NewForConfig(conf)
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to cluster, %w", err)
 	}
-	cm, err := kc.CoreV1().ConfigMaps(metav1.NamespaceSystem).Get(ctx, "spotinst-kubernetes-cluster-controller-config", metav1.GetOptions{})
+
+	cm, err := kc.CoreV1().ConfigMaps(spotConfigMapNamespace).Get(ctx, spotConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error in ocean configuration, %w", err)
 	}
 
-	// TODO This is not the Ocean ID
-	clusterID := cm.Data["spotinst.cluster-identifier"]
-	if clusterID == "" {
-		return nil, fmt.Errorf("ocean configuration has no cluster ID")
+	clusterIdentifier := cm.Data[clusterIdentifierConfigMapKey]
+	if clusterIdentifier == "" {
+		return nil, fmt.Errorf("ocean configuration has no cluster identifier")
 	}
-	log.Info("Reading ocean configuration", "id", clusterID)
+	log.Info("Reading ocean configuration", "clusterIdentifier", clusterIdentifier)
+
 	kubeConfig := genericclioptions.NewConfigFlags(false)
 	kubeConfig.APIServer = &conf.Host
 	kubeConfig.BearerToken = &conf.BearerToken
@@ -100,9 +107,9 @@ func NewManager(log logr.Logger) (Manager, error) {
 	kubeConfig.Namespace = &ns
 
 	return &manager{
-		clusterID:        clusterID,
-		log:              log,
-		kubeClientGetter: kubeConfig,
+		clusterIdentifier: clusterIdentifier,
+		log:               log,
+		kubeClientGetter:  kubeConfig,
 	}, nil
 }
 
@@ -226,16 +233,15 @@ func (m *manager) SetConfiguration(k8sProvisioned, oceanClusterProvisioned bool)
 	err = rc.Create(ctx, crd, &ctrlrt.CreateOptions{})
 	if err != nil && !k8serrors.IsAlreadyExists(err) {
 		return nil, fmt.Errorf("failed to create crd, %w", err)
-
 	}
 
 	env := &v1alpha1.WaveEnvironment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.clusterID,
+			Name:      m.clusterIdentifier,
 			Namespace: catalog.SystemNamespace,
 		},
 		Spec: v1alpha1.WaveEnvironmentSpec{
-			OceanClusterId:          m.clusterID,
+			EnvironmentNamespace:    catalog.SystemNamespace,
 			OperatorVersion:         version.BuildVersion,
 			CertManagerDeployed:     !certManagerExists,
 			K8sClusterProvisioned:   k8sProvisioned,
@@ -248,6 +254,14 @@ func (m *manager) SetConfiguration(k8sProvisioned, oceanClusterProvisioned bool)
 	}
 
 	err = rc.Create(ctx, uenv)
+	if err != nil {
+		if k8serrors.IsAlreadyExists(err) {
+			m.log.Info("WaveEnvironment CR already exists", "message", err.Error())
+		} else {
+			return nil, fmt.Errorf("failed to create wave environment cr, %w", err)
+		}
+	}
+
 	return env, nil
 }
 
@@ -258,7 +272,7 @@ func (m *manager) GetConfiguration() (*v1alpha1.WaveEnvironment, error) {
 	}
 	env := &v1alpha1.WaveEnvironment{}
 	ctx := context.TODO()
-	key := ctrlrt.ObjectKey{Name: m.clusterID, Namespace: catalog.SystemNamespace}
+	key := ctrlrt.ObjectKey{Name: m.clusterIdentifier, Namespace: catalog.SystemNamespace}
 	err = client.Get(ctx, key, env)
 	if err != nil {
 		return nil, err
@@ -327,7 +341,9 @@ func (m *manager) Delete() error {
 		}
 	} else {
 		for _, wc := range components.Items {
-			rc.Delete(ctx, &wc)
+			if err := rc.Delete(ctx, &wc); err != nil {
+				m.log.Error(err, "could not delete wave component", wc.Name)
+			}
 		}
 	}
 
@@ -356,13 +372,76 @@ func (m *manager) Delete() error {
 
 	env, err := m.GetConfiguration()
 	if err != nil {
-		return fmt.Errorf("unable to read wave environment, %w", err)
+		crdGone, ok := err.(*apimeta.NoKindMatchError)
+		if ok {
+			m.log.Info("WaveEnvironment CRD is not present", "message", crdGone.Error())
+		} else {
+			if k8serrors.IsNotFound(err) {
+				m.log.Info("WaveEnvironment CR not found", "message", err.Error())
+			} else {
+				return fmt.Errorf("unable to read wave environment, %w", err)
+			}
+		}
+	} else {
+		if env.Spec.CertManagerDeployed {
+			err = m.deleteCertManager(ctx)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	if env.Spec.CertManagerDeployed {
-		err = m.deleteCertManager(ctx)
+	return nil
+}
+
+func (m *manager) DeleteConfiguration() error {
+
+	ctx := context.TODO()
+
+	crdPresent := true
+	crPresent := true
+
+	environment, err := m.GetConfiguration()
+	if err != nil {
+		crdGone, ok := err.(*apimeta.NoKindMatchError)
+		if ok {
+			m.log.Info("WaveEnvironment CRD is not present", "message", crdGone.Error())
+			crdPresent = false
+		} else {
+			if k8serrors.IsNotFound(err) {
+				m.log.Info("WaveEnvironment CR not found", "message", err.Error())
+				crPresent = false
+			} else {
+				return fmt.Errorf("unable to read wave environment, %w", err)
+			}
+		}
+	}
+
+	if !crdPresent {
+		return nil
+	}
+
+	rc, err := m.getControllerRuntimeClient()
+	if err != nil {
+		return fmt.Errorf("could not get controller runtime client, %w", err)
+	}
+
+	if crPresent {
+		err = rc.Delete(ctx, environment)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not delete wave environment cr, %w", err)
+		}
+	}
+
+	if crdPresent {
+		crd, err := m.loadCrd("/wave.spot.io_waveenvironments.yaml")
+		if err != nil {
+			return fmt.Errorf("could not load crd, %w", err)
+		}
+
+		err = rc.Delete(ctx, crd)
+		if err != nil {
+			return fmt.Errorf("could not delete crd, %w", err)
 		}
 	}
 
@@ -434,49 +513,6 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 		return true, nil
 	})
 	return err
-}
-
-func (m *manager) Describe() error {
-
-	rc, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return fmt.Errorf("kubernetes config error, %w", err)
-	}
-	ctx := context.TODO()
-	components := &v1alpha1.WaveComponentList{}
-	err = rc.List(ctx, components)
-	if err != nil {
-		return fmt.Errorf("cannot list wave components, %w", err)
-	}
-
-	width := 20
-	writer := tabwriter.NewWriter(os.Stdout, width, 8, 1, '\t', tabwriter.AlignRight)
-	bar := strings.Repeat("-", width)
-	boundary := bar + "\t" + bar + "\t" + bar + "\t" + bar
-	fmt.Fprintln(writer, "component\tcondition\tproperty\tvalue")
-	fmt.Fprintln(writer, boundary)
-	for _, wc := range components.Items {
-		sort.Slice(wc.Status.Conditions, func(i, j int) bool {
-			return wc.Status.Conditions[i].LastUpdateTime.Time.After(wc.Status.Conditions[j].LastUpdateTime.Time)
-		})
-		condition := "Unknown"
-		if len(wc.Status.Conditions) > 0 {
-			condition = fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status)
-			// m.log.Info("         ", "condition", fmt.Sprintf("%s=%s", wc.Status.Conditions[0].Type, wc.Status.Conditions[0].Status))
-		}
-		if len(wc.Status.Properties) == 0 {
-			fmt.Fprintln(writer, wc.Name+"\t"+condition+"\t\t")
-		} else {
-			h := wc.Name + "\t" + condition
-			for k, v := range wc.Status.Properties {
-				fmt.Fprintln(writer, h+"\t"+k+"\t"+v)
-				h = "\t"
-			}
-		}
-		fmt.Fprintln(writer, boundary)
-	}
-	writer.Flush()
-	return nil
 }
 
 func (m *manager) deleteWaveOperator(ctx context.Context) error {

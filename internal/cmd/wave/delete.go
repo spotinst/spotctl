@@ -141,9 +141,15 @@ func (x *CmdDelete) run(ctx context.Context) error {
 	}
 
 	logger.Info("uninstalling wave")
+
 	err = manager.Delete()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not delete wave, %w", err)
+	}
+
+	err = manager.DeleteConfiguration()
+	if err != nil {
+		return fmt.Errorf("could not delete wave configuration, %w", err)
 	}
 
 	return nil
