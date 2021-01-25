@@ -356,6 +356,11 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return fmt.Errorf("unable to set wave configuration, %w", err)
 	}
 
+	err = manager.CreateTideRBAC()
+	if err != nil {
+		return fmt.Errorf("could not create tide rbac objects, %w", err)
+	}
+
 	err = manager.Create(env)
 	if err != nil {
 		spinner.StopFail()
