@@ -147,10 +147,18 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return fmt.Errorf("could not delete wave, %w", err)
 	}
 
-	err = manager.DeleteConfiguration()
+	// Since we are running from CLI, we can do a full uninstall and remove the CRD too
+	err = manager.DeleteConfiguration(true)
 	if err != nil {
 		return fmt.Errorf("could not delete wave configuration, %w", err)
 	}
+
+	err = manager.DeleteTideRBAC()
+	if err != nil {
+		return fmt.Errorf("could not delete tide rbac objects, %w", err)
+	}
+
+	logger.Info("wave has been uninstalled")
 
 	return nil
 }
