@@ -39,7 +39,7 @@ const (
 
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
-	WaveOperatorVersion    = "0.1.8"
+	WaveOperatorVersion    = "0.2.0"
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"

@@ -823,8 +823,8 @@ github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/y
 github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/spotinst/spotinst-sdk-go v1.74.0 h1:mxXBigeuoYI2JRO1yUkhnoORxuC6Y5xLXkbdgX87t3Q=
 github.com/spotinst/spotinst-sdk-go v1.74.0/go.mod h1:sSRVZTSdUAPxeELD/urZkxcfU/DcxO1/UIdOxagqFBc=
-github.com/spotinst/wave-operator v0.0.0-20210125094050-ccb9a24ef3b4 h1:KRg0ppkf/rnAbNo8m5mDlRMet+oy/mYfWsKj00rHAmM=
-github.com/spotinst/wave-operator v0.0.0-20210125094050-ccb9a24ef3b4/go.mod h1:S5uBAi2CuLNCP1zFsolTvzfVxmlB1ikDfAO5E7uAtts=
+github.com/spotinst/wave-operator v0.0.0-20210204164614-a8e1a3647251 h1:tg8fAGjxMtn/iH42nsrmaDGC2W/2WCNL9RLUGVmrmPU=
+github.com/spotinst/wave-operator v0.0.0-20210204164614-a8e1a3647251/go.mod h1:S5uBAi2CuLNCP1zFsolTvzfVxmlB1ikDfAO5E7uAtts=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
