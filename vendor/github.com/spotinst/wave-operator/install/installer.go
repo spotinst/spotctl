@@ -327,6 +327,7 @@ func (i *HelmInstaller) IsUpgrade(comp *v1alpha1.WaveComponent, inst *Installati
 	var newVals map[string]interface{}
 	err := yaml.Unmarshal([]byte(comp.Spec.ValuesConfiguration), &newVals)
 	if err != nil {
+		i.Log.Error(err, "problem unmarshalling values")
 		return true // fail properly later
 	}
 	if newVals == nil {

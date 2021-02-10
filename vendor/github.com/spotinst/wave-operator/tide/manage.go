@@ -40,6 +40,7 @@ const (
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
 	WaveOperatorVersion    = "0.2.0"
+	WaveOperatorValues     = ""
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
@@ -511,7 +512,7 @@ func (m *manager) installWaveOperator(ctx context.Context) error {
 	)
 
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
-	err = installer.Install(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, "")
+	err = installer.Install(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, WaveOperatorValues)
 	if err != nil {
 		return fmt.Errorf("cannot install wave operator, %w", err)
 	}

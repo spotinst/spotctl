@@ -114,7 +114,7 @@ func (m *manager) testCertManager() (bool, error) {
 		return false, nil
 	})
 	if err != nil {
-		return false, fmt.Errorf("Error in checking cert-manager functionality, %w", err)
+		return false, fmt.Errorf("cert-manager appears to be present, but there are errors, %w", err)
 	}
 	return true, nil
 }
