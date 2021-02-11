@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -13,12 +15,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/wave-operator/tide"
 	"github.com/theckman/yacspin"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
@@ -340,6 +345,11 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		}
 	}
 
+	spinner.Message("updating ocean")
+	if err := updateOcean(ctx, getSpinnerLogger(x.opts.ClusterName, spinner)); err != nil {
+		return fmt.Errorf("error in applying ocean update, %w", err)
+	}
+
 	spinner.Message("installing wave")
 
 	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
@@ -594,4 +604,41 @@ func allNonDeletedStackStatuses() []string {
 
 func defaultStackStatusFilter() []*string {
 	return aws.StringSlice(allNonDeletedStackStatuses())
+}
+
+func updateOcean(ctx context.Context, logger logr.Logger) error {
+
+	conf, err := config.GetConfig()
+	if err != nil {
+		return fmt.Errorf("cannot get cluster configuration, %w", err)
+	}
+
+	const oceanURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
+
+	res, err := http.Get(oceanURL)
+	if err != nil {
+		return fmt.Errorf("error fetching ocean manifests, %w", err)
+	}
+	data, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return fmt.Errorf("error reading ocean manifests, %w", err)
+	}
+
+	delim := regexp.MustCompile("(?m)^---$")
+	objects := delim.Split(string(data), -1)
+
+	whitespace := regexp.MustCompile("^[[:space:]]*$")
+
+	for _, o := range objects {
+		if whitespace.Match([]byte(o)) {
+			logger.Info("whitespace match", "", o)
+			continue
+		}
+		err := kubernetes.DoServerSideApply(ctx, conf, o, logger)
+		if err != nil {
+			return fmt.Errorf("error applying object from manifests <<%s>>, %w", string(o), err)
+		}
+	}
+	return nil
 }
