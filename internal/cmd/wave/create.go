@@ -171,6 +171,8 @@ func (x *CmdCreate) run(ctx context.Context) error {
 	var k8sClusterProvisioned bool
 	var oceanClusterProvisioned bool
 
+	var waveOperatorImage = "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.0-8004b24d" // XXX TODO
+
 	cfg := yacspin.Config{
 		Frequency:       250 * time.Millisecond,
 		CharSet:         yacspin.CharSets[33],
@@ -361,7 +363,13 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return err
 	}
 
-	env, err := manager.SetConfiguration(k8sClusterProvisioned, oceanClusterProvisioned)
+	waveConfig := map[string]interface{}{
+		tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
+		tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
+		tide.ConfigInitialWaveOperatorImage:  waveOperatorImage,
+	}
+
+	env, err := manager.SetConfiguration(waveConfig)
 	if err != nil {
 		return fmt.Errorf("unable to set wave configuration, %w", err)
 	}

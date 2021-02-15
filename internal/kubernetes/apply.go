@@ -72,8 +72,10 @@ func DoServerSideApply(ctx context.Context, cfg *rest.Config, content string, lo
 	//  types.ApplyPatchType indicates SSA.
 	//  FieldManager specifies the field owner ID.
 	logger.Info("applying object", "name", obj.GetName())
+	force := true
 	_, err = dri.Patch(ctx, obj.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{
 		FieldManager: Owner,
+		Force:        &(force),
 	})
 
 	return err
