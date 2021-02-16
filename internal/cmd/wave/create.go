@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/go-logr/logr"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/kubernetes"
@@ -49,13 +50,17 @@ type CmdCreateOptions struct {
 	Region            string
 	Tags              []string
 	KubernetesVersion string
+	WaveOperatorImage string
 }
+
+const DefaultWaveOperatorImage = "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.0-5c8351cd"
 
 func (x *CmdCreateOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&x.ConfigFile, flags.FlagWaveConfigFile, "f", x.ConfigFile, "load configuration from a file (or stdin if set to '-')")
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id (will be created if empty)")
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name (generated if unspecified, e.g. \"wave-9d4afe95\")")
 	fs.StringVar(&x.Region, flags.FlagWaveRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
+	fs.StringVar(&x.WaveOperatorImage, flags.FlagWaveImage, DefaultWaveOperatorImage, "wave-operator docker image")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", "1.18", "kubernetes version")
 }
@@ -136,6 +141,12 @@ func (x *CmdCreateOptions) Validate() error {
 	if x.ClusterName != "" && x.ConfigFile != "" {
 		return errors.RequiredXor(flags.FlagWaveClusterName, flags.FlagWaveConfigFile)
 	}
+
+	_, err := crane.Manifest(x.WaveOperatorImage)
+	if err != nil {
+		return fmt.Errorf("unable to verify image \"%s\", %w", x.WaveOperatorImage, err)
+	}
+
 	return x.CmdOptions.Validate()
 }
 
@@ -170,8 +181,6 @@ func (x *CmdCreate) run(ctx context.Context) error {
 
 	var k8sClusterProvisioned bool
 	var oceanClusterProvisioned bool
-
-	var waveOperatorImage = "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.0-8004b24d" // XXX TODO
 
 	cfg := yacspin.Config{
 		Frequency:       250 * time.Millisecond,
@@ -366,7 +375,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 	waveConfig := map[string]interface{}{
 		tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
 		tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
-		tide.ConfigInitialWaveOperatorImage:  waveOperatorImage,
+		tide.ConfigInitialWaveOperatorImage:  x.opts.WaveOperatorImage,
 	}
 
 	env, err := manager.SetConfiguration(waveConfig)
