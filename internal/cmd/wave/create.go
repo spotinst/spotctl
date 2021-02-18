@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -13,9 +15,19 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/go-logr/logr"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/kubernetes"
+	"github.com/spotinst/wave-operator/tide"
+	"github.com/theckman/yacspin"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
 	"github.com/spotinst/spotctl/internal/cloud"
+	"github.com/spotinst/spotctl/internal/dep"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
@@ -23,9 +35,6 @@ import (
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
 	"github.com/spotinst/spotctl/internal/wave"
-	"github.com/theckman/yacspin"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
 type CmdCreate struct {
@@ -41,13 +50,17 @@ type CmdCreateOptions struct {
 	Region            string
 	Tags              []string
 	KubernetesVersion string
+	WaveOperatorImage string
 }
+
+const DefaultWaveOperatorImage = "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.0-5c8351cd"
 
 func (x *CmdCreateOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&x.ConfigFile, flags.FlagWaveConfigFile, "f", x.ConfigFile, "load configuration from a file (or stdin if set to '-')")
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id (will be created if empty)")
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name (generated if unspecified, e.g. \"wave-9d4afe95\")")
 	fs.StringVar(&x.Region, flags.FlagWaveRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
+	fs.StringVar(&x.WaveOperatorImage, flags.FlagWaveImage, DefaultWaveOperatorImage, "wave-operator docker image")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", "1.18", "kubernetes version")
 }
@@ -67,11 +80,43 @@ func newCmdCreate(opts *CmdOptions) *CmdCreate {
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},
+		PersistentPreRunE: func(*cobra.Command, []string) error {
+			return cmd.preRun(context.Background())
+		},
 	}
 
 	cmd.opts.Init(cmd.cmd.PersistentFlags(), opts)
 
 	return &cmd
+}
+
+func (x *CmdCreate) preRun(ctx context.Context) error {
+	// Call to the the parent command's PersistentPreRunE.
+	// See: https://github.com/spf13/cobra/issues/216.
+	if parent := x.cmd.Parent(); parent != nil && parent.PersistentPreRunE != nil {
+		if err := parent.PersistentPreRunE(parent, nil); err != nil {
+			return err
+		}
+	}
+	return x.installDeps(ctx)
+}
+
+func (x *CmdCreate) installDeps(ctx context.Context) error {
+	// Initialize a new dependency manager.
+	dm, err := x.opts.Clientset.NewDepManager()
+	if err != nil {
+		return err
+	}
+
+	// Install options.
+	installOpts := []dep.InstallOption{
+		dep.WithInstallPolicy(dep.InstallPolicy(x.opts.InstallPolicy)),
+		dep.WithNoninteractive(x.opts.Noninteractive),
+		dep.WithDryRun(x.opts.DryRun),
+	}
+
+	// Install!
+	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
 func (x *CmdCreateOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
@@ -96,6 +141,12 @@ func (x *CmdCreateOptions) Validate() error {
 	if x.ClusterName != "" && x.ConfigFile != "" {
 		return errors.RequiredXor(flags.FlagWaveClusterName, flags.FlagWaveConfigFile)
 	}
+
+	_, err := crane.Manifest(x.WaveOperatorImage)
+	if err != nil {
+		return fmt.Errorf("unable to verify image \"%s\", %w", x.WaveOperatorImage, err)
+	}
+
 	return x.CmdOptions.Validate()
 }
 
@@ -127,6 +178,9 @@ func (x *CmdCreate) validate(ctx context.Context) error {
 
 // TODO(liran): WARNING: This is the ugliest code in the world, but it seems to work (for now).
 func (x *CmdCreate) run(ctx context.Context) error {
+
+	var k8sClusterProvisioned bool
+	var oceanClusterProvisioned bool
 
 	cfg := yacspin.Config{
 		Frequency:       250 * time.Millisecond,
@@ -200,6 +254,8 @@ func (x *CmdCreate) run(ctx context.Context) error {
 
 		createCluster := false
 		if _, err = sc.describeStacks(); err != nil {
+			// TODO Allow creation of cluster if previous stack failed
+			// TODO Check for in-progress stacks
 			if err.Error() == sc.errStackNotFound().Error() {
 				createCluster = true
 			}
@@ -210,19 +266,25 @@ func (x *CmdCreate) run(ctx context.Context) error {
 			return err
 		}
 
-		spinner.Message("creating eks cluster " + x.opts.ClusterName)
 		if createCluster {
+			spinner.Message("creating eks cluster " + x.opts.ClusterName)
+			k8sClusterProvisioned = true
 			if err = cmdEksctl.Run(ctx, x.buildEksctlCreateClusterArgs()...); err != nil {
 				return err
 			}
 		}
 
 		spinner.Message("creating node groups")
+		oceanClusterProvisioned = true
 		if err = cmdEksctl.Run(ctx, x.buildEksctlCreateNodeGroupArgs()...); err != nil {
 			return err
 		}
 	} else { // import an existing cluster
 		spinner.Message("importing")
+
+		// TODO Allow importing non-Ocean clusters
+		k8sClusterProvisioned = false
+		oceanClusterProvisioned = false
 
 		// TODO(liran/validation): Validate it elsewhere.
 		if x.opts.Region == "" {
@@ -294,18 +356,47 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		}
 	}
 
+	spinner.Message("updating ocean")
+	if err := updateOcean(ctx, getSpinnerLogger(x.opts.ClusterName, spinner)); err != nil {
+		return fmt.Errorf("error in applying ocean update, %w", err)
+	}
+
 	spinner.Message("installing wave")
-	manager, err := wave.NewManager(x.opts.ClusterName, getSpinnerLogger(x.opts.ClusterName, spinner)) // pass in name to validate ocean controller configuration
+
+	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner))
 	if err != nil {
 		return err
 	}
 
-	err = manager.Create()
+	waveConfig := map[string]interface{}{
+		tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
+		tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
+		tide.ConfigInitialWaveOperatorImage:  x.opts.WaveOperatorImage,
+	}
+
+	env, err := manager.SetConfiguration(waveConfig)
+	if err != nil {
+		return fmt.Errorf("unable to set wave configuration, %w", err)
+	}
+
+	err = manager.CreateTideRBAC()
+	if err != nil {
+		return fmt.Errorf("could not create tide rbac objects, %w", err)
+	}
+
+	err = manager.Create(env)
 	if err != nil {
 		spinner.StopFail()
 		return err
 	}
+
+	spinner.StopMessage("wave operator is managing components")
 	spinner.Stop()
+
 	return nil
 }
 
@@ -530,4 +621,41 @@ func allNonDeletedStackStatuses() []string {
 
 func defaultStackStatusFilter() []*string {
 	return aws.StringSlice(allNonDeletedStackStatuses())
+}
+
+func updateOcean(ctx context.Context, logger logr.Logger) error {
+
+	conf, err := config.GetConfig()
+	if err != nil {
+		return fmt.Errorf("cannot get cluster configuration, %w", err)
+	}
+
+	const oceanURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
+
+	res, err := http.Get(oceanURL)
+	if err != nil {
+		return fmt.Errorf("error fetching ocean manifests, %w", err)
+	}
+	data, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return fmt.Errorf("error reading ocean manifests, %w", err)
+	}
+
+	delim := regexp.MustCompile("(?m)^---$")
+	objects := delim.Split(string(data), -1)
+
+	whitespace := regexp.MustCompile("^[[:space:]]*$")
+
+	for _, o := range objects {
+		if whitespace.Match([]byte(o)) {
+			logger.Info("whitespace match", "", o)
+			continue
+		}
+		err := kubernetes.DoServerSideApply(ctx, conf, o, logger)
+		if err != nil {
+			return fmt.Errorf("error applying object from manifests <<%s>>, %w", string(o), err)
+		}
+	}
+	return nil
 }

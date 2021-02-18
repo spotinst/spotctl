@@ -59,6 +59,7 @@ const (
 	FlagWaveClusterID   string = "cluster-id"
 	FlagWaveClusterName string = "cluster-name"
 	FlagWaveConfigFile  string = "config-file"
+	FlagWaveImage       string = "wave-image"
 )
 
 func Log(cmd *cobra.Command) {

@@ -2,12 +2,16 @@ package wave
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/wave-operator/tide"
+
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDelete struct {
@@ -103,5 +107,58 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	return errors.NotImplemented()
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+	if err != nil {
+		return err
+	}
+
+	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+	if err != nil {
+		return err
+	}
+
+	c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+	if err != nil {
+		return err
+	}
+
+	// TODO Remove option to specify cluster-name on command line, or look up Ocean cluster by name,
+	// This will override the user supplied command line flag
+	x.opts.ClusterName = c.Name
+
+	// TODO Delete ocean cluster if it was provisioned
+	// TODO Delete kubernetes cluster if it was provisioned
+
+	if err := wave.ValidateClusterContext(c.Name); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	logger := getWaveLogger()
+
+	manager, err := tide.NewManager(logger)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("uninstalling wave")
+
+	err = manager.Delete()
+	if err != nil {
+		return fmt.Errorf("could not delete wave, %w", err)
+	}
+
+	// Since we are running from CLI, we can do a full uninstall and remove the CRD too
+	err = manager.DeleteConfiguration(true)
+	if err != nil {
+		return fmt.Errorf("could not delete wave configuration, %w", err)
+	}
+
+	err = manager.DeleteTideRBAC()
+	if err != nil {
+		return fmt.Errorf("could not delete tide rbac objects, %w", err)
+	}
+
+	logger.Info("wave has been uninstalled")
+
+	return nil
 }

@@ -22,7 +22,7 @@ var (
 	// See: https://github.com/weaveworks/eksctl.
 	DependencyEksctl Dependency = &dependency{
 		name:    "eksctl",
-		version: "0.31.0-fc20af78",
+		version: "0.36.2-f5c273f8",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}

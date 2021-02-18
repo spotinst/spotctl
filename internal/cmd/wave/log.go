@@ -60,7 +60,7 @@ func (s spinnerLogger) Info(msg string, keysAndValues ...interface{}) {
 }
 
 func (s spinnerLogger) Error(err error, msg string, keysAndValues ...interface{}) {
-	panic("implement me")
+	s.spinner.Message(fmt.Sprintf("%s   ERROR:%s %s, %v", err.Error(), s.name, msg, keysAndValues))
 }
 
 func (s spinnerLogger) V(level int) logr.Logger {

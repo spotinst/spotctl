@@ -10,3 +10,5 @@ dist/
 
 # jetbrains
 .idea
+.vscode
+scratch
