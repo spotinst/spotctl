@@ -35,6 +35,13 @@ const (
 	Unknown     string = "unknown"
 )
 
+type InstallSpec struct {
+	Name       string `json:"name"`
+	Repository string `json:"repository"`
+	Version    string `json:"version"`
+	Values     string `json:"values,omitempty"`
+}
+
 type Installer interface {
 
 	// Namespace where components are installed, the namespace must exist before Install() is called
