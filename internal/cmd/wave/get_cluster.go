@@ -2,9 +2,11 @@ package wave
 
 import (
 	"context"
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/writer"
+	"sort"
 
 	"github.com/spotinst/spotctl/internal/flags"
 )
@@ -80,10 +82,7 @@ func (x *CmdGetCluster) validate(ctx context.Context) error {
 
 func (x *CmdGetCluster) run(ctx context.Context) error {
 
-	fmt.Println("Should get Wave clusters")
-	return nil
-
-	/*spotClientOpts := []spot.ClientOption{
+	spotClientOpts := []spot.ClientOption{
 		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
@@ -92,12 +91,12 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		return err
 	}
 
-	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+	waveClient, err := spotClient.Services().Wave()
 	if err != nil {
 		return err
 	}
 
-	clusters, err := oceanClient.ListClusters(ctx)
+	clusters, err := waveClient.ListClusters(ctx)
 	if err != nil {
 		return err
 	}
@@ -107,9 +106,9 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		return err
 	}
 
-	sort.Sort(&spot.OceanClustersSorter{Clusters: clusters})
+	sort.Sort(&spot.WaveClustersSorter{Clusters: clusters})
 
-	return w.Write(clusters)*/
+	return w.Write(clusters)
 }
 
 func (x *CmdGetClusterOptions) Init(fs *pflag.FlagSet, opts *CmdGetOptions) {

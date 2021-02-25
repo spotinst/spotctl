@@ -101,6 +101,7 @@ func (x *CmdDescribe) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
+// TODO This should use the Spot API instead of going direct to the cluster
 func (x *CmdDescribe) run(ctx context.Context) error {
 	if x.opts.ClusterID != "" {
 		spotClientOpts := []spot.ClientOption{

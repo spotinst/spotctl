@@ -2,16 +2,11 @@ package wave
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/wave-operator/tide"
-
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
-	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDelete struct {
@@ -22,12 +17,14 @@ type CmdDelete struct {
 type CmdDeleteOptions struct {
 	*CmdOptions
 	ClusterID   string
-	ClusterName string
+	DeleteOcean bool
+	Force       bool
 }
 
 func (x *CmdDeleteOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
-	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
+	fs.BoolVar(&x.DeleteOcean, flags.FlagWaveDeleteOceanCluster, x.DeleteOcean, "delete ocean cluster")
+	fs.BoolVar(&x.Force, flags.FlagWaveForceDelete, x.Force, "force delete")
 }
 
 func NewCmdDelete(opts *CmdOptions) *cobra.Command {
@@ -39,7 +36,7 @@ func newCmdDelete(opts *CmdOptions) *CmdDelete {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "delete",
-		Short:         "Delete a Wave installation",
+		Short:         "Delete a Wave cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -65,8 +62,8 @@ func (x *CmdDelete) survey(ctx context.Context) error {
 }
 
 func (x *CmdDeleteOptions) Validate() error {
-	if x.ClusterID == "" && x.ClusterName == "" {
-		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
+	if x.ClusterID == "" {
+		return errors.Required(flags.FlagWaveClusterID)
 	}
 	return x.CmdOptions.Validate()
 }
@@ -112,7 +109,14 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+	waveClient, err := spotClient.Services().Wave()
+	if err != nil {
+		return err
+	}
+
+	return waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean, x.opts.Force)
+
+	/*oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 	if err != nil {
 		return err
 	}
@@ -160,5 +164,5 @@ func (x *CmdDelete) run(ctx context.Context) error {
 
 	logger.Info("wave has been uninstalled")
 
-	return nil
+	return nil*/
 }

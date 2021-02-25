@@ -2,6 +2,8 @@ module github.com/spotinst/spotctl
 
 go 1.15
 
+replace github.com/spotinst/spotinst-sdk-go => /Users/tts/dev/spotinst-sdk-go
+
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect

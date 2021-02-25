@@ -47,3 +47,19 @@ func (s *OceanRolloutsSorter) Swap(i, j int) {
 func (s *OceanRolloutsSorter) Less(i, j int) bool {
 	return s.Rollouts[i].UpdatedAt.After(s.Rollouts[j].UpdatedAt)
 }
+
+type WaveClustersSorter struct {
+	Clusters []*WaveCluster
+}
+
+func (s *WaveClustersSorter) Len() int {
+	return len(s.Clusters)
+}
+
+func (s *WaveClustersSorter) Swap(i, j int) {
+	s.Clusters[i], s.Clusters[j] = s.Clusters[j], s.Clusters[i]
+}
+
+func (s *WaveClustersSorter) Less(i, j int) bool {
+	return s.Clusters[i].UpdatedAt.After(s.Clusters[j].UpdatedAt)
+}

@@ -55,11 +55,13 @@ const (
 	FlagOceanRolloutInstanceIDs         string = "instance-ids"
 
 	// Wave.
-	FlagWaveRegion      string = "region"
-	FlagWaveClusterID   string = "cluster-id"
-	FlagWaveClusterName string = "cluster-name"
-	FlagWaveConfigFile  string = "config-file"
-	FlagWaveImage       string = "wave-image"
+	FlagWaveRegion             string = "region"
+	FlagWaveClusterID          string = "cluster-id"
+	FlagWaveClusterName        string = "cluster-name"
+	FlagWaveConfigFile         string = "config-file"
+	FlagWaveImage              string = "wave-image"
+	FlagWaveDeleteOceanCluster string = "delete-ocean"
+	FlagWaveForceDelete        string = "force"
 )
 
 func Log(cmd *cobra.Command) {

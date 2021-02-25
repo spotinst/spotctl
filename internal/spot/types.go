@@ -156,6 +156,18 @@ type (
 		SpecIDs             []string
 		InstanceIDs         []string
 	}
+
+	// WaveCluster represents a Wave cluster.
+	WaveCluster struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
 )
 
 // typeOf returns obj type's name using reflection.

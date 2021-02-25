@@ -453,11 +453,12 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
-# github.com/spotinst/spotinst-sdk-go v1.74.0
+# github.com/spotinst/spotinst-sdk-go v1.74.0 => /Users/tts/dev/spotinst-sdk-go
 ## explicit
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/gcp
+github.com/spotinst/spotinst-sdk-go/service/wave
 github.com/spotinst/spotinst-sdk-go/spotinst
 github.com/spotinst/spotinst-sdk-go/spotinst/client
 github.com/spotinst/spotinst-sdk-go/spotinst/credentials
@@ -595,6 +596,8 @@ google.golang.org/protobuf/types/known/timestamppb
 gopkg.in/gorp.v1
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
+# gopkg.in/ini.v1 v1.62.0
+gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
@@ -940,3 +943,4 @@ sigs.k8s.io/kustomize/pkg/types
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
+# github.com/spotinst/spotinst-sdk-go => /Users/tts/dev/spotinst-sdk-go
