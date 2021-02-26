@@ -47,7 +47,20 @@ type Component struct {
 	State           *string           `json:"state,omitempty"`
 }
 
-type ListClustersInput struct{}
+type ClusterState string
+
+const (
+	ClusterAvailable   ClusterState = "AVAILABLE"
+	ClusterProgressing ClusterState = "PROGRESSING"
+	ClusterDegraded    ClusterState = "DEGRADED"
+	ClusterFailing     ClusterState = "FAILING"
+	ClusterUnknown     ClusterState = "UNKNOWN"
+)
+
+type ListClustersInput struct {
+	ClusterIdentifier *string       `json:"clusterIdentifier,omitempty"`
+	ClusterState      *ClusterState `json:"clusterState,omitempty"`
+}
 
 type ListClustersOutput struct {
 	Clusters []*Cluster `json:"clusters,omitempty"`
@@ -71,6 +84,17 @@ type DeleteClusterOutput struct{}
 
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
 	r := client.NewRequest(http.MethodGet, "/wave/cluster")
+
+	if input != nil {
+		if input.ClusterIdentifier != nil {
+			r.Params.Set("clusterIdentifier", spotinst.StringValue(input.ClusterIdentifier))
+		}
+
+		if input.ClusterState != nil {
+			r.Params.Set("state", string(*input.ClusterState))
+		}
+	}
+
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
 		return nil, err

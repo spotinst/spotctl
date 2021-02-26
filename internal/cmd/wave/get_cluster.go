@@ -4,11 +4,13 @@ import (
 	"context"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/writer"
+	"github.com/spotinst/spotinst-sdk-go/service/wave"
 	"sort"
-
-	"github.com/spotinst/spotctl/internal/flags"
+	"strings"
 )
 
 type (
@@ -19,8 +21,9 @@ type (
 
 	CmdGetClusterOptions struct {
 		*CmdGetOptions
-		ClusterID   string
-		ClusterName string
+		ClusterID    string
+		ClusterName  string
+		ClusterState string
 	}
 )
 
@@ -96,9 +99,20 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		return err
 	}
 
-	clusters, err := waveClient.ListClusters(ctx)
-	if err != nil {
-		return err
+	var clusters []*spot.WaveCluster
+	if x.opts.ClusterID != "" {
+		cluster, err := waveClient.GetCluster(ctx, x.opts.ClusterID)
+		if err != nil {
+			return err
+		}
+		clusters = make([]*spot.WaveCluster, 1)
+		clusters[0] = cluster
+	} else {
+		clusterState := strings.ToUpper(x.opts.ClusterState)
+		clusters, err = waveClient.ListClusters(ctx, x.opts.ClusterName, clusterState)
+		if err != nil {
+			return err
+		}
 	}
 
 	w, err := x.opts.Clientset.NewWriter(writer.Format(x.opts.Output))
@@ -123,12 +137,27 @@ func (x *CmdGetClusterOptions) initDefaults(opts *CmdGetOptions) {
 func (x *CmdGetClusterOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
+	fs.StringVar(&x.ClusterState, flags.FlagWaveClusterState, x.ClusterState, "cluster state")
 }
 
 func (x *CmdGetClusterOptions) Validate() error {
-	/*if x.ClusterID == "" && x.ClusterName == "" {
-		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
-	}*/
-
+	if x.ClusterID != "" && x.ClusterName != "" {
+		return errors.RequiredXor(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
+	}
+	if x.ClusterState != "" {
+		if !validateClusterState(x.ClusterState) {
+			return errors.Invalid(flags.FlagWaveClusterState, x.ClusterState)
+		}
+	}
 	return x.CmdGetOptions.Validate()
+}
+
+func validateClusterState(state string) bool {
+	clusterState := wave.ClusterState(strings.ToUpper(state))
+	switch clusterState {
+	case wave.ClusterDegraded, wave.ClusterAvailable, wave.ClusterFailing, wave.ClusterProgressing, wave.ClusterUnknown:
+		return true
+	default:
+		return false
+	}
 }

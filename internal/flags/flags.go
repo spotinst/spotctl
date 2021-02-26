@@ -62,6 +62,7 @@ const (
 	FlagWaveImage              string = "wave-image"
 	FlagWaveDeleteOceanCluster string = "delete-ocean"
 	FlagWaveForceDelete        string = "force"
+	FlagWaveClusterState       string = "cluster-state"
 )
 
 func Log(cmd *cobra.Command) {

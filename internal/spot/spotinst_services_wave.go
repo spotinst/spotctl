@@ -77,10 +77,19 @@ func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDelete
 	return err
 }
 
-func (x *wave) ListClusters(ctx context.Context) ([]*WaveCluster, error) {
-	log.Debugf("Listing Wave clusters")
+func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state string) ([]*WaveCluster, error) {
+	log.Debugf("Listing Wave clusters (clusterIdentifier: %q, state: %q)", clusterIdentifier, state)
 
-	output, err := x.svc.ListClusters(ctx, &wavesdk.ListClustersInput{})
+	input := &wavesdk.ListClustersInput{}
+	if clusterIdentifier != "" {
+		input.ClusterIdentifier = spotinst.String(clusterIdentifier)
+	}
+	if state != "" {
+		clusterState := wavesdk.ClusterState(state)
+		input.ClusterState = &clusterState
+	}
+
+	output, err := x.svc.ListClusters(ctx, input)
 	if err != nil {
 		return nil, err
 	}

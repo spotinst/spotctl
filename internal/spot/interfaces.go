@@ -114,7 +114,7 @@ type (
 	WaveInterface interface {
 
 		// ListClusters returns a list of Wave clusters.
-		ListClusters(ctx context.Context) ([]*WaveCluster, error)
+		ListClusters(ctx context.Context, clusterIdentifier string, state string) ([]*WaveCluster, error)
 
 		// GetCluster returns a Wave cluster by ID.
 		GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error)
