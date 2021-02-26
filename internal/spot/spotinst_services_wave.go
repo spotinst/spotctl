@@ -25,43 +25,7 @@ func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, 
 		return nil, err
 	}
 
-	if output.Cluster == nil {
-		return nil, fmt.Errorf("cluster is nil")
-	}
-
-	var components []WaveComponent
-	if output.Cluster.Config != nil && len(output.Cluster.Config.Components) > 0 {
-		components = make([]WaveComponent, len(output.Cluster.Config.Components))
-		for i, outputComponent := range output.Cluster.Config.Components {
-			if outputComponent != nil {
-				component := WaveComponent{
-					Uid:             spotinst.StringValue(outputComponent.Uid),
-					Name:            spotinst.StringValue(outputComponent.Name),
-					OperatorVersion: spotinst.StringValue(outputComponent.OperatorVersion),
-					Version:         spotinst.StringValue(outputComponent.Version),
-					Properties:      outputComponent.Properties,
-					State:           spotinst.StringValue(outputComponent.State),
-				}
-				components[i] = component
-			}
-		}
-	}
-
-	cluster := &WaveCluster{
-		TypeMeta: TypeMeta{
-			Kind: typeOf(WaveCluster{}),
-		},
-		ObjectMeta: ObjectMeta{
-			ID:        spotinst.StringValue(output.Cluster.ID),
-			Name:      spotinst.StringValue(output.Cluster.ClusterIdentifier),
-			CreatedAt: spotinst.TimeValue(output.Cluster.CreatedAt),
-			UpdatedAt: spotinst.TimeValue(output.Cluster.UpdatedAt),
-		},
-		Components: components,
-		Obj:        output.Cluster,
-	}
-
-	return cluster, nil
+	return buildCluster(output.Cluster)
 }
 
 func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDeleteOcean bool, forceDelete bool) error {
@@ -95,20 +59,52 @@ func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state
 	}
 
 	clusters := make([]*WaveCluster, len(output.Clusters))
-	for i, cluster := range output.Clusters {
-		clusters[i] = &WaveCluster{
-			TypeMeta: TypeMeta{
-				Kind: typeOf(WaveCluster{}),
-			},
-			ObjectMeta: ObjectMeta{
-				ID:        spotinst.StringValue(cluster.ID),
-				Name:      spotinst.StringValue(cluster.ClusterIdentifier),
-				CreatedAt: spotinst.TimeValue(cluster.CreatedAt),
-				UpdatedAt: spotinst.TimeValue(cluster.UpdatedAt),
-			},
-			Obj: cluster,
+	for i, outputCluster := range output.Clusters {
+		cluster, err := buildCluster(outputCluster)
+		if err != nil {
+			return nil, err
 		}
+		clusters[i] = cluster
 	}
 
 	return clusters, nil
+}
+
+func buildCluster(cluster *wavesdk.Cluster) (*WaveCluster, error) {
+	if cluster == nil {
+		return nil, fmt.Errorf("cluster is nil")
+	}
+
+	var components []WaveComponent
+	if cluster.Config != nil && len(cluster.Config.Components) > 0 {
+		components = make([]WaveComponent, len(cluster.Config.Components))
+		for i, comp := range cluster.Config.Components {
+			if comp != nil {
+				component := WaveComponent{
+					Uid:             spotinst.StringValue(comp.Uid),
+					Name:            spotinst.StringValue(comp.Name),
+					OperatorVersion: spotinst.StringValue(comp.OperatorVersion),
+					Version:         spotinst.StringValue(comp.Version),
+					Properties:      comp.Properties,
+					State:           spotinst.StringValue(comp.State),
+				}
+				components[i] = component
+			}
+		}
+	}
+
+	return &WaveCluster{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(WaveCluster{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(cluster.ID),
+			Name:      spotinst.StringValue(cluster.ClusterIdentifier),
+			CreatedAt: spotinst.TimeValue(cluster.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(cluster.UpdatedAt),
+		},
+		State:      spotinst.StringValue(cluster.State),
+		Components: components,
+		Obj:        cluster,
+	}, nil
 }

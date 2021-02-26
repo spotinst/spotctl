@@ -165,8 +165,10 @@ type (
 		// Object's metadata.
 		ObjectMeta
 
+		State string `json:"state" table:"3,state"`
+
 		// Wave cluster's components
-		Components []WaveComponent
+		Components []WaveComponent `json:"components"`
 
 		// Obj holds the raw object
 		Obj interface{} `json:"-"`
@@ -174,12 +176,12 @@ type (
 
 	// WaveComponent represents a Wave component
 	WaveComponent struct {
-		Uid             string
-		Name            string
-		OperatorVersion string
-		Version         string
-		Properties      map[string]string
-		State           string
+		Uid             string            `json:"uid"`
+		Name            string            `json:"name"`
+		OperatorVersion string            `json:"operatorVersion"`
+		Version         string            `json:"version"`
+		Properties      map[string]string `json:"properties,omitempty"`
+		State           string            `json:"state"`
 	}
 )
 
