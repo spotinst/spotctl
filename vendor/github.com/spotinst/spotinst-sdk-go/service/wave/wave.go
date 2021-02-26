@@ -39,12 +39,12 @@ type Config struct {
 }
 
 type Component struct {
-	Uid             *string            `json:"uid,omitempty"`
-	Name            *string            `json:"name,omitempty"`
-	OperatorVersion *string            `json:"operatorVersion,omitempty"`
-	Version         *string            `json:"version,omitempty"`
-	Properties      *map[string]string `json:"properties,omitempty"`
-	State           *string            `json:"state,omitempty"`
+	Uid             *string           `json:"uid,omitempty"`
+	Name            *string           `json:"name,omitempty"`
+	OperatorVersion *string           `json:"operatorVersion,omitempty"`
+	Version         *string           `json:"version,omitempty"`
+	Properties      map[string]string `json:"properties,omitempty"`
+	State           *string           `json:"state,omitempty"`
 }
 
 type ListClustersInput struct{}

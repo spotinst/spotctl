@@ -2,6 +2,7 @@ package spot
 
 import (
 	"context"
+	"fmt"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 
 	"github.com/spotinst/spotctl/internal/log"
@@ -24,6 +25,28 @@ func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, 
 		return nil, err
 	}
 
+	if output.Cluster == nil {
+		return nil, fmt.Errorf("cluster is nil")
+	}
+
+	var components []WaveComponent
+	if output.Cluster.Config != nil && len(output.Cluster.Config.Components) > 0 {
+		components = make([]WaveComponent, len(output.Cluster.Config.Components))
+		for i, outputComponent := range output.Cluster.Config.Components {
+			if outputComponent != nil {
+				component := WaveComponent{
+					Uid:             spotinst.StringValue(outputComponent.Uid),
+					Name:            spotinst.StringValue(outputComponent.Name),
+					OperatorVersion: spotinst.StringValue(outputComponent.OperatorVersion),
+					Version:         spotinst.StringValue(outputComponent.Version),
+					Properties:      outputComponent.Properties,
+					State:           spotinst.StringValue(outputComponent.State),
+				}
+				components[i] = component
+			}
+		}
+	}
+
 	cluster := &WaveCluster{
 		TypeMeta: TypeMeta{
 			Kind: typeOf(WaveCluster{}),
@@ -34,7 +57,8 @@ func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, 
 			CreatedAt: spotinst.TimeValue(output.Cluster.CreatedAt),
 			UpdatedAt: spotinst.TimeValue(output.Cluster.UpdatedAt),
 		},
-		Obj: output.Cluster,
+		Components: components,
+		Obj:        output.Cluster,
 	}
 
 	return cluster, nil

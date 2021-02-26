@@ -39,6 +39,7 @@ func newCmdDescribe(opts *CmdOptions) *CmdDescribe {
 func (x *CmdDescribe) initSubCommands() {
 	commands := []func(*CmdDescribeOptions) *cobra.Command{
 		NewCmdDescribeCluster,
+		NewCmdDescribeComponents,
 	}
 
 	for _, cmd := range commands {
