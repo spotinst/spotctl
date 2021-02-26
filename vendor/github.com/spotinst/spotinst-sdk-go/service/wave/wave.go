@@ -53,6 +53,14 @@ type ListClustersOutput struct {
 	Clusters []*Cluster `json:"clusters,omitempty"`
 }
 
+type ReadClusterInput struct {
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ReadClusterOutput struct {
+	Cluster *Cluster `json:"cluster,omitempty"`
+}
+
 type DeleteClusterInput struct {
 	ClusterID         *string `json:"clusterId,omitempty"`
 	ShouldDeleteOcean *bool   `json:"shouldDeleteOcean,omitempty"`
@@ -75,6 +83,34 @@ func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) 
 	}
 
 	return &ListClustersOutput{Clusters: clusters}, nil
+}
+
+func (s *ServiceOp) ReadCluster(ctx context.Context, input *ReadClusterInput) (*ReadClusterOutput, error) {
+	path, err := uritemplates.Expand("/wave/cluster/{clusterId}", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	clusters, err := clustersFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ReadClusterOutput)
+	if len(clusters) > 0 {
+		output.Cluster = clusters[0]
+	}
+
+	return output, nil
 }
 
 func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput) (*DeleteClusterOutput, error) {

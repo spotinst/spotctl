@@ -3,6 +3,7 @@ package wave
 import (
 	"context"
 	"fmt"
+	"github.com/spotinst/spotctl/internal/writer/writers/json"
 	"os"
 	"sort"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
-	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDescribe struct {
@@ -25,13 +25,11 @@ type CmdDescribe struct {
 
 type CmdDescribeOptions struct {
 	*CmdOptions
-	ClusterID   string
-	ClusterName string
+	ClusterID string
 }
 
 func (x *CmdDescribeOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
-	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
 }
 
 func NewCmdDescribe(opts *CmdOptions) *cobra.Command {
@@ -43,7 +41,7 @@ func newCmdDescribe(opts *CmdOptions) *CmdDescribe {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "describe",
-		Short:         "Describe a Wave installation",
+		Short:         "Describe a Wave cluster",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		RunE: func(*cobra.Command, []string) error {
@@ -69,8 +67,8 @@ func (x *CmdDescribe) survey(ctx context.Context) error {
 }
 
 func (x *CmdDescribeOptions) Validate() error {
-	if x.ClusterID == "" && x.ClusterName == "" {
-		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
+	if x.ClusterID == "" {
+		return errors.Required(flags.FlagWaveClusterID)
 	}
 	return x.CmdOptions.Validate()
 }
@@ -101,9 +99,35 @@ func (x *CmdDescribe) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
-// TODO This should use the Spot API instead of going direct to the cluster
+// TODO describe_cluster describe_components
 func (x *CmdDescribe) run(ctx context.Context) error {
-	if x.opts.ClusterID != "" {
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
+	}
+
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+	if err != nil {
+		return err
+	}
+
+	waveClient, err := spotClient.Services().Wave()
+	if err != nil {
+		return err
+	}
+
+	cluster, err := waveClient.GetCluster(ctx, x.opts.ClusterID)
+	if err != nil {
+		return err
+	}
+
+	w, err := x.opts.Clientset.NewWriter(json.WriterFormat)
+	if err != nil {
+		return err
+	}
+
+	return w.Write(cluster.Obj)
+
+	/*if x.opts.ClusterID != "" {
 		spotClientOpts := []spot.ClientOption{
 			spot.WithCredentialsProfile(x.opts.Profile),
 		}
@@ -135,7 +159,7 @@ func (x *CmdDescribe) run(ctx context.Context) error {
 		return err
 	}
 
-	return printWaveComponentDescriptions(waveComponents)
+	return printWaveComponentDescriptions(waveComponents)*/
 }
 
 func printWaveComponentDescriptions(components *v1alpha1.WaveComponentList) error {

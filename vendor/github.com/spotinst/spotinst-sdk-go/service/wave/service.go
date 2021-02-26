@@ -11,10 +11,11 @@ import (
 // of the Spotinst API. See this package's package overview docs for details on
 // the service.
 type Service interface {
+	ReadCluster(context.Context, *ReadClusterInput) (*ReadClusterOutput, error)
 	ListClusters(context.Context, *ListClustersInput) (*ListClustersOutput, error)
 	DeleteCluster(context.Context, *DeleteClusterInput) (*DeleteClusterOutput, error)
-	// TODO Get cluster?
-	// TODO Get Spark application(s)
+	// TODO List spark applications (with query params for filtering)
+	// TODO Read Spark application
 }
 
 type ServiceOp struct {

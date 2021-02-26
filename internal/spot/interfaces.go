@@ -116,6 +116,9 @@ type (
 		// ListClusters returns a list of Wave clusters.
 		ListClusters(ctx context.Context) ([]*WaveCluster, error)
 
+		// GetCluster returns a Wave cluster by ID.
+		GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error)
+
 		// DeleteCluster deletes a Wave cluster by ID.
 		DeleteCluster(ctx context.Context, clusterID string, deleteOcean bool, force bool) error
 

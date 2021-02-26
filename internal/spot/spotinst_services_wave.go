@@ -12,6 +12,34 @@ type wave struct {
 	svc wavesdk.Service
 }
 
+func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error) {
+	log.Debugf("Getting Wave cluster by ID: %s", clusterID)
+
+	input := &wavesdk.ReadClusterInput{
+		ClusterID: spotinst.String(clusterID),
+	}
+
+	output, err := x.svc.ReadCluster(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	cluster := &WaveCluster{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(WaveCluster{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(output.Cluster.ID),
+			Name:      spotinst.StringValue(output.Cluster.ClusterIdentifier),
+			CreatedAt: spotinst.TimeValue(output.Cluster.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(output.Cluster.UpdatedAt),
+		},
+		Obj: output.Cluster,
+	}
+
+	return cluster, nil
+}
+
 func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDeleteOcean bool, forceDelete bool) error {
 	log.Debugf("Deleting Wave cluster by ID: %s (shouldDeleteOcean: %t, forceDelete: %t)", clusterID, shouldDeleteOcean, forceDelete)
 
