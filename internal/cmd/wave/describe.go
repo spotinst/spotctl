@@ -40,6 +40,7 @@ func (x *CmdDescribe) initSubCommands() {
 	commands := []func(*CmdDescribeOptions) *cobra.Command{
 		NewCmdDescribeCluster,
 		NewCmdDescribeComponents,
+		NewCmdDescribeSparkApplication,
 	}
 
 	for _, cmd := range commands {

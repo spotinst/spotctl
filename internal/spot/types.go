@@ -168,7 +168,7 @@ type (
 		State string `json:"state" table:"3,state"`
 
 		// Wave cluster's components
-		Components []WaveComponent `json:"components"`
+		Components []WaveComponent `json:"-"`
 
 		// Obj holds the raw object
 		Obj interface{} `json:"-"`
@@ -200,7 +200,7 @@ type (
 
 		State string `json:"state" table:"3,state"`
 
-		ClusterIdentifier string `json:"clusterIdentifier" table:"4,cluster"`
+		ClusterIdentifier string `json:"clusterIdentifier" table:"4,clusterIdentifier"`
 
 		ApplicationId string `json:"applicationId" table:"5,applicationId"`
 
