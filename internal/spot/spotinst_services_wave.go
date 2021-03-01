@@ -22,7 +22,7 @@ func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, 
 
 	output, err := x.svc.ReadCluster(ctx, input)
 	if err != nil {
-		return nil, err
+		return nil, parseError(err)
 	}
 
 	return buildCluster(output.Cluster)

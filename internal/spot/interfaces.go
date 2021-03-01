@@ -127,10 +127,6 @@ type (
 
 		// GetSparkApplication returns a Wave Spark application by ID.
 		GetSparkApplication(ctx context.Context, id string) (*SparkApplication, error)
-
-		// TODO add --purge flag to delete (or something) - that should poll the API and wait for the cluster to be deleted, and then
-		// TODO remove the tide RBAC and environment CR and CRD
-
 	}
 
 	// CloudProviderName represents the name of a cloud provider.

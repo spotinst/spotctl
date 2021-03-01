@@ -2,16 +2,19 @@ package wave
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/wave-operator/tide"
+	"k8s.io/apimachinery/pkg/util/wait"
+
+	spoterrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/wave"
-	"github.com/spotinst/wave-operator/tide"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"time"
 )
 
 type CmdDelete struct {
@@ -73,7 +76,7 @@ func (x *CmdDelete) survey(ctx context.Context) error {
 
 func (x *CmdDeleteOptions) Validate() error {
 	if x.ClusterID == "" {
-		return errors.Required(flags.FlagWaveClusterID)
+		return spoterrors.Required(flags.FlagWaveClusterID)
 	}
 	return x.CmdOptions.Validate()
 }
@@ -143,8 +146,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 
 	err = wait.Poll(pollInterval, deletionTimeout, func() (bool, error) {
 		_, err := waveClient.GetCluster(ctx, x.opts.ClusterID)
-		if err != nil {
-			// TODO PARSE ERROR
+		if err != nil && errors.As(err, &spot.ResourceDoesNotExistError{}) {
 			return true, nil
 		} else {
 			return false, nil
