@@ -49,8 +49,7 @@ func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state
 		input.ClusterIdentifier = spotinst.String(clusterIdentifier)
 	}
 	if state != "" {
-		clusterState := wavesdk.ClusterState(state)
-		input.ClusterState = &clusterState
+		input.ClusterState = spotinst.String(state)
 	}
 
 	output, err := x.svc.ListClusters(ctx, input)
@@ -68,6 +67,63 @@ func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state
 	}
 
 	return clusters, nil
+}
+
+func (x *wave) ListSparkApplications(ctx context.Context, filter *SparkApplicationsFilter) ([]*SparkApplication, error) {
+	log.Debugf("Listing Spark applications")
+
+	input := &wavesdk.ListSparkApplicationsInput{}
+	if filter != nil {
+		if filter.ClusterIdentifier != "" {
+			input.ClusterIdentifier = spotinst.String(filter.ClusterIdentifier)
+		}
+		if filter.ApplicationState != "" {
+			input.ApplicationState = spotinst.String(filter.ApplicationState)
+		}
+		if filter.Namespace != "" {
+			input.Namespace = spotinst.String(filter.Namespace)
+		}
+		if filter.Name != "" {
+			input.Name = spotinst.String(filter.Name)
+		}
+		if filter.Heritage != "" {
+			input.Heritage = spotinst.String(filter.Heritage)
+		}
+		if filter.ApplicationId != "" {
+			input.ApplicationId = spotinst.String(filter.ApplicationId)
+		}
+	}
+
+	output, err := x.svc.ListSparkApplications(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	sparkApplications := make([]*SparkApplication, len(output.SparkApplications))
+	for i, outputSparkApplication := range output.SparkApplications {
+		sparkApplication, err := buildSparkApplication(outputSparkApplication)
+		if err != nil {
+			return nil, err
+		}
+		sparkApplications[i] = sparkApplication
+	}
+
+	return sparkApplications, nil
+}
+
+func (x *wave) GetSparkApplication(ctx context.Context, id string) (*SparkApplication, error) {
+	log.Debugf("Getting Wave Spark application by ID: %s", id)
+
+	input := &wavesdk.ReadSparkApplicationInput{
+		ID: spotinst.String(id),
+	}
+
+	output, err := x.svc.ReadSparkApplication(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return buildSparkApplication(output.SparkApplication)
 }
 
 func buildCluster(cluster *wavesdk.Cluster) (*WaveCluster, error) {
@@ -106,5 +162,27 @@ func buildCluster(cluster *wavesdk.Cluster) (*WaveCluster, error) {
 		State:      spotinst.StringValue(cluster.State),
 		Components: components,
 		Obj:        cluster,
+	}, nil
+}
+
+func buildSparkApplication(sparkApplication *wavesdk.SparkApplication) (*SparkApplication, error) {
+	if sparkApplication == nil {
+		return nil, fmt.Errorf("spark application is nil")
+	}
+
+	return &SparkApplication{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(SparkApplication{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(sparkApplication.ID),
+			Name:      spotinst.StringValue(sparkApplication.Name),
+			CreatedAt: spotinst.TimeValue(sparkApplication.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(sparkApplication.UpdatedAt),
+		},
+		State:             spotinst.StringValue(sparkApplication.ApplicationState),
+		ClusterIdentifier: spotinst.StringValue(sparkApplication.ClusterIdentifier),
+		ApplicationId:     spotinst.StringValue(sparkApplication.ApplicationID),
+		Obj:               sparkApplication,
 	}, nil
 }

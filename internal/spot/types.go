@@ -183,6 +183,36 @@ type (
 		Properties      map[string]string `json:"properties,omitempty"`
 		State           string            `json:"state"`
 	}
+
+	// SparkApplication represents a Wave Spark application.
+	SparkApplication struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		// TODO Should just show the values that are in the Spark application listing in the UI, and allow to filter on those
+
+		State string `json:"state" table:"3,state"`
+
+		ClusterIdentifier string `json:"clusterIdentifier" table:"4,cluster"`
+
+		ApplicationId string `json:"applicationId" table:"5,applicationId"`
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
+
+	// SparkApplicationsFilter contains filter options for the list Spark applications command
+	SparkApplicationsFilter struct {
+		ClusterIdentifier string
+		Name              string
+		Namespace         string
+		ApplicationId     string
+		ApplicationState  string
+		Heritage          string
+	}
 )
 
 // typeOf returns obj type's name using reflection.

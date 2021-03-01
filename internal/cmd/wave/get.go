@@ -41,6 +41,7 @@ func newCmdGet(opts *CmdOptions) *CmdGet {
 func (x *CmdGet) initSubCommands() {
 	commands := []func(*CmdGetOptions) *cobra.Command{
 		NewCmdGetCluster,
+		NewCmdGetSparkApplication,
 	}
 
 	for _, cmd := range commands {

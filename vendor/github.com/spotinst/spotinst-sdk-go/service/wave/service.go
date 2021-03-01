@@ -14,8 +14,8 @@ type Service interface {
 	ReadCluster(context.Context, *ReadClusterInput) (*ReadClusterOutput, error)
 	ListClusters(context.Context, *ListClustersInput) (*ListClustersOutput, error)
 	DeleteCluster(context.Context, *DeleteClusterInput) (*DeleteClusterOutput, error)
-	// TODO List spark applications (with query params for filtering)
-	// TODO Read Spark application
+	ReadSparkApplication(context.Context, *ReadSparkApplicationInput) (*ReadSparkApplicationOutput, error)
+	ListSparkApplications(context.Context, *ListSparkApplicationsInput) (*ListSparkApplicationsOutput, error)
 }
 
 type ServiceOp struct {

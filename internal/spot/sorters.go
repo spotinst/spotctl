@@ -63,3 +63,19 @@ func (s *WaveClustersSorter) Swap(i, j int) {
 func (s *WaveClustersSorter) Less(i, j int) bool {
 	return s.Clusters[i].UpdatedAt.After(s.Clusters[j].UpdatedAt)
 }
+
+type SparkApplicationsSorter struct {
+	SparkApplications []*SparkApplication
+}
+
+func (s *SparkApplicationsSorter) Len() int {
+	return len(s.SparkApplications)
+}
+
+func (s *SparkApplicationsSorter) Swap(i, j int) {
+	s.SparkApplications[i], s.SparkApplications[j] = s.SparkApplications[j], s.SparkApplications[i]
+}
+
+func (s *SparkApplicationsSorter) Less(i, j int) bool {
+	return s.SparkApplications[i].UpdatedAt.After(s.SparkApplications[j].UpdatedAt)
+}

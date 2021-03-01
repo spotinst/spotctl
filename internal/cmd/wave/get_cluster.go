@@ -8,7 +8,6 @@ import (
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/writer"
-	"github.com/spotinst/spotinst-sdk-go/service/wave"
 	"sort"
 	"strings"
 )
@@ -115,6 +114,7 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		}
 	}
 
+	// Should the json writer just write out the json as is? like in describe (cluster.obj)
 	w, err := x.opts.Clientset.NewWriter(writer.Format(x.opts.Output))
 	if err != nil {
 		return err
@@ -144,20 +144,5 @@ func (x *CmdGetClusterOptions) Validate() error {
 	if x.ClusterID != "" && x.ClusterName != "" {
 		return errors.RequiredXor(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
 	}
-	if x.ClusterState != "" {
-		if !validateClusterState(x.ClusterState) {
-			return errors.Invalid(flags.FlagWaveClusterState, x.ClusterState)
-		}
-	}
 	return x.CmdGetOptions.Validate()
-}
-
-func validateClusterState(state string) bool {
-	clusterState := wave.ClusterState(strings.ToUpper(state))
-	switch clusterState {
-	case wave.ClusterDegraded, wave.ClusterAvailable, wave.ClusterFailing, wave.ClusterProgressing, wave.ClusterUnknown:
-		return true
-	default:
-		return false
-	}
 }
