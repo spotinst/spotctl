@@ -107,8 +107,11 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		clusters = make([]*spot.WaveCluster, 1)
 		clusters[0] = cluster
 	} else {
-		clusterState := strings.ToUpper(x.opts.ClusterState)
-		clusters, err = waveClient.ListClusters(ctx, x.opts.ClusterName, clusterState)
+		filter := &spot.WaveClustersFilter{
+			ClusterIdentifier: x.opts.ClusterName,
+			ClusterState:      strings.ToUpper(x.opts.ClusterState),
+		}
+		clusters, err = waveClient.ListClusters(ctx, filter)
 		if err != nil {
 			return err
 		}

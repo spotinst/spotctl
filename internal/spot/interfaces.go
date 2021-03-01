@@ -113,9 +113,8 @@ type (
 	// WaveInterface defines the interface of the Spot Wave API.
 	WaveInterface interface {
 
-		// TODO Change to filter object
 		// ListClusters returns a list of Wave clusters.
-		ListClusters(ctx context.Context, clusterIdentifier string, state string) ([]*WaveCluster, error)
+		ListClusters(ctx context.Context, filter *WaveClustersFilter) ([]*WaveCluster, error)
 
 		// GetCluster returns a Wave cluster by ID.
 		GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error)

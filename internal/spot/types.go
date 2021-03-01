@@ -184,6 +184,12 @@ type (
 		State           string            `json:"state"`
 	}
 
+	// WaveClustersFilter contains filter options for the list Wave clusters command
+	WaveClustersFilter struct {
+		ClusterIdentifier string
+		ClusterState      string
+	}
+
 	// SparkApplication represents a Wave Spark application.
 	SparkApplication struct {
 		// Type's metadata.

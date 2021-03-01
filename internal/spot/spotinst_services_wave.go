@@ -41,15 +41,17 @@ func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDelete
 	return err
 }
 
-func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state string) ([]*WaveCluster, error) {
-	log.Debugf("Listing Wave clusters (clusterIdentifier: %q, state: %q)", clusterIdentifier, state)
+func (x *wave) ListClusters(ctx context.Context, filter *WaveClustersFilter) ([]*WaveCluster, error) {
+	log.Debugf("Listing Wave clusters, filter: %+v", filter)
 
 	input := &wavesdk.ListClustersInput{}
-	if clusterIdentifier != "" {
-		input.ClusterIdentifier = spotinst.String(clusterIdentifier)
-	}
-	if state != "" {
-		input.ClusterState = spotinst.String(state)
+	if filter != nil {
+		if filter.ClusterIdentifier != "" {
+			input.ClusterIdentifier = spotinst.String(filter.ClusterIdentifier)
+		}
+		if filter.ClusterState != "" {
+			input.ClusterState = spotinst.String(filter.ClusterState)
+		}
 	}
 
 	output, err := x.svc.ListClusters(ctx, input)
@@ -70,7 +72,7 @@ func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state
 }
 
 func (x *wave) ListSparkApplications(ctx context.Context, filter *SparkApplicationsFilter) ([]*SparkApplication, error) {
-	log.Debugf("Listing Spark applications, filter: %v", filter)
+	log.Debugf("Listing Spark applications, filter: %+v", filter)
 
 	input := &wavesdk.ListSparkApplicationsInput{}
 	if filter != nil {
