@@ -3,14 +3,15 @@ package wave
 import (
 	"context"
 	"encoding/json"
-	"github.com/spotinst/spotinst-sdk-go/spotinst"
-	"github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
+	"github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates"
 )
 
 type Cluster struct {
@@ -134,6 +135,10 @@ func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) 
 }
 
 func (s *ServiceOp) ReadCluster(ctx context.Context, input *ReadClusterInput) (*ReadClusterOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+
 	path, err := uritemplates.Expand("/wave/cluster/{clusterId}", uritemplates.Values{
 		"clusterId": spotinst.StringValue(input.ClusterID),
 	})
@@ -162,6 +167,10 @@ func (s *ServiceOp) ReadCluster(ctx context.Context, input *ReadClusterInput) (*
 }
 
 func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput) (*DeleteClusterOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+
 	path, err := uritemplates.Expand("/wave/cluster/{clusterId}", uritemplates.Values{
 		"clusterId": spotinst.StringValue(input.ClusterID),
 	})
@@ -171,7 +180,7 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 
 	r := client.NewRequest(http.MethodDelete, path)
 
-	if input != nil {
+	if input.ShouldDeleteOcean != nil {
 		r.Params.Set("shouldDeleteOcean",
 			strconv.FormatBool(spotinst.BoolValue(input.ShouldDeleteOcean)))
 	}
@@ -183,41 +192,6 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 	defer resp.Body.Close()
 
 	return &DeleteClusterOutput{}, nil
-}
-
-func clustersFromHttpResponse(resp *http.Response) ([]*Cluster, error) {
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return clustersFromJSON(body)
-}
-
-func clustersFromJSON(in []byte) ([]*Cluster, error) {
-	var rw client.Response
-	if err := json.Unmarshal(in, &rw); err != nil {
-		return nil, err
-	}
-	out := make([]*Cluster, len(rw.Response.Items))
-	if len(out) == 0 {
-		return out, nil
-	}
-	for i, rb := range rw.Response.Items {
-		b, err := clusterFromJSON(rb)
-		if err != nil {
-			return nil, err
-		}
-		out[i] = b
-	}
-	return out, nil
-}
-
-func clusterFromJSON(in []byte) (*Cluster, error) {
-	b := new(Cluster)
-	if err := json.Unmarshal(in, b); err != nil {
-		return nil, err
-	}
-	return b, nil
 }
 
 func (s *ServiceOp) ListSparkApplications(ctx context.Context, input *ListSparkApplicationsInput) (*ListSparkApplicationsOutput, error) {
@@ -264,6 +238,10 @@ func (s *ServiceOp) ListSparkApplications(ctx context.Context, input *ListSparkA
 }
 
 func (s *ServiceOp) ReadSparkApplication(ctx context.Context, input *ReadSparkApplicationInput) (*ReadSparkApplicationOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+
 	path, err := uritemplates.Expand("/wave/spark/application/{id}", uritemplates.Values{
 		"id": spotinst.StringValue(input.ID),
 	})
@@ -289,6 +267,41 @@ func (s *ServiceOp) ReadSparkApplication(ctx context.Context, input *ReadSparkAp
 	}
 
 	return output, nil
+}
+
+func clustersFromHttpResponse(resp *http.Response) ([]*Cluster, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return clustersFromJSON(body)
+}
+
+func clustersFromJSON(in []byte) ([]*Cluster, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*Cluster, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := clusterFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func clusterFromJSON(in []byte) (*Cluster, error) {
+	b := new(Cluster)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func sparkApplicationsFromHttpResponse(resp *http.Response) ([]*SparkApplication, error) {
