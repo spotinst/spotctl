@@ -81,7 +81,6 @@ type ReadClusterOutput struct {
 type DeleteClusterInput struct {
 	ClusterID         *string `json:"clusterId,omitempty"`
 	ShouldDeleteOcean *bool   `json:"shouldDeleteOcean,omitempty"`
-	ForceDelete       *bool   `json:"forceDelete,omitempty"`
 }
 
 type DeleteClusterOutput struct{}
@@ -172,14 +171,9 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 
 	r := client.NewRequest(http.MethodDelete, path)
 
-	if input.ShouldDeleteOcean != nil {
+	if input != nil {
 		r.Params.Set("shouldDeleteOcean",
 			strconv.FormatBool(spotinst.BoolValue(input.ShouldDeleteOcean)))
-	}
-
-	if input.ForceDelete != nil {
-		r.Params.Set("forceDelete",
-			strconv.FormatBool(spotinst.BoolValue(input.ForceDelete)))
 	}
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))

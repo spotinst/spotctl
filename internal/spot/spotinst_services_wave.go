@@ -28,13 +28,12 @@ func (x *wave) GetCluster(ctx context.Context, clusterID string) (*WaveCluster, 
 	return buildCluster(output.Cluster)
 }
 
-func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDeleteOcean bool, forceDelete bool) error {
-	log.Debugf("Deleting Wave cluster by ID: %s (shouldDeleteOcean: %t, forceDelete: %t)", clusterID, shouldDeleteOcean, forceDelete)
+func (x *wave) DeleteCluster(ctx context.Context, clusterID string, shouldDeleteOcean bool) error {
+	log.Debugf("Deleting Wave cluster by ID: %s (shouldDeleteOcean: %t)", clusterID, shouldDeleteOcean)
 
 	input := &wavesdk.DeleteClusterInput{
 		ClusterID:         spotinst.String(clusterID),
 		ShouldDeleteOcean: spotinst.Bool(shouldDeleteOcean),
-		ForceDelete:       spotinst.Bool(forceDelete),
 	}
 
 	_, err := x.svc.DeleteCluster(ctx, input)

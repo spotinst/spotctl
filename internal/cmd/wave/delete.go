@@ -18,13 +18,11 @@ type CmdDeleteOptions struct {
 	*CmdOptions
 	ClusterID   string
 	DeleteOcean bool
-	Force       bool
 }
 
 func (x *CmdDeleteOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
 	fs.BoolVar(&x.DeleteOcean, flags.FlagWaveDeleteOceanCluster, x.DeleteOcean, "delete ocean cluster")
-	fs.BoolVar(&x.Force, flags.FlagWaveForceDelete, x.Force, "force delete")
 }
 
 func NewCmdDelete(opts *CmdOptions) *cobra.Command {
@@ -114,7 +112,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	return waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean, x.opts.Force)
+	return waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean)
 
 	/*oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 	if err != nil {

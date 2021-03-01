@@ -120,7 +120,7 @@ type (
 		GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error)
 
 		// DeleteCluster deletes a Wave cluster by ID.
-		DeleteCluster(ctx context.Context, clusterID string, deleteOcean bool, force bool) error
+		DeleteCluster(ctx context.Context, clusterID string, deleteOcean bool) error
 
 		// ListSparkApplications returns a list of Wave Spark applications.
 		ListSparkApplications(ctx context.Context, filter *SparkApplicationsFilter) ([]*SparkApplication, error)
@@ -128,8 +128,6 @@ type (
 		// GetSparkApplication returns a Wave Spark application by ID.
 		GetSparkApplication(ctx context.Context, id string) (*SparkApplication, error)
 
-		// TODO Change describe cluster to just describe the components and cluster state, we get the json from the get cmd
-		// TODO I should have create cluster and delete cluster commands (not in top level create and delete)
 		// TODO add --purge flag to delete (or something) - that should poll the API and wait for the cluster to be deleted, and then
 		// TODO remove the tide RBAC and environment CR and CRD
 
