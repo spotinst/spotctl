@@ -61,6 +61,7 @@ const (
 	FlagWaveConfigFile               string = "config-file"
 	FlagWaveImage                    string = "wave-image"
 	FlagWaveDeleteOceanCluster       string = "delete-ocean"
+	FlagWaveDeleteClusterPurge       string = "purge"
 	FlagWaveClusterState             string = "state"
 	FlagWaveSparkApplicationName     string = "name"
 	FlagWaveSparkApplicationEntityId string = "id"

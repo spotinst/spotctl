@@ -2,11 +2,16 @@ package wave
 
 import (
 	"context"
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/wave"
+	"github.com/spotinst/wave-operator/tide"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"time"
 )
 
 type CmdDelete struct {
@@ -18,11 +23,18 @@ type CmdDeleteOptions struct {
 	*CmdOptions
 	ClusterID   string
 	DeleteOcean bool
+	Purge       bool
 }
+
+const (
+	deletionTimeout = 5 * time.Minute
+	pollInterval    = 5 * time.Second
+)
 
 func (x *CmdDeleteOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
 	fs.BoolVar(&x.DeleteOcean, flags.FlagWaveDeleteOceanCluster, x.DeleteOcean, "delete ocean cluster")
+	fs.BoolVar(&x.Purge, flags.FlagWaveDeleteClusterPurge, x.Purge, "delete all configuration (requires admin cluster access)")
 }
 
 func NewCmdDelete(opts *CmdOptions) *cobra.Command {
@@ -112,55 +124,55 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		return err
 	}
 
-	return waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean)
-
-	/*oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
-	if err != nil {
-		return err
-	}
-
-	c, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
-	if err != nil {
-		return err
-	}
-
-	// TODO Remove option to specify cluster-name on command line, or look up Ocean cluster by name,
-	// This will override the user supplied command line flag
-	x.opts.ClusterName = c.Name
-
-	// TODO Delete ocean cluster if it was provisioned
-	// TODO Delete kubernetes cluster if it was provisioned
-
-	if err := wave.ValidateClusterContext(c.Name); err != nil {
-		return fmt.Errorf("cluster context validation failure, %w", err)
+	if x.opts.Purge {
+		cluster, err := waveClient.GetCluster(ctx, x.opts.ClusterID)
+		if err != nil {
+			return err
+		}
+		if err := wave.ValidateClusterContext(cluster.Name); err != nil {
+			return fmt.Errorf("cluster context validation failure, %w", err)
+		}
 	}
 
 	logger := getWaveLogger()
 
-	manager, err := tide.NewManager(logger)
-	if err != nil {
+	logger.Info("Deleting Wave cluster ...")
+	if err := waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean); err != nil {
 		return err
 	}
 
-	logger.Info("uninstalling wave")
+	err = wait.Poll(pollInterval, deletionTimeout, func() (bool, error) {
+		_, err := waveClient.GetCluster(ctx, x.opts.ClusterID)
+		if err != nil {
+			// TODO PARSE ERROR
+			return true, nil
+		} else {
+			return false, nil
+		}
+	})
 
-	err = manager.Delete()
-	if err != nil {
-		return fmt.Errorf("could not delete wave, %w", err)
+	if !x.opts.Purge {
+		logger.Info("Wave cluster deleted")
+		return nil
+	} else {
+		// Purge Wave Environment CRD and tide RBAC
+		logger.Info("Deleting Wave configuration ...")
+		manager, err := tide.NewManager(logger)
+		if err != nil {
+			return err
+		}
+		err = manager.DeleteConfiguration(true)
+		if err != nil {
+			return fmt.Errorf("could not delete wave configuration, %w", err)
+		}
+		err = manager.DeleteTideRBAC()
+		if err != nil {
+			return fmt.Errorf("could not delete tide rbac objects, %w", err)
+		}
+		logger.Info("Wave has been removed")
 	}
 
-	// Since we are running from CLI, we can do a full uninstall and remove the CRD too
-	err = manager.DeleteConfiguration(true)
-	if err != nil {
-		return fmt.Errorf("could not delete wave configuration, %w", err)
-	}
+	// TODO Delete kubernetes cluster if it was provisioned
 
-	err = manager.DeleteTideRBAC()
-	if err != nil {
-		return fmt.Errorf("could not delete tide rbac objects, %w", err)
-	}
-
-	logger.Info("wave has been uninstalled")
-
-	return nil*/
+	return nil
 }
