@@ -149,7 +149,6 @@ func (x *CmdGetSparkApplicationOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdGetSparkApplicationOptions) Validate() error {
-	// TODO Do this for list clusters too
 	if x.ApplicationId != "" {
 		if x.ClusterName != "" {
 			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveClusterName)

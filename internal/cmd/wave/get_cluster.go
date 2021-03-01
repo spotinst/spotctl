@@ -144,8 +144,13 @@ func (x *CmdGetClusterOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdGetClusterOptions) Validate() error {
-	if x.ClusterID != "" && x.ClusterName != "" {
-		return errors.RequiredXor(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
+	if x.ClusterID != "" {
+		if x.ClusterName != "" {
+			return errors.RequiredXor(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
+		}
+		if x.ClusterState != "" {
+			return errors.RequiredXor(flags.FlagWaveClusterID, flags.FlagWaveClusterState)
+		}
 	}
 	return x.CmdGetOptions.Validate()
 }
