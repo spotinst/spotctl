@@ -70,7 +70,7 @@ func (x *wave) ListClusters(ctx context.Context, clusterIdentifier string, state
 }
 
 func (x *wave) ListSparkApplications(ctx context.Context, filter *SparkApplicationsFilter) ([]*SparkApplication, error) {
-	log.Debugf("Listing Spark applications")
+	log.Debugf("Listing Spark applications, filter: %v", filter)
 
 	input := &wavesdk.ListSparkApplicationsInput{}
 	if filter != nil {
@@ -80,14 +80,8 @@ func (x *wave) ListSparkApplications(ctx context.Context, filter *SparkApplicati
 		if filter.ApplicationState != "" {
 			input.ApplicationState = spotinst.String(filter.ApplicationState)
 		}
-		if filter.Namespace != "" {
-			input.Namespace = spotinst.String(filter.Namespace)
-		}
 		if filter.Name != "" {
 			input.Name = spotinst.String(filter.Name)
-		}
-		if filter.Heritage != "" {
-			input.Heritage = spotinst.String(filter.Heritage)
 		}
 		if filter.ApplicationId != "" {
 			input.ApplicationId = spotinst.String(filter.ApplicationId)

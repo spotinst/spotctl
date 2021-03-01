@@ -192,8 +192,6 @@ type (
 		// Object's metadata.
 		ObjectMeta
 
-		// TODO Should just show the values that are in the Spark application listing in the UI, and allow to filter on those
-
 		State string `json:"state" table:"3,state"`
 
 		ClusterIdentifier string `json:"clusterIdentifier" table:"4,cluster"`
@@ -208,10 +206,8 @@ type (
 	SparkApplicationsFilter struct {
 		ClusterIdentifier string
 		Name              string
-		Namespace         string
 		ApplicationId     string
 		ApplicationState  string
-		Heritage          string
 	}
 )
 

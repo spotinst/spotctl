@@ -19,13 +19,11 @@ type (
 
 	CmdGetSparkApplicationOptions struct {
 		*CmdGetOptions
-		ClusterName          string
-		ApplicationName      string
-		ApplicationNamespace string
-		ApplicationId        string
-		ApplicationSparkId   string
-		ApplicationState     string
-		ApplicationHeritage  string
+		ClusterName        string
+		ApplicationName    string
+		ApplicationId      string
+		ApplicationSparkId string
+		ApplicationState   string
 	}
 )
 
@@ -113,10 +111,8 @@ func (x *CmdGetSparkApplication) run(ctx context.Context) error {
 		filter := &spot.SparkApplicationsFilter{
 			ClusterIdentifier: x.opts.ClusterName,
 			Name:              x.opts.ApplicationName,
-			Namespace:         x.opts.ApplicationNamespace,
 			ApplicationId:     x.opts.ApplicationSparkId,
 			ApplicationState:  x.opts.ApplicationState,
-			Heritage:          x.opts.ApplicationHeritage,
 		}
 		sparkApplications, err = waveClient.ListSparkApplications(ctx, filter)
 		if err != nil {
@@ -145,14 +141,11 @@ func (x *CmdGetSparkApplicationOptions) initDefaults(opts *CmdGetOptions) {
 }
 
 func (x *CmdGetSparkApplicationOptions) initFlags(fs *pflag.FlagSet) {
-	// TODO Remove some of these flags ... only allow filtering by table columns?
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
 	fs.StringVar(&x.ApplicationName, flags.FlagWaveSparkApplicationName, x.ApplicationName, "application name")
-	fs.StringVar(&x.ApplicationNamespace, flags.FlagWaveSparkApplicationNamespace, x.ApplicationNamespace, "application namespace")
 	fs.StringVar(&x.ApplicationId, flags.FlagWaveSparkApplicationEntityId, x.ApplicationId, "application id")
 	fs.StringVar(&x.ApplicationSparkId, flags.FlagWaveSparkApplicationSparkId, x.ApplicationSparkId, "the application's spark id (spark-xxx)")
 	fs.StringVar(&x.ApplicationState, flags.FlagWaveSparkApplicationState, x.ApplicationState, "application state")
-	fs.StringVar(&x.ApplicationHeritage, flags.FlagWaveSparkApplicationHeritage, x.ApplicationHeritage, "application heritage")
 }
 
 func (x *CmdGetSparkApplicationOptions) Validate() error {
@@ -164,17 +157,11 @@ func (x *CmdGetSparkApplicationOptions) Validate() error {
 		if x.ApplicationName != "" {
 			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationName)
 		}
-		if x.ApplicationNamespace != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationNamespace)
-		}
 		if x.ApplicationSparkId != "" {
 			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationSparkId)
 		}
 		if x.ApplicationState != "" {
 			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationState)
-		}
-		if x.ApplicationHeritage != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationHeritage)
 		}
 	}
 	return x.CmdGetOptions.Validate()
