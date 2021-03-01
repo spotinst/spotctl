@@ -283,9 +283,6 @@ func clustersFromJSON(in []byte) ([]*Cluster, error) {
 		return nil, err
 	}
 	out := make([]*Cluster, len(rw.Response.Items))
-	if len(out) == 0 {
-		return out, nil
-	}
 	for i, rb := range rw.Response.Items {
 		b, err := clusterFromJSON(rb)
 		if err != nil {
@@ -318,9 +315,6 @@ func sparkApplicationsFromJSON(in []byte) ([]*SparkApplication, error) {
 		return nil, err
 	}
 	out := make([]*SparkApplication, len(rw.Response.Items))
-	if len(out) == 0 {
-		return out, nil
-	}
 	for i, rb := range rw.Response.Items {
 		b, err := sparkApplicationFromJSON(rb)
 		if err != nil {
