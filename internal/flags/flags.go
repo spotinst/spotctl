@@ -64,8 +64,8 @@ const (
 	FlagWaveDeleteClusterPurge       string = "purge"
 	FlagWaveClusterState             string = "state"
 	FlagWaveSparkApplicationName     string = "name"
-	FlagWaveSparkApplicationEntityId string = "id"
-	FlagWaveSparkApplicationSparkId  string = "spark-id"
+	FlagWaveSparkApplicationEntityID string = "id"
+	FlagWaveSparkApplicationSparkID  string = "spark-id"
 	FlagWaveSparkApplicationState    string = "state"
 )
 

@@ -32,7 +32,7 @@ type Environment struct {
 	K8sClusterProvisioned   *bool   `json:"k8sClusterProvisioned,omitempty"`
 	OceanClusterProvisioned *bool   `json:"oceanClusterProvisioned,omitempty"`
 	EnvironmentNamespace    *string `json:"environmentNamespace,omitempty"`
-	OceanClusterId          *string `json:"oceanClusterId,omitempty"`
+	OceanClusterID          *string `json:"oceanClusterId,omitempty"`
 }
 
 type Config struct {
@@ -40,7 +40,7 @@ type Config struct {
 }
 
 type Component struct {
-	Uid             *string           `json:"uid,omitempty"`
+	UID             *string           `json:"uid,omitempty"`
 	Name            *string           `json:"name,omitempty"`
 	OperatorVersion *string           `json:"operatorVersion,omitempty"`
 	Version         *string           `json:"version,omitempty"`
@@ -90,7 +90,7 @@ type ListSparkApplicationsInput struct {
 	ClusterIdentifier *string `json:"clusterIdentifier,omitempty"`
 	Name              *string `json:"name,omitempty"`
 	Namespace         *string `json:"namespace,omitempty"`
-	ApplicationId     *string `json:"applicationId,omitempty"`
+	ApplicationID     *string `json:"applicationId,omitempty"`
 	ApplicationState  *string `json:"applicationState,omitempty"`
 	Heritage          *string `json:"heritage,omitempty"`
 }
@@ -206,8 +206,8 @@ func (s *ServiceOp) ListSparkApplications(ctx context.Context, input *ListSparkA
 			r.Params.Set("name", spotinst.StringValue(input.Name))
 		}
 
-		if input.ApplicationId != nil {
-			r.Params.Set("applicationId", spotinst.StringValue(input.ApplicationId))
+		if input.ApplicationID != nil {
+			r.Params.Set("applicationId", spotinst.StringValue(input.ApplicationID))
 		}
 
 		if input.ApplicationState != nil {

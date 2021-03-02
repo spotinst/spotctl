@@ -54,7 +54,7 @@ func (x *CmdDescribeSparkApplicationOptions) initDefaults(opts *CmdDescribeOptio
 }
 
 func (x *CmdDescribeSparkApplicationOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ID, flags.FlagWaveSparkApplicationEntityId, x.ID, "id of the spark application")
+	fs.StringVar(&x.ID, flags.FlagWaveSparkApplicationEntityID, x.ID, "id of the spark application")
 }
 
 func (x *CmdDescribeSparkApplication) survey(ctx context.Context) error {
@@ -66,7 +66,7 @@ func (x *CmdDescribeSparkApplication) survey(ctx context.Context) error {
 
 func (x *CmdDescribeSparkApplicationOptions) Validate() error {
 	if x.ID == "" {
-		return errors.Required(flags.FlagWaveSparkApplicationEntityId)
+		return errors.Required(flags.FlagWaveSparkApplicationEntityID)
 	}
 	return x.CmdDescribeOptions.Validate()
 }

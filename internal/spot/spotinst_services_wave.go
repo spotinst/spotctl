@@ -84,8 +84,8 @@ func (x *wave) ListSparkApplications(ctx context.Context, filter *SparkApplicati
 		if filter.Name != "" {
 			input.Name = spotinst.String(filter.Name)
 		}
-		if filter.ApplicationId != "" {
-			input.ApplicationId = spotinst.String(filter.ApplicationId)
+		if filter.ApplicationID != "" {
+			input.ApplicationID = spotinst.String(filter.ApplicationID)
 		}
 	}
 
@@ -132,7 +132,7 @@ func buildCluster(cluster *wavesdk.Cluster) (*WaveCluster, error) {
 		for i, comp := range cluster.Config.Components {
 			if comp != nil {
 				component := WaveComponent{
-					Uid:             spotinst.StringValue(comp.Uid),
+					UID:             spotinst.StringValue(comp.UID),
 					Name:            spotinst.StringValue(comp.Name),
 					OperatorVersion: spotinst.StringValue(comp.OperatorVersion),
 					Version:         spotinst.StringValue(comp.Version),
@@ -177,7 +177,7 @@ func buildSparkApplication(sparkApplication *wavesdk.SparkApplication) (*SparkAp
 		},
 		State:             spotinst.StringValue(sparkApplication.ApplicationState),
 		ClusterIdentifier: spotinst.StringValue(sparkApplication.ClusterIdentifier),
-		ApplicationId:     spotinst.StringValue(sparkApplication.ApplicationID),
+		ApplicationID:     spotinst.StringValue(sparkApplication.ApplicationID),
 		Obj:               sparkApplication,
 	}, nil
 }

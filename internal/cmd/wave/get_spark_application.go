@@ -21,8 +21,8 @@ type (
 		*CmdGetOptions
 		ClusterName        string
 		ApplicationName    string
-		ApplicationId      string
-		ApplicationSparkId string
+		ApplicationID      string
+		ApplicationSparkID string
 		ApplicationState   string
 	}
 )
@@ -100,8 +100,8 @@ func (x *CmdGetSparkApplication) run(ctx context.Context) error {
 	}
 
 	var sparkApplications []*spot.SparkApplication
-	if x.opts.ApplicationId != "" {
-		sparkApplication, err := waveClient.GetSparkApplication(ctx, x.opts.ApplicationId)
+	if x.opts.ApplicationID != "" {
+		sparkApplication, err := waveClient.GetSparkApplication(ctx, x.opts.ApplicationID)
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func (x *CmdGetSparkApplication) run(ctx context.Context) error {
 		filter := &spot.SparkApplicationsFilter{
 			ClusterIdentifier: x.opts.ClusterName,
 			Name:              x.opts.ApplicationName,
-			ApplicationId:     x.opts.ApplicationSparkId,
+			ApplicationID:     x.opts.ApplicationSparkID,
 			ApplicationState:  x.opts.ApplicationState,
 		}
 		sparkApplications, err = waveClient.ListSparkApplications(ctx, filter)
@@ -143,24 +143,24 @@ func (x *CmdGetSparkApplicationOptions) initDefaults(opts *CmdGetOptions) {
 func (x *CmdGetSparkApplicationOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
 	fs.StringVar(&x.ApplicationName, flags.FlagWaveSparkApplicationName, x.ApplicationName, "application name")
-	fs.StringVar(&x.ApplicationId, flags.FlagWaveSparkApplicationEntityId, x.ApplicationId, "application id")
-	fs.StringVar(&x.ApplicationSparkId, flags.FlagWaveSparkApplicationSparkId, x.ApplicationSparkId, "the application's spark id (spark-xxx)")
+	fs.StringVar(&x.ApplicationID, flags.FlagWaveSparkApplicationEntityID, x.ApplicationID, "application id")
+	fs.StringVar(&x.ApplicationSparkID, flags.FlagWaveSparkApplicationSparkID, x.ApplicationSparkID, "the application's spark id (spark-xxx)")
 	fs.StringVar(&x.ApplicationState, flags.FlagWaveSparkApplicationState, x.ApplicationState, "application state")
 }
 
 func (x *CmdGetSparkApplicationOptions) Validate() error {
-	if x.ApplicationId != "" {
+	if x.ApplicationID != "" {
 		if x.ClusterName != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveClusterName)
+			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityID, flags.FlagWaveClusterName)
 		}
 		if x.ApplicationName != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationName)
+			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityID, flags.FlagWaveSparkApplicationName)
 		}
-		if x.ApplicationSparkId != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationSparkId)
+		if x.ApplicationSparkID != "" {
+			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityID, flags.FlagWaveSparkApplicationSparkID)
 		}
 		if x.ApplicationState != "" {
-			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityId, flags.FlagWaveSparkApplicationState)
+			return errors.RequiredXor(flags.FlagWaveSparkApplicationEntityID, flags.FlagWaveSparkApplicationState)
 		}
 	}
 	return x.CmdGetOptions.Validate()

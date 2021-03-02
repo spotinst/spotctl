@@ -176,7 +176,7 @@ type (
 
 	// WaveComponent represents a Wave component
 	WaveComponent struct {
-		Uid             string            `json:"uid"`
+		UID             string            `json:"uid"`
 		Name            string            `json:"name"`
 		OperatorVersion string            `json:"operatorVersion"`
 		Version         string            `json:"version"`
@@ -202,7 +202,7 @@ type (
 
 		ClusterIdentifier string `json:"clusterIdentifier" table:"4,clusterIdentifier"`
 
-		ApplicationId string `json:"applicationId" table:"5,applicationId"`
+		ApplicationID string `json:"applicationId" table:"5,applicationId"`
 
 		// Obj holds the raw object
 		Obj interface{} `json:"-"`
@@ -212,7 +212,7 @@ type (
 	SparkApplicationsFilter struct {
 		ClusterIdentifier string
 		Name              string
-		ApplicationId     string
+		ApplicationID     string
 		ApplicationState  string
 	}
 )
