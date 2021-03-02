@@ -117,7 +117,6 @@ func (x *CmdGetCluster) run(ctx context.Context) error {
 		}
 	}
 
-	// Should the json writer just write out the json as is? like in describe (cluster.obj)
 	w, err := x.opts.Clientset.NewWriter(writer.Format(x.opts.Output))
 	if err != nil {
 		return err
