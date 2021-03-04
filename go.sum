@@ -860,6 +860,8 @@ github.com/spotinst/spotinst-sdk-go v1.80.0 h1:ygqAYGTA2Z/1nlIue1YtXsDGQCv6Lgx3f
 github.com/spotinst/spotinst-sdk-go v1.80.0/go.mod h1:tJtl0XQCi8YaZnCQfC/y3qHB9OpaxADH/N7EPa0hkt8=
 github.com/spotinst/wave-operator v0.0.0-20210217095453-a89af0cacc9a h1:mQZs5c2OHQoQPlB4B/5okxemMsha8T78zsXgcG7zryY=
 github.com/spotinst/wave-operator v0.0.0-20210217095453-a89af0cacc9a/go.mod h1:nNgqZ0VnVQYWC6OzPku2uDVE0cksRrbbMtKVs20TgPc=
+github.com/spotinst/wave-operator v0.0.0-20210224195535-ccfceb52cecb h1:6kuf9H7BsE/W9PgroCdAEROZz2/qNeqLzJtL35IumsM=
+github.com/spotinst/wave-operator v0.0.0-20210224195535-ccfceb52cecb/go.mod h1:nNgqZ0VnVQYWC6OzPku2uDVE0cksRrbbMtKVs20TgPc=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=

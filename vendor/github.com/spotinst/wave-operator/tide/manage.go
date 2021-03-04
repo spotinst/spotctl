@@ -35,12 +35,9 @@ import (
 )
 
 const (
-
-	// TODO Read chart values from external source
-
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
-	WaveOperatorVersion    = "0.2.0"
+	WaveOperatorVersion    = "" // empty string indicates latest chart version
 	WaveOperatorValues     = ""
 
 	CertManagerChart      = "cert-manager"
@@ -70,6 +67,8 @@ func init() {
 }
 
 type Manager interface {
+	SetWaveInstallSpec(spec install.InstallSpec) error
+
 	SetConfiguration(config map[string]interface{}) (*v1alpha1.WaveEnvironment, error)
 	DeleteConfiguration(deleteEnvironmentCrd bool) error
 	GetConfiguration() (*v1alpha1.WaveEnvironment, error)
@@ -82,6 +81,7 @@ type Manager interface {
 }
 
 type manager struct {
+	spec              install.InstallSpec
 	clusterIdentifier string
 	log               logr.Logger
 	kubeClientGetter  genericclioptions.RESTClientGetter
@@ -123,7 +123,29 @@ func NewManager(log logr.Logger) (Manager, error) {
 		clusterIdentifier: clusterIdentifier,
 		log:               log,
 		kubeClientGetter:  kubeConfig,
+		spec: install.InstallSpec{
+			Name:       WaveOperatorChart,
+			Repository: WaveOperatorRepository,
+			Version:    WaveOperatorVersion,
+			Values:     WaveOperatorValues,
+		},
 	}, nil
+}
+
+func (m *manager) SetWaveInstallSpec(spec install.InstallSpec) error {
+	if spec.Name != "" {
+		m.spec.Name = spec.Name
+	}
+	if spec.Repository != "" {
+		m.spec.Repository = spec.Repository
+	}
+	if spec.Version != "" {
+		m.spec.Version = spec.Version
+	}
+	if spec.Values != "" {
+		m.spec.Values = spec.Values
+	}
+	return nil
 }
 
 type validatedConfig struct {
@@ -293,7 +315,7 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 		},
 		Spec: v1alpha1.WaveEnvironmentSpec{
 			EnvironmentNamespace:    catalog.SystemNamespace,
-			OperatorVersion:         WaveOperatorVersion, // TODO Make dynamic
+			OperatorVersion:         m.spec.Version,
 			CertManagerDeployed:     !certManagerExists,
 			K8sClusterProvisioned:   config.isK8sProvisioned,
 			OceanClusterProvisioned: config.isOceanClusterProvisioned,
@@ -555,13 +577,13 @@ func (m *manager) installWaveOperator(ctx context.Context, waveOperatorImage str
 		metav1.CreateOptions{},
 	)
 
-	values, err := setImageInValues(WaveOperatorValues, waveOperatorImage)
+	values, err := setImageInValues(m.spec.Values, waveOperatorImage)
 	if err != nil {
 		return fmt.Errorf("unable to set image %s, %w", waveOperatorImage, err)
 	}
 
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
-	err = installer.Install(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, values)
+	err = installer.Install(m.spec.Name, m.spec.Repository, m.spec.Version, values)
 	if err != nil {
 		return fmt.Errorf("cannot install wave operator, %w", err)
 	}
@@ -632,7 +654,7 @@ func (m *manager) deleteWaveOperator(ctx context.Context) error {
 	}
 
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
-	err = installer.Delete(WaveOperatorChart, WaveOperatorRepository, WaveOperatorVersion, "")
+	err = installer.Delete(m.spec.Name, m.spec.Repository, m.spec.Version, "")
 	if err != nil {
 		return fmt.Errorf("cannot delete wave operator, %w", err)
 	}
