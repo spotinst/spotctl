@@ -30,7 +30,7 @@ type CmdDeleteOptions struct {
 }
 
 const (
-	deletionTimeout = 5 * time.Minute
+	deletionTimeout = 7 * time.Minute
 	pollInterval    = 5 * time.Second
 )
 
@@ -153,10 +153,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		}
 	})
 
-	if !x.opts.Purge {
-		logger.Info("Wave cluster deleted")
-		return nil
-	} else {
+	if x.opts.Purge {
 		// Purge Wave Environment CRD and tide RBAC
 		logger.Info("Deleting Wave configuration ...")
 		manager, err := tide.NewManager(logger)
@@ -171,10 +168,11 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("could not delete tide rbac objects, %w", err)
 		}
-		logger.Info("Wave has been removed")
 	}
 
 	// TODO Delete kubernetes cluster if it was provisioned
+
+	logger.Info("Wave has been removed")
 
 	return nil
 }
