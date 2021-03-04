@@ -3,10 +3,11 @@ package spot
 import (
 	"context"
 	"fmt"
+
+	wavesdk "github.com/spotinst/spotinst-sdk-go/service/wave"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 
 	"github.com/spotinst/spotctl/internal/log"
-	wavesdk "github.com/spotinst/spotinst-sdk-go/service/wave"
 )
 
 type wave struct {

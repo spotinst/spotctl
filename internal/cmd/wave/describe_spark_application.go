@@ -2,8 +2,10 @@ package wave
 
 import (
 	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/spot"
