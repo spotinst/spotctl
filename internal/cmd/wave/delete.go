@@ -141,7 +141,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 
 	logger.Info("Deleting Wave cluster ...")
 	if err := waveClient.DeleteCluster(ctx, x.opts.ClusterID, x.opts.DeleteOcean); err != nil {
-		return err
+		return fmt.Errorf("could not delete wave cluster, %w", err)
 	}
 
 	err = wait.Poll(pollInterval, deletionTimeout, func() (bool, error) {
@@ -152,6 +152,9 @@ func (x *CmdDelete) run(ctx context.Context) error {
 			return false, nil
 		}
 	})
+	if err != nil {
+		return fmt.Errorf("could not delete wave cluster, %w", err)
+	}
 
 	if x.opts.Purge {
 		// Purge Wave Environment CRD and tide RBAC
