@@ -414,7 +414,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return fmt.Errorf("could not create tide rbac objects, %w", err)
 	}
 
-	err = manager.Create(env)
+	err = manager.Create(*env)
 	if err != nil {
 		spinner.StopFail()
 		return err
