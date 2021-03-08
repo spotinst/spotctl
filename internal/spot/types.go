@@ -156,6 +156,65 @@ type (
 		SpecIDs             []string
 		InstanceIDs         []string
 	}
+
+	// WaveCluster represents a Wave cluster.
+	WaveCluster struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		State string `json:"state" table:"3,state"`
+
+		// Wave cluster's components
+		Components []WaveComponent `json:"-"`
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
+
+	// WaveComponent represents a Wave component
+	WaveComponent struct {
+		UID             string            `json:"uid"`
+		Name            string            `json:"name"`
+		OperatorVersion string            `json:"operatorVersion"`
+		Version         string            `json:"version"`
+		Properties      map[string]string `json:"properties,omitempty"`
+		State           string            `json:"state"`
+	}
+
+	// WaveClustersFilter contains filter options for the list Wave clusters command
+	WaveClustersFilter struct {
+		ClusterIdentifier string
+		ClusterState      string
+	}
+
+	// SparkApplication represents a Wave Spark application.
+	SparkApplication struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		State string `json:"state" table:"3,state"`
+
+		ClusterIdentifier string `json:"clusterIdentifier" table:"4,clusterIdentifier"`
+
+		ApplicationID string `json:"applicationId" table:"5,applicationId"`
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
+
+	// SparkApplicationsFilter contains filter options for the list Spark applications command
+	SparkApplicationsFilter struct {
+		ClusterIdentifier string
+		Name              string
+		ApplicationID     string
+		ApplicationState  string
+	}
 )
 
 // typeOf returns obj type's name using reflection.

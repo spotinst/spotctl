@@ -48,6 +48,7 @@ type ECSCluster struct {
 type ECSStrategy struct {
 	DrainingTimeout          *int  `json:"drainingTimeout,omitempty"`
 	UtilizeReservedInstances *bool `json:"utilizeReservedInstances,omitempty"`
+	UtilizeCommitments       *bool `json:"utilizeCommitments,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -701,6 +702,13 @@ func (o *ECSStrategy) SetDrainingTimeout(v *int) *ECSStrategy {
 func (o *ECSStrategy) SetUtilizeReservedInstances(v *bool) *ECSStrategy {
 	if o.UtilizeReservedInstances = v; o.UtilizeReservedInstances == nil {
 		o.nullFields = append(o.nullFields, "UtilizeReservedInstances")
+	}
+	return o
+}
+
+func (o *ECSStrategy) SetUtilizeCommitments(v *bool) *ECSStrategy {
+	if o.UtilizeCommitments = v; o.UtilizeCommitments == nil {
+		o.nullFields = append(o.nullFields, "UtilizeCommitments")
 	}
 	return o
 }

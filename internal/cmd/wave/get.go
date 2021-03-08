@@ -1,13 +1,8 @@
 package wave
 
 import (
-	"context"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spotinst/spotctl/internal/errors"
-	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/spot"
 )
 
 type CmdGet struct {
@@ -17,13 +12,10 @@ type CmdGet struct {
 
 type CmdGetOptions struct {
 	*CmdOptions
-	ClusterID   string
-	ClusterName string
-}
 
-func (x *CmdGetOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ClusterID, flags.FlagWaveClusterID, x.ClusterID, "cluster id")
-	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name")
+	// Get options
+	NoHeaders bool
+	Output    string
 }
 
 func NewCmdGet(opts *CmdOptions) *cobra.Command {
@@ -35,73 +27,44 @@ func newCmdGet(opts *CmdOptions) *CmdGet {
 
 	cmd.cmd = &cobra.Command{
 		Use:           "get",
-		Short:         "Get a Wave installation",
+		Short:         "Display one or many resources",
 		SilenceErrors: true,
 		SilenceUsage:  true,
-		RunE: func(*cobra.Command, []string) error {
-			return cmd.Run(context.Background())
-		},
 	}
 
 	cmd.opts.Init(cmd.cmd.PersistentFlags(), opts)
+	cmd.initSubCommands()
 
 	return &cmd
 }
 
+func (x *CmdGet) initSubCommands() {
+	commands := []func(*CmdGetOptions) *cobra.Command{
+		NewCmdGetCluster,
+		NewCmdGetSparkApplication,
+	}
+
+	for _, cmd := range commands {
+		x.cmd.AddCommand(cmd(&x.opts))
+	}
+}
+
 func (x *CmdGetOptions) Init(fs *pflag.FlagSet, opts *CmdOptions) {
-	x.CmdOptions = opts
+	x.initDefaults(opts)
 	x.initFlags(fs)
 }
 
-func (x *CmdGet) survey(ctx context.Context) error {
-	if x.opts.Noninteractive {
-		return nil
-	}
-	return nil
+func (x *CmdGetOptions) initDefaults(opts *CmdOptions) {
+	x.CmdOptions = opts
+	x.NoHeaders = false
+	x.Output = "table"
+}
+
+func (x *CmdGetOptions) initFlags(fs *pflag.FlagSet) {
+	fs.BoolVar(&x.NoHeaders, "no-headers", x.NoHeaders, "when using the `table` output format, don't print headers")
+	fs.StringVarP(&x.Output, "output", "o", x.Output, "output format (table|json|yaml)")
 }
 
 func (x *CmdGetOptions) Validate() error {
-	if x.ClusterID == "" && x.ClusterName == "" {
-		return errors.RequiredOr(flags.FlagWaveClusterID, flags.FlagWaveClusterName)
-	}
-	return x.CmdOptions.Validate()
-}
-
-func (x *CmdGet) Run(ctx context.Context) error {
-	steps := []func(context.Context) error{
-		x.survey,
-		x.log,
-		x.validate,
-		x.run,
-	}
-
-	for _, step := range steps {
-		if err := step(ctx); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (x *CmdGet) log(ctx context.Context) error {
-	flags.Log(x.cmd)
-	return nil
-}
-
-func (x *CmdGet) validate(ctx context.Context) error {
-	return x.opts.Validate()
-}
-
-func (x *CmdGet) run(ctx context.Context) error {
-	spotClientOpts := []spot.ClientOption{
-		spot.WithCredentialsProfile(x.opts.Profile),
-	}
-
-	_, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
-	if err != nil {
-		return err
-	}
-
-	return errors.NotImplemented()
+	return x.CmdOptions.Validate() // TODO Validate output format
 }
