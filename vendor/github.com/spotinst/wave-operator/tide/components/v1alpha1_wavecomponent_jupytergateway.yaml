@@ -1,0 +1,41 @@
+apiVersion: wave.spot.io/v1alpha1
+kind: WaveComponent
+metadata:
+  name: enterprise-gateway
+spec:
+  type: helm
+  name: enterprise-gateway
+  url: https://charts.spot.io
+  state: present
+  version: 2.5.0
+  valuesConfiguration: |
+    image: public.ecr.aws/l8m2k1n1/netapp/enterprise-gateway:dev
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: spotinst.io/node-lifecycle
+              operator: In
+              values:
+              - od
+    ingress:
+      enabled: true
+      hostName: ""
+      traefik:
+        enabled: false
+      nginx:
+        enabled: true
+        tls:
+          enabled: true
+          hostname: gateway.wave.spot.io
+        path: /gateway/?(.*)
+        annotations:
+          kubernetes.io/ingress.class: "wave-nginx"
+          nginx.ingress.kubernetes.io/rewrite-target: /$1
+          nginx.ingress.kubernetes.io/ssl-redirect: "false"
+          nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+          cert-manager.io/cluster-issuer: wave-issuer
+    kernel:
+      kernelNamespace: jupyter-notebooks
+

@@ -6,7 +6,7 @@ var (
 	// See: https://kubernetes.io/docs/reference/kubectl.
 	DependencyKubectl Dependency = &dependency{
 		name:    "kubectl",
-		version: "1.19.0",
+		version: "1.19.6",
 		url: "https://storage.googleapis.com/kubernetes-release/" +
 			"release/v{{.version}}/bin/{{.os}}/{{.arch}}/kubectl{{.extension}}",
 	}
@@ -14,7 +14,7 @@ var (
 	// See: https://github.com/kubernetes/kops.
 	DependencyKops Dependency = &dependency{
 		name:    "kops",
-		version: "1.18.2",
+		version: "1.19.1",
 		url: "https://github.com/kubernetes/kops/releases/download/" +
 			"v{{.version}}/kops-{{.os}}-{{.arch}}",
 	}
@@ -22,7 +22,7 @@ var (
 	// See: https://github.com/weaveworks/eksctl.
 	DependencyEksctl Dependency = &dependency{
 		name:    "eksctl",
-		version: "0.36.2-f5c273f8",
+		version: "v0.36.2-81884a74",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}
