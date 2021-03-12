@@ -7,18 +7,21 @@ import (
 
 	"github.com/spotinst/wave-operator/api/v1alpha1"
 	"github.com/spotinst/wave-operator/install"
+	"github.com/spotinst/wave-operator/internal/version"
 )
 
 const AnnotationPrefix = "tide.wave.spot.io"
 
 type Upgrade struct {
 	UpgradedAt time.Time           `json:"upgradedAt"`
+	Version    string              `json:"version"`
 	Spec       install.InstallSpec `json:"spec"`
 }
 
 func addUpgradeAnnotation(spec install.InstallSpec, env *v1alpha1.WaveEnvironment) error {
 	upgrades := []Upgrade{}
 	u := Upgrade{
+		Version:    version.BuildVersion,
 		UpgradedAt: time.Now(),
 		Spec:       spec,
 	}

@@ -62,7 +62,7 @@ var (
 
 //go:embed components/*
 var components embed.FS
-var componentDirName string = "components"
+var componentDirName = "components"
 
 //go:embed crds/*
 var crds embed.FS
@@ -169,26 +169,26 @@ type validatedConfig struct {
 }
 
 func validateConfig(input map[string]interface{}) (*validatedConfig, error) {
-	config := &validatedConfig{}
+	vc := &validatedConfig{}
 	cp, ok := input[ConfigIsOceanClusterProvisioned].(bool)
 	if !ok {
 		return nil, fmt.Errorf("invalid configuration field for %s <<%v>>", ConfigIsOceanClusterProvisioned, input[ConfigIsOceanClusterProvisioned])
 	}
-	config.isOceanClusterProvisioned = cp
+	vc.isOceanClusterProvisioned = cp
 
 	k, ok := input[ConfigIsK8sProvisioned].(bool)
 	if !ok {
 		return nil, fmt.Errorf("invalid configuration field for %s <<%v>>", ConfigIsK8sProvisioned, input[ConfigIsK8sProvisioned])
 	}
-	config.isK8sProvisioned = k
+	vc.isK8sProvisioned = k
 
 	i, ok := input[ConfigInitialWaveOperatorImage].(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid configuration field for %s <<%v>>", ConfigInitialWaveOperatorImage, input[ConfigInitialWaveOperatorImage])
 	}
-	config.initialWaveOperatorImage = i
+	vc.initialWaveOperatorImage = i
 
-	return config, nil
+	return vc, nil
 }
 
 func (m *manager) getKubernetesClient() (kubernetes.Interface, error) {
@@ -250,7 +250,7 @@ func (m *manager) loadWaveComponents() ([]*v1alpha1.WaveComponent, error) {
 	}
 
 	if len(manifests) == 0 {
-		return nil, fmt.Errorf("No wave component manifests found")
+		return nil, fmt.Errorf("no wave component manifests found")
 	}
 	waveComponents := make([]*v1alpha1.WaveComponent, 0, len(manifests))
 
@@ -278,7 +278,7 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 	ctx := context.TODO()
 
 	m.log.Info("Configuring Wave")
-	config, err := validateConfig(input)
+	vc, err := validateConfig(input)
 	if err != nil {
 		return nil, fmt.Errorf("invalid input, %w", err)
 	}
@@ -329,15 +329,15 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 			Name:      m.clusterIdentifier,
 			Namespace: catalog.SystemNamespace,
 			Annotations: map[string]string{
-				AnnotationPrefix + "/" + ConfigInitialWaveOperatorImage: config.initialWaveOperatorImage,
+				AnnotationPrefix + "/" + ConfigInitialWaveOperatorImage: vc.initialWaveOperatorImage,
 			},
 		},
 		Spec: v1alpha1.WaveEnvironmentSpec{
 			EnvironmentNamespace:    catalog.SystemNamespace,
 			OperatorVersion:         m.spec.Version,
 			CertManagerDeployed:     !certManagerExists,
-			K8sClusterProvisioned:   config.isK8sProvisioned,
-			OceanClusterProvisioned: config.isOceanClusterProvisioned,
+			K8sClusterProvisioned:   vc.isK8sProvisioned,
+			OceanClusterProvisioned: vc.isOceanClusterProvisioned,
 		},
 	}
 
@@ -419,7 +419,19 @@ func (m *manager) Create(env v1alpha1.WaveEnvironment) error {
 		err = rc.Create(ctx, wc)
 		if err != nil {
 			if k8serrors.IsAlreadyExists(err) {
-				m.log.Info("wave component already exists", "name", wc.Name)
+				m.log.Info("wave component already exists, patching", "name", wc.Name)
+				objName := ctrlrt.ObjectKeyFromObject(wc)
+				existing := &v1alpha1.WaveComponent{}
+				err = rc.Get(ctx, objName, existing)
+				if err != nil {
+					return fmt.Errorf("error retrieving object, %w", err)
+				}
+				wc.ObjectMeta.ResourceVersion = existing.ObjectMeta.ResourceVersion
+				err = rc.Patch(ctx, wc, ctrlrt.MergeFrom(existing))
+				if err != nil {
+					return fmt.Errorf("patch error, %w", err)
+				}
+
 			} else {
 				return fmt.Errorf("cannot install component %s, %w", wc.Name, err)
 			}
@@ -616,6 +628,7 @@ func (m *manager) installWaveOperator(ctx context.Context, waveOperatorImage str
 	if err != nil {
 		return fmt.Errorf("unable to set image %s, %w", waveOperatorImage, err)
 	}
+	m.spec.Values = values
 
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
 	existing, err := installer.Get(m.spec.Name)
@@ -623,12 +636,12 @@ func (m *manager) installWaveOperator(ctx context.Context, waveOperatorImage str
 		return fmt.Errorf("error checking release, %w", err)
 	}
 	if existing == nil {
-		err = installer.Install(m.spec.Name, m.spec.Repository, m.spec.Version, values)
+		err = installer.Install(m.spec.Name, m.spec.Repository, m.spec.Version, m.spec.Values)
 		if err != nil {
 			return fmt.Errorf("cannot install wave operator, %w", err)
 		}
 	} else {
-		err = installer.Upgrade(m.spec.Name, m.spec.Repository, m.spec.Version, values)
+		err = installer.Upgrade(m.spec.Name, m.spec.Repository, m.spec.Version, m.spec.Values)
 		if err != nil {
 			return fmt.Errorf("cannot upgrade wave operator, %w", err)
 		}
@@ -777,9 +790,27 @@ func (m *manager) CreateTideRBAC() error {
 		return fmt.Errorf("could not create tide service account, %w", err)
 	}
 
+	// create or patch clusterrolebinding
 	_, err = kubeClient.RbacV1().ClusterRoleBindings().Create(ctx, crb, metav1.CreateOptions{})
-	if err != nil && !k8serrors.IsAlreadyExists(err) {
-		return fmt.Errorf("could not create tide cluster role binding, %w", err)
+	if err != nil {
+		if !k8serrors.IsAlreadyExists(err) {
+			return fmt.Errorf("could not create tide cluster role binding, %w", err)
+		}
+		rc, err := m.getControllerRuntimeClient()
+		if err != nil {
+			return err
+		}
+		objName := ctrlrt.ObjectKeyFromObject(crb)
+		existing := &rbacv1.ClusterRoleBinding{}
+		err = rc.Get(ctx, objName, existing)
+		if err != nil {
+			return fmt.Errorf("error retrieving clusterrolebinding, %w", err)
+		}
+		crb.ObjectMeta.ResourceVersion = existing.ObjectMeta.ResourceVersion
+		err = rc.Patch(ctx, crb, ctrlrt.MergeFrom(existing))
+		if err != nil {
+			return fmt.Errorf("patch error, %w", err)
+		}
 	}
 
 	return nil

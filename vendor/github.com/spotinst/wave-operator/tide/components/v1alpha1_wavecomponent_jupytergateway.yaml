@@ -7,9 +7,18 @@ spec:
   name: enterprise-gateway
   url: https://charts.spot.io
   state: present
-  version: 2.4.0
+  version: 2.5.0
   valuesConfiguration: |
     image: public.ecr.aws/l8m2k1n1/netapp/enterprise-gateway:dev
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: spotinst.io/node-lifecycle
+              operator: In
+              values:
+              - od
     ingress:
       enabled: true
       hostName: ""
@@ -29,3 +38,4 @@ spec:
           cert-manager.io/cluster-issuer: wave-issuer
     kernel:
       kernelNamespace: jupyter-notebooks
+
