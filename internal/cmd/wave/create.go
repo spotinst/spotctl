@@ -2,6 +2,7 @@ package wave
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,6 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spotinst/spotctl/internal/kubernetes"
+	"github.com/spotinst/wave-operator/install"
 	"github.com/spotinst/wave-operator/tide"
 	"github.com/theckman/yacspin"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -51,9 +53,11 @@ type CmdCreateOptions struct {
 	Tags              []string
 	KubernetesVersion string
 	WaveOperatorImage string
+	WaveChartSpec     string
 }
 
-const DefaultWaveOperatorImage = "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.0-5c8351cd"
+const DefaultWaveOperatorImage = "" // "public.ecr.aws/l8m2k1n1/netapp/wave-operator:0.2.1-1d11e752"
+const DefaultWaveChartSpec = ""     // "{\"name\":\"wave-operator\",\"repository\":\"https://charts.spot.io\",\"version\":\"0.2.0\"}"
 
 func (x *CmdCreateOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&x.ConfigFile, flags.FlagWaveConfigFile, "f", x.ConfigFile, "load configuration from a file (or stdin if set to '-')")
@@ -61,6 +65,7 @@ func (x *CmdCreateOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterName, flags.FlagWaveClusterName, x.ClusterName, "cluster name (generated if unspecified, e.g. \"wave-9d4afe95\")")
 	fs.StringVar(&x.Region, flags.FlagWaveRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringVar(&x.WaveOperatorImage, flags.FlagWaveImage, DefaultWaveOperatorImage, "wave-operator docker image")
+	fs.StringVar(&x.WaveChartSpec, flags.FlagWaveChartSpec, DefaultWaveChartSpec, "wave-operator chart specification (json)")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", "1.18", "kubernetes version")
 }
@@ -142,11 +147,20 @@ func (x *CmdCreateOptions) Validate() error {
 		return errors.RequiredXor(flags.FlagWaveClusterName, flags.FlagWaveConfigFile)
 	}
 
-	_, err := crane.Manifest(x.WaveOperatorImage)
-	if err != nil {
-		return fmt.Errorf("unable to verify image \"%s\", %w", x.WaveOperatorImage, err)
+	if x.WaveOperatorImage != "" {
+		_, err := crane.Manifest(x.WaveOperatorImage)
+		if err != nil {
+			return fmt.Errorf("unable to verify image \"%s\", %w", x.WaveOperatorImage, err)
+		}
 	}
 
+	if x.WaveChartSpec != "" {
+		is := &install.InstallSpec{}
+		err := json.Unmarshal([]byte(x.WaveChartSpec), is)
+		if err != nil {
+			return fmt.Errorf("bad helm chart spec for wave operator \"%s\", %w", x.WaveChartSpec, err)
+		}
+	}
 	return x.CmdOptions.Validate()
 }
 
@@ -372,6 +386,18 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return err
 	}
 
+	if x.opts.WaveChartSpec != "" {
+		is := &install.InstallSpec{}
+		err := json.Unmarshal([]byte(x.opts.WaveChartSpec), is)
+		if err != nil {
+			return fmt.Errorf("bad helm chart spec for wave operator \"%s\", %w", x.opts.WaveChartSpec, err)
+		}
+		err = manager.SetWaveInstallSpec(*is)
+		if err != nil {
+			return fmt.Errorf("cannot set install spec for manager \"%s\", %w", x.opts.WaveChartSpec, err)
+		}
+	}
+
 	waveConfig := map[string]interface{}{
 		tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
 		tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
@@ -388,7 +414,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 		return fmt.Errorf("could not create tide rbac objects, %w", err)
 	}
 
-	err = manager.Create(env)
+	err = manager.Create(*env)
 	if err != nil {
 		spinner.StopFail()
 		return err

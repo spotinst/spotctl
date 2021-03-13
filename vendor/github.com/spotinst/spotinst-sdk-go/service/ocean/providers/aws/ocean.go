@@ -51,6 +51,7 @@ type Strategy struct {
 	FallbackToOnDemand       *bool    `json:"fallbackToOd,omitempty"`
 	DrainingTimeout          *int     `json:"drainingTimeout,omitempty"`
 	GracePeriod              *int     `json:"gracePeriod,omitempty"`
+	UtilizeCommitments       *bool    `json:"utilizeCommitments,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -813,6 +814,13 @@ func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
 func (o *Strategy) SetGracePeriod(v *int) *Strategy {
 	if o.GracePeriod = v; o.GracePeriod == nil {
 		o.nullFields = append(o.nullFields, "GracePeriod")
+	}
+	return o
+}
+
+func (o *Strategy) SetUtilizeCommitments(v *bool) *Strategy {
+	if o.UtilizeCommitments = v; o.UtilizeCommitments == nil {
+		o.nullFields = append(o.nullFields, "UtilizeCommitments")
 	}
 	return o
 }

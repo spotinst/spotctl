@@ -35,6 +35,13 @@ const (
 	Unknown     string = "unknown"
 )
 
+type InstallSpec struct {
+	Name       string `json:"name"`
+	Repository string `json:"repository"`
+	Version    string `json:"version,omitempty"`
+	Values     string `json:"values,omitempty"`
+}
+
 type Installer interface {
 
 	// Namespace where components are installed, the namespace must exist before Install() is called
@@ -69,19 +76,7 @@ type Installation struct {
 	Values      map[string]interface{}
 	Status      string
 	Description string
-}
-
-func NewInstallation(name, version, status, description string, vals map[string]interface{}) *Installation {
-	if vals == nil {
-		vals = map[string]interface{}{}
-	}
-	return &Installation{
-		Name:        name,
-		Version:     version,
-		Status:      status,
-		Values:      vals,
-		Description: description,
-	}
+	AppVersion  string
 }
 
 type HelmInstaller struct {
@@ -127,13 +122,18 @@ func (i *HelmInstaller) Get(name string) (*Installation, error) {
 		}
 		return nil, err
 	}
-	return NewInstallation(
-		rel.Name,
-		rel.Chart.Metadata.Version,
-		translateStatus(rel.Info.Status),
-		rel.Info.Description,
-		rel.Config,
-	), nil
+	vals := map[string]interface{}{}
+	if rel.Config != nil {
+		vals = rel.Config
+	}
+	return &Installation{
+		Name:        rel.Name,
+		Version:     rel.Chart.Metadata.Version,
+		Status:      translateStatus(rel.Info.Status),
+		Values:      vals,
+		Description: rel.Info.Description,
+		AppVersion:  rel.Chart.AppVersion(),
+	}, nil
 }
 
 func translateStatus(status release.Status) string {
@@ -333,7 +333,11 @@ func (i *HelmInstaller) IsUpgrade(comp *v1alpha1.WaveComponent, inst *Installati
 	if newVals == nil {
 		newVals = map[string]interface{}{}
 	}
-	if !reflect.DeepEqual(newVals, inst.Values) {
+	oldVals := map[string]interface{}{}
+	if inst.Values != nil {
+		oldVals = inst.Values
+	}
+	if !reflect.DeepEqual(newVals, oldVals) {
 		i.Log.Info("upgrade required", "diff", cmp.Diff(newVals, inst.Values))
 		return true
 	}

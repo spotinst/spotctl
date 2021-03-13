@@ -33,7 +33,7 @@ const (
 type SparkApplicationSpec struct {
 
 	//uniquely identifies the spark application, and is shared as a label on all driver and executor pods
-	ApplicationId string `json:"applicationId"`
+	ApplicationID string `json:"applicationId"`
 
 	//the name of the spark application
 	ApplicationName string `json:"applicationName"`
@@ -101,12 +101,61 @@ type Attempt struct {
 }
 
 type Executor struct {
-
 	//the executor ID
-	Id string `json:"id"`
-
+	ID string `json:"id"`
+	//is the executor currently active
+	IsActive bool `json:"isActive"`
 	//the timestamp of executor added event
 	AddTime string `json:"addTime"`
+	//the timestamp of executor removed event
+	RemoveTime string `json:"removeTime"`
+	//the reason for executor removal
+	RemoveReason string `json:"removeReason"`
+	//RDD blocks in the block manager of this executor
+	RddBlocks int64 `json:"rddBlocks"`
+	//storage memory used by this executor
+	MemoryUsed int64 `json:"memoryUsed"`
+	//disk space used for RDD storage by this executor
+	DiskUsed int64 `json:"diskUsed"`
+	//number of cores available in this executor
+	TotalCores int64 `json:"totalCores"`
+	//maximum number of tasks that can run concurrently in this executor
+	MaxTasks int64 `json:"maxTasks"`
+	//number of tasks currently executing
+	ActiveTasks int64 `json:"activeTasks"`
+	//number of tasks that have failed in this executor
+	FailedTasks int64 `json:"failedTasks"`
+	// number of tasks that have completed in this executor
+	CompletedTasks int64 `json:"completedTasks"`
+	//total number of tasks (running, failed and completed) in this executor
+	TotalTasks int64 `json:"totalTasks"`
+	//elapsed time the JVM spent executing tasks in this executor (milliseconds)
+	TotalDuration int64 `json:"totalDuration"`
+	//elapsed time the JVM spent in garbage collection summed in this executor (milliseconds)
+	TotalGCTime int64 `json:"totalGCTime"`
+	//total input bytes summed in this executor
+	TotalInputBytes int64 `json:"totalInputBytes"`
+	//total shuffle read bytes summed in this executor
+	TotalShuffleRead int64 `json:"totalShuffleRead"`
+	//total shuffle write bytes summed in this executor
+	TotalShuffleWrite int64 `json:"totalShuffleWrite"`
+	//is the executor blacklisted (ignored during task scheduling)
+	IsBlacklisted bool `json:"isBlacklisted"`
+	//total amount of memory available for storage (bytes)
+	MaxMemory int64 `json:"maxMemory"`
+	//current value of memory metrics
+	MemoryMetrics ExecutorMemoryMetrics `json:"memoryMetrics"`
+}
+
+type ExecutorMemoryMetrics struct {
+	//used on heap memory currently for storage (bytes)
+	UsedOnHeapStorageMemory int64 `json:"usedOnHeapStorageMemory"`
+	//used off heap memory currently for storage (bytes)
+	UsedOffHeapStorageMemory int64 `json:"usedOffHeapStorageMemory"`
+	//total available on heap memory for storage (bytes)
+	TotalOnHeapStorageMemory int64 `json:"totalOnHeapStorageMemory"`
+	//total available off heap memory for storage (bytes)
+	TotalOffHeapStorageMemory int64 `json:"totalOffHeapStorageMemory"`
 }
 
 type Pod struct {
@@ -126,7 +175,29 @@ type Pod struct {
 	DeletionTimestamp *metav1.Time `json:"deletionTimestamp,omitempty"`
 	//the pod's labels
 	Labels map[string]string `json:"labels"`
+	//the pod's state history
+	StateHistory []PodStateHistoryEntry `json:"stateHistory"`
 }
+
+type PodStateHistoryEntry struct {
+	//the timestamp when this state was first seen
+	Timestamp metav1.Time `json:"timestamp"`
+	//the phase of the pod
+	Phase v1.PodPhase `json:"phase"`
+	//map of container name to container status
+	ContainerStatuses map[string]PodStateHistoryContainerStatus `json:"containerStatuses"`
+}
+
+type PodStateHistoryContainerStatus struct {
+	State    PodStateHistoryContainerState `json:"state"`
+	ExitCode *int32                        `json:"exitCode,omitempty"`
+}
+
+type PodStateHistoryContainerState string
+
+const ContainerStateWaiting PodStateHistoryContainerState = "waiting"
+const ContainerStateRunning PodStateHistoryContainerState = "running"
+const ContainerStateTerminated PodStateHistoryContainerState = "terminated"
 
 // +kubebuilder:object:root=true
 
