@@ -36,10 +36,11 @@ const (
 )
 
 type InstallSpec struct {
-	Name       string `json:"name"`
-	Repository string `json:"repository"`
-	Version    string `json:"version,omitempty"`
-	Values     string `json:"values,omitempty"`
+	Name       string                      `json:"name"`
+	Repository string                      `json:"repository"`
+	Version    string                      `json:"version,omitempty"`
+	Values     string                      `json:"values,omitempty"`
+	Enabled    map[v1alpha1.ChartName]bool `json:"enabled,omitempty"`
 }
 
 type Installer interface {
@@ -186,6 +187,7 @@ func (i *HelmInstaller) Upgrade(chartName string, repository string, version str
 	upgradeAction.Namespace = i.namespace
 	upgradeAction.ChartPathOptions.RepoURL = repository
 	upgradeAction.ChartPathOptions.Version = version
+	upgradeAction.ReuseValues = true
 
 	settings := &cli.EnvSettings{}
 	cache, err := ioutil.TempDir(os.TempDir(), "wavecache-")

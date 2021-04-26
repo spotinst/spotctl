@@ -26,6 +26,9 @@ func addUpgradeAnnotation(spec install.InstallSpec, env *v1alpha1.WaveEnvironmen
 		Spec:       spec,
 	}
 	key := AnnotationPrefix + "/waveUpgrades"
+	if env.Annotations == nil {
+		env.Annotations = map[string]string{}
+	}
 	annotation := env.Annotations[key]
 	if annotation != "" {
 		err := json.Unmarshal([]byte(annotation), &upgrades)

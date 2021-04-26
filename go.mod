@@ -2,6 +2,8 @@ module github.com/spotinst/spotctl
 
 go 1.16
 
+replace github.com/spotinst/wave-operator => /Users/tts/dev/wave-operator
+
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
