@@ -468,7 +468,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/spotinst/wave-operator v0.0.0-20210312191710-2c2dc1af4eff => /Users/tts/dev/wave-operator
+# github.com/spotinst/wave-operator v0.0.0-20210427091642-d1bf1464a897
 ## explicit
 github.com/spotinst/wave-operator/api/v1alpha1
 github.com/spotinst/wave-operator/catalog
@@ -943,4 +943,3 @@ sigs.k8s.io/kustomize/pkg/types
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# github.com/spotinst/wave-operator => /Users/tts/dev/wave-operator
