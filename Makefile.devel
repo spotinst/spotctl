@@ -1,51 +1,32 @@
+V            := 0
+Q            := $(if $(filter 1,$(V)),,@)
 GO           := GO111MODULE=on go
-GO_RELEASER  := goreleaser
 GIT_DIRTY    := $(shell test -n "`git status --porcelain`" && echo ".CHANGES" || true)
-GIT_COMMIT   := $$(git rev-parse --short HEAD)
-VERSION      := $$(cat VERSION | cut -d'-' -f 1)
-VERSION_PRE  := $$(cat VERSION | cut -d'-' -f 2- -s)
-VERSION_FULL := $$(cat VERSION)
-VERSION_META := $(GIT_COMMIT)$(GIT_DIRTY)
-VERSION_PKG  := github.com/spotinst/spotctl/internal/version
-
-define goreleaser_release
-	VERSION=$(VERSION) \
-	VERSION_PRE=$(VERSION_PRE) \
-	VERSION_META=$(VERSION_META) \
-	VERSION_PKG=$(VERSION_PKG) \
-	$(GO_RELEASER) release --rm-dist
-endef
+VERSION      := $$(cat internal/version/VERSION)
 
 ##@ Development
 
 .PHONY: build
 build: fmt ## Build all commands
-	@$(GO) build \
-		-ldflags "-extldflags '-static' \
-			-X $(VERSION_PKG).Version=$(VERSION) \
-			-X $(VERSION_PKG).Prerelease=$(VERSION_PRE) \
-			-X $(VERSION_PKG).Metadata=$(VERSION_META)" \
-		-gcflags  "all=-trimpath=$(GOPATH)/src/github.com" \
-		-asmflags "all=-trimpath=$(GOPATH)/src/github.com" \
-		-mod=vendor \
+	$(Q) $(GO) build \
+		-trimpath \
 		-race \
 		-o dist/spotctl cmd/spotctl/main.go
 
 .PHONY: release
 release: fmt ## Release all commands
 ifneq ($(strip $(GIT_DIRTY)),)
-	@echo "Git is currently in a dirty state. Please commit your changes or stash them before you release."; exit 1;
+	$(Q) echo "Git is currently in a dirty state. Please commit your changes or stash them before you release."; exit 1;
 else
-	@echo $(shell bash -c 'read -p "Bump version: $(VERSION_FULL) → " version; echo $$version') > VERSION
-	@git commit -am "chore(release): v$(VERSION)"
-	@git tag -f -m  "chore(release): v$(VERSION)" v$(VERSION)
-	@git push --follow-tags
-	@$(call goreleaser_release)
+	$(Q) echo $(shell bash -c 'read -p "Bump version: $(VERSION) → " version; echo $$version') > internal/version/VERSION
+	$(Q) git commit -am "chore(release): v$(VERSION)"
+	$(Q) git tag -f -m  "chore(release): v$(VERSION)" v$(VERSION)
+	$(Q) git push --follow-tags
 endif
 
 .PHONY: test
 test: fmt ## Run all tests
-	@$(GO) test \
+	$(Q) $(GO) test \
 		-v $$($(GO) list ./... | grep -v vendor) $(TESTARGS) \
 		-covermode=atomic \
 		-coverprofile=dist/coverage.txt \
@@ -55,24 +36,24 @@ test: fmt ## Run all tests
 
 .PHONY: cover
 cover: test ## Run all tests and open the coverage report
-	@$(GO) tool cover -html=dist/coverage.txt
+	$(Q) $(GO) tool cover -html=dist/coverage.txt
 
 .PHONY: tidy
 tidy: ## Add missing and remove unused modules
-	@$(GO) mod tidy
+	$(Q) $(GO) mod tidy
 
 .PHONY: vendor
 vendor: ## Make vendored copy of all dependencies
-	@$(GO) mod vendor
+	$(Q) $(GO) mod vendor
 
 .PHONY: fmt
 fmt: ## Format all .go files
-	@$(GO) fmt ./...
+	$(Q) $(GO) fmt ./...
 
 .PHONY: vet
 vet: ## Analyze all .go files
-	@$(GO) vet ./...
+	$(Q) $(GO) vet ./...
 
 .PHONY: clean
 clean: ## Clean the generated artifacts
-	@rm -rf dist
+	$(Q) rm -rf dist

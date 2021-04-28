@@ -1,62 +1,45 @@
 package version
 
 import (
-	"bytes"
-	"fmt"
+	_ "embed"
 	"strings"
 
 	"github.com/hashicorp/go-version"
 )
 
 var (
-	// Version represents the main version number.
-	//
-	// Populated by the compiler.
-	// Read-only.
-	Version string = "0.0.0"
-
-	// Prerelease represents an optional pre-release label for the version.
-	// If this is "" (empty string) then it means that it is a final release.
-	// Otherwise, this is a pre-release such as "beta", "rc1", etc.
-	//
-	// Populated by the compiler.
-	// Read-only.
-	Prerelease string = "dev"
-
-	// Metadata represents an optional build metadata.
-	//
-	// Populated by the compiler.
-	// Read-only.
-	Metadata string
-
-	// SemVer is an instance of SemVer version (https://semver.org/) used to
-	// verify that the full version is a proper semantic version.
+	// Version is an instance of version.Version used to verify that the full
+	// version complies with the Semantic Versioning specification (https://semver.org).
 	//
 	// Populated at runtime.
 	// Read-only.
-	SemVer *version.Version
+	Version *version.Version
+
+	// _version represents the full version that must comply with the Semantic
+	// Versioning specification (https://semver.org).
+	//
+	// Populated at build-time.
+	// Read-only.
+	//go:embed VERSION
+	_version string
 )
 
 func init() {
-	var buf bytes.Buffer
-
-	if Version != "" {
-		fmt.Fprintf(&buf, "%s", Version)
-	}
-
-	if Prerelease != "" {
-		fmt.Fprintf(&buf, "-%s", strings.TrimPrefix(Prerelease, "-"))
-	}
-
-	if Metadata != "" {
-		fmt.Fprintf(&buf, "+%s", strings.TrimPrefix(Metadata, "+"))
-	}
-
 	// Parse and verify the given version.
-	SemVer = version.Must(version.NewSemver(buf.String()))
+	Version = version.Must(version.NewSemver(strings.TrimSpace(_version)))
 }
 
-// String returns the complete version string, including prerelease and metadata.
+// Prerelease is an alias of version.Prerelease.
+func Prerelease() string {
+	return Version.Prerelease()
+}
+
+// Metadata is an alias of version.Metadata.
+func Metadata() string {
+	return Version.Metadata()
+}
+
+// String is an alias of version.String.
 func String() string {
-	return SemVer.String()
+	return Version.String()
 }

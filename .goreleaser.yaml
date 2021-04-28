@@ -1,118 +1,66 @@
 project_name: spotctl
 
 before:
-  # Global hooks.
   hooks:
     - go generate ./...
 
 builds:
-  -
-    # Path to main.go file or main package.
-    main: ./cmd/spotctl/main.go
-
-    # Name template for the binary final name.
+  - main: ./cmd/spotctl/main.go
     binary: spotctl
-
-    # Set flags for custom build tags.
-    flags:
-      - -mod=vendor
-
-    # Custom environment variables to be set during the builds.
     env:
-      - GO111MODULE=on
       - CGO_ENABLED=0
-
-    # Custom asmflags templates.
-    asmflags:
-      - all=-trimpath={{ .Env.GOPATH }}
-
-    # Custom gcflags templates.
-    gcflags:
-      - all=-trimpath={{ .Env.GOPATH }}
-
-    # Custom ldflags templates.
-    ldflags:
-      - -extldflags '-static' -s -w -X {{ .Env.VERSION_PKG }}.Version={{ .Env.VERSION }} -X {{ .Env.VERSION_PKG }}.Prerelease={{ .Env.VERSION_PRE }} -X {{ .Env.VERSION_PKG }}.Metadata={{ .Env.VERSION_META }}
-
-    # GOOS list to build for.
+      - GO111MODULE=on
+    flags:
+      - -trimpath
+      - -mod=vendor
     goos:
       - linux
       - darwin
       - windows
-
-    # GOARCH list to build for.
     goarch:
       - amd64
-
-brews:
-  -
-    # Formula name.
-    name: spotctl
-
-    # Repository to push the tap to.
-    github:
-      owner: spotinst
-      name: homebrew-tap
-
-    # Template for the url.
-    url_template: "http://github.com/spotinst/spotinst-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-    # Git author used to commit to the repository.
-    commit_author:
-      name: spotinst
-      email: team@spotinst.com
-
-    folder: Formula
-    homepage: "https://api.spotinst.com/"
-    description: "A unified command-line interface to manage your Spotinst resources."
-
-    # Setting this to true will prevent goreleaser to actually try to commit the
-    # updated formula. Instead, the formula file will be stored on the dist folder
-    # only, leaving the responsibility of publishing it to the user.
-    #
-    # If set to auto, the release will not be uploaded to the homebrew tap in case
-    # there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    #
-    # Default is false.
-    skip_upload: auto
-
-    # Custom install script for brew.
-    #
-    # Default is 'bin.install "program"'.
-    install: |
-      bin.install "spotctl"
+      - 386
+      - arm64
+      - arm
+    ignore:
+      - goos: darwin
+        goarch: 386
 
 checksum:
-  # Checksums file name template.
-  name_template: '{{ .ProjectName }}-checksums.txt'
+  name_template: "{{ .ProjectName }}-{{ .Version }}-SHA256SUMS"
+  algorithm: sha256
 
 changelog:
   sort: asc
-
-  # Commit messages matching the regexp listed here will be removed from the changelog.
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - ^chore
+      - ^ci
+      - ^doc
+      - ^test
       - Merge pull request
       - Merge branch
 
 archives:
-    # Archive name template.
-  - name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Env.VERSION }}'
-
-    # Additional files/globs you want to add to the archive.
+  - name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}-{{ .Version }}"
     files:
       - none*
 
+brews:
+  - name: spotctl
+    tap:
+      owner: spotinst
+      name: homebrew-tap
+    url_template: "https://github.com/spotinst/spotctl/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    commit_author:
+      name: spotinst
+      email: ng-spot-info@netapp.com
+    folder: Formula
+    homepage: https://spot.io/
+    description: "A unified command-line interface to manage your Spot by NetApp resources."
+    skip_upload: auto
+    install: |
+      bin.install "spotctl"
+
 release:
-  # If set to true, will not auto-upload any artifacts to GitHub.
-  disable: false
-
-  # If set to true, will not auto-publish the release.
   draft: true
-
-  # If set to auto, will mark the release as not ready for production in case there
-  # is an indicator for this in the tag e.g. v1.0.0-rc1. If set to true, will mark
-  # the release as not ready for production.
-  prerelease: auto
