@@ -6,7 +6,6 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
 	github.com/aws/aws-sdk-go v1.34.30
-	github.com/containerd/stargz-snapshotter/estargz v0.4.1 // indirect
 	github.com/docker/cli v20.10.3+incompatible // indirect
 	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0
@@ -14,7 +13,7 @@ require (
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.3.0
 	github.com/google/go-cmp v0.5.4 // indirect
-	github.com/google/go-containerregistry v0.4.0
+	github.com/google/go-containerregistry v0.4.1
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
