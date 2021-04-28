@@ -9,7 +9,9 @@ spec:
   state: present
   version: 2.5.0
   valuesConfiguration: |
-    image: public.ecr.aws/l8m2k1n1/netapp/enterprise-gateway:dev
+    image: elyra/enterprise-gateway:2.5.0
+    kernelspecs:
+      image: public.ecr.aws/l8m2k1n1/netapp/jupyter-kernelspecs:0.1
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
@@ -37,5 +39,5 @@ spec:
           nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
           cert-manager.io/cluster-issuer: wave-issuer
     kernel:
+      whitelist: []
       kernelNamespace: jupyter-notebooks
-

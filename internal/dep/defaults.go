@@ -19,10 +19,10 @@ var (
 			"v{{.version}}/kops-{{.os}}-{{.arch}}",
 	}
 
-	// See: https://github.com/weaveworks/eksctl.
+	// See: https://github.com/spotinst/weaveworks-eksctl.
 	DependencyEksctl Dependency = &dependency{
 		name:    "eksctl",
-		version: "0.36.2-81884a74",
+		version: "0.39.0-b54d0ada",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}

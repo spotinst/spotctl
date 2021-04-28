@@ -10,5 +10,6 @@ spec:
   version: 1.0.5
   valuesConfiguration: |
     sparkJobNamespace: spark-jobs
-    enableWebhook: true
+    webhook:
+      enable: true
 
