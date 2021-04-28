@@ -11,7 +11,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.62.0
-	github.com/go-logr/logr v0.3.0
+	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/go-containerregistry v0.4.1
 	github.com/hashicorp/go-multierror v1.0.0
@@ -28,9 +28,8 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.85.0
 	github.com/spotinst/wave-operator v0.0.0-20210427091642-d1bf1464a897
 	github.com/theckman/yacspin v0.8.0
-	golang.org/x/sys v0.0.0-20210216224549-f992740a1bac // indirect
 	k8s.io/apiextensions-apiserver v0.19.3
-	k8s.io/apimachinery v0.19.3
+	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v0.19.3
 	sigs.k8s.io/controller-runtime v0.7.0-alpha.6
 )
