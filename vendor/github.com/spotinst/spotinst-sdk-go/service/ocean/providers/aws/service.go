@@ -14,8 +14,7 @@ import (
 type Service interface {
 	serviceKubernetes
 	serviceECS
-
-	ListResourceSuggestions(context.Context, *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error)
+	serviceCommon
 }
 
 type serviceKubernetes interface {
@@ -33,6 +32,8 @@ type serviceKubernetes interface {
 
 	ListClusterInstances(context.Context, *ListClusterInstancesInput) (*ListClusterInstancesOutput, error)
 	DetachClusterInstances(context.Context, *DetachClusterInstancesInput) (*DetachClusterInstancesOutput, error)
+
+	GetLogEvents(context.Context, *GetLogEventsInput) (*GetLogEventsOutput, error)
 
 	ListRolls(context.Context, *ListRollsInput) (*ListRollsOutput, error)
 	CreateRoll(context.Context, *CreateRollInput) (*CreateRollOutput, error)
@@ -58,6 +59,10 @@ type serviceECS interface {
 	DeleteECSLaunchSpec(context.Context, *DeleteECSLaunchSpecInput) (*DeleteECSLaunchSpecOutput, error)
 
 	RollECS(context.Context, *ECSRollClusterInput) (*ECSRollClusterOutput, error)
+}
+
+type serviceCommon interface {
+	ListResourceSuggestions(context.Context, *ListResourceSuggestionsInput) (*ListResourceSuggestionsOutput, error)
 }
 
 type ServiceOp struct {
