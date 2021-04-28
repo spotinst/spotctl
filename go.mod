@@ -16,7 +16,7 @@ require (
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/go-containerregistry v0.4.0
 	github.com/hashicorp/go-multierror v1.0.0
-	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/go-version v1.3.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 	github.com/magefile/mage v1.11.0 // indirect
