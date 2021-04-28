@@ -3,7 +3,7 @@ module github.com/spotinst/spotctl
 go 1.16
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.2
+	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
 	github.com/aws/aws-sdk-go v1.34.30
 	github.com/containerd/stargz-snapshotter/estargz v0.4.1 // indirect
