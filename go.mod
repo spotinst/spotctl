@@ -11,7 +11,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.62.0
-	github.com/go-logr/logr v0.3.0
+	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/google/go-containerregistry v0.4.1
 	github.com/hashicorp/go-multierror v1.0.0
