@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -162,7 +163,8 @@ type ListLaunchSpecsOutput struct {
 }
 
 type CreateLaunchSpecInput struct {
-	LaunchSpec *LaunchSpec `json:"launchSpec,omitempty"`
+	LaunchSpec   *LaunchSpec `json:"launchSpec,omitempty"`
+	InitialNodes *int        `json:"-"`
 }
 
 type CreateLaunchSpecOutput struct {
@@ -250,6 +252,10 @@ func (s *ServiceOp) ListLaunchSpecs(ctx context.Context, input *ListLaunchSpecsI
 func (s *ServiceOp) CreateLaunchSpec(ctx context.Context, input *CreateLaunchSpecInput) (*CreateLaunchSpecOutput, error) {
 	r := client.NewRequest(http.MethodPost, "/ocean/aws/k8s/launchSpec")
 	r.Obj = input
+
+	if input.InitialNodes != nil {
+		r.Params.Set("initialNodes", strconv.Itoa(spotinst.IntValue(input.InitialNodes)))
+	}
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
