@@ -29,7 +29,7 @@ require (
 	github.com/theckman/yacspin v0.8.0
 	golang.org/x/sys v0.0.0-20210216224549-f992740a1bac // indirect
 	k8s.io/apiextensions-apiserver v0.19.3
-	k8s.io/apimachinery v0.19.3
+	k8s.io/apimachinery v0.20.6
 	k8s.io/client-go v0.19.3
 	sigs.k8s.io/controller-runtime v0.7.0-alpha.6
 )
