@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
-	github.com/aws/aws-sdk-go v1.38.35
+	github.com/aws/aws-sdk-go v1.38.36
 	github.com/docker/cli v20.10.3+incompatible // indirect
 	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0
