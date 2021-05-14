@@ -104,7 +104,7 @@ type Automatic struct {
 }
 
 type VMSizes struct {
-	Whitelist []*string `json:"whitelist,omitempty"`
+	Whitelist []string `json:"whitelist,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -178,11 +178,11 @@ type MarketplaceImage struct {
 }
 
 type LoadBalancer struct {
-	BackendPoolNames  []*string `json:"backendPoolNames,omitempty"`
-	LoadBalancerSKU   *string   `json:"loadBalancerSku,omitempty"`
-	Name              *string   `json:"name,omitempty"`
-	ResourceGroupName *string   `json:"resourceGroupName,omitempty"`
-	Type              *string   `json:"type,omitempty"`
+	BackendPoolNames  []string `json:"backendPoolNames,omitempty"`
+	LoadBalancerSKU   *string  `json:"loadBalancerSku,omitempty"`
+	Name              *string  `json:"name,omitempty"`
+	ResourceGroupName *string  `json:"resourceGroupName,omitempty"`
+	Type              *string  `json:"type,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -194,6 +194,7 @@ type NetworkInterface struct {
 	IsPrimary           *bool                 `json:"isPrimary,omitempty"`
 	EnableIPForwarding  *bool                 `json:"enableIPForwarding,omitempty"`
 	PublicIPSKU         *string               `json:"publicIpSku,omitempty"`
+	SecurityGroup       *SecurityGroup        `json:"securityGroup,omitempty"`
 	AdditionalIPConfigs []*AdditionalIPConfig `json:"additionalIpConfigurations,omitempty"`
 
 	forceSendFields []string
@@ -793,7 +794,7 @@ func (o VMSizes) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *VMSizes) SetWhitelist(v []*string) *VMSizes {
+func (o *VMSizes) SetWhitelist(v []string) *VMSizes {
 	if o.Whitelist = v; o.Whitelist == nil {
 		o.nullFields = append(o.nullFields, "Whitelist")
 	}
@@ -841,6 +842,34 @@ func (o *LaunchSpecification) SetNetwork(v *Network) *LaunchSpecification {
 func (o *LaunchSpecification) SetLogin(v *Login) *LaunchSpecification {
 	if o.Login = v; o.Login == nil {
 		o.nullFields = append(o.nullFields, "Login")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetExtensions(v []*Extension) *LaunchSpecification {
+	if o.Extensions = v; o.Extensions == nil {
+		o.nullFields = append(o.nullFields, "Extensions")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetLoadBalancersConfig(v *LoadBalancersConfig) *LaunchSpecification {
+	if o.LoadBalancersConfig = v; o.LoadBalancersConfig == nil {
+		o.nullFields = append(o.nullFields, "LoadBalancersConfig")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetOSDisk(v *OSDisk) *LaunchSpecification {
+	if o.OSDisk = v; o.OSDisk == nil {
+		o.nullFields = append(o.nullFields, "OSDisk")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetTags(v []*Tag) *LaunchSpecification {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }
@@ -983,6 +1012,13 @@ func (o *NetworkInterface) SetPublicIPSKU(v *string) *NetworkInterface {
 	return o
 }
 
+func (o *NetworkInterface) SetSecurityGroup(v *SecurityGroup) *NetworkInterface {
+	if o.SecurityGroup = v; o.SecurityGroup == nil {
+		o.nullFields = append(o.nullFields, "SecurityGroup")
+	}
+	return o
+}
+
 // endregion
 
 // region AdditionalIPConfig
@@ -1088,7 +1124,7 @@ func (o LoadBalancersConfig) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *LoadBalancersConfig) SetUserName(v []*LoadBalancer) *LoadBalancersConfig {
+func (o *LoadBalancersConfig) SetLoadBalancers(v []*LoadBalancer) *LoadBalancersConfig {
 	if o.LoadBalancers = v; o.LoadBalancers == nil {
 		o.nullFields = append(o.nullFields, "LoadBalancers")
 	}
@@ -1133,7 +1169,7 @@ func (o *LoadBalancer) SetType(v *string) *LoadBalancer {
 	return o
 }
 
-func (o *LoadBalancer) SeBackendPoolNames(v []*string) *LoadBalancer {
+func (o *LoadBalancer) SeBackendPoolNames(v []string) *LoadBalancer {
 	if o.BackendPoolNames = v; o.BackendPoolNames == nil {
 		o.nullFields = append(o.nullFields, "BackendPoolNames")
 	}
