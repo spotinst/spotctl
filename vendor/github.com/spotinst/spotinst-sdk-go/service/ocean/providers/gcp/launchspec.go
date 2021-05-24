@@ -13,14 +13,15 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                *string     `json:"id,omitempty"`
-	OceanID           *string     `json:"oceanId,omitempty"`
-	SourceImage       *string     `json:"sourceImage,omitempty"`
-	Metadata          []*Metadata `json:"metadata,omitempty"`
-	Labels            []*Label    `json:"labels,omitempty"`
-	Taints            []*Taint    `json:"taints,omitempty"`
-	AutoScale         *AutoScale  `json:"autoScale,omitempty"`
-	RestrictScaleDown *bool       `json:"restrictScaleDown,omitempty"`
+	ID                *string             `json:"id,omitempty"`
+	OceanID           *string             `json:"oceanId,omitempty"`
+	SourceImage       *string             `json:"sourceImage,omitempty"`
+	Metadata          []*Metadata         `json:"metadata,omitempty"`
+	Labels            []*Label            `json:"labels,omitempty"`
+	Taints            []*Taint            `json:"taints,omitempty"`
+	AutoScale         *AutoScale          `json:"autoScale,omitempty"`
+	RestrictScaleDown *bool               `json:"restrictScaleDown,omitempty"`
+	Strategy          *LaunchSpecStrategy `json:"strategy,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -68,6 +69,13 @@ type AutoScaleHeadroom struct {
 	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
 	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
 	NumOfUnits    *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecStrategy struct {
+	PreemptiblePercentage *int `json:"preemptiblePercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -364,6 +372,13 @@ func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "Strategy")
+	}
+	return o
+}
+
 // endregion
 
 // region Label
@@ -489,3 +504,20 @@ func (o *AutoScaleHeadroom) SetNumOfUnits(v *int) *AutoScaleHeadroom {
 }
 
 // endregion
+
+// region Strategy
+
+func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecStrategy) SetPreemptiblePercentage(v *int) *LaunchSpecStrategy {
+	if o.PreemptiblePercentage = v; o.PreemptiblePercentage == nil {
+		o.nullFields = append(o.nullFields, "PreemptiblePercentage")
+	}
+	return o
+}
+
+//endregion
