@@ -73,7 +73,7 @@ type VirtualNodeGroupTemplate struct {
 }
 
 type ResourceLimits struct {
-	MaxVCPU      *int `json:"maxVcpu,omitempty"`
+	MaxVCPU      *int `json:"maxVCpu,omitempty"`
 	MaxMemoryGib *int `json:"maxMemoryGib,omitempty"`
 
 	forceSendFields []string
