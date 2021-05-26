@@ -17,6 +17,8 @@ limitations under the License.
 package predicate
 
 import (
+	"reflect"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,6 +46,7 @@ type Predicate interface {
 var _ Predicate = Funcs{}
 var _ Predicate = ResourceVersionChangedPredicate{}
 var _ Predicate = GenerationChangedPredicate{}
+var _ Predicate = AnnotationChangedPredicate{}
 var _ Predicate = or{}
 var _ Predicate = and{}
 
@@ -122,21 +125,14 @@ type ResourceVersionChangedPredicate struct {
 // Update implements default UpdateEvent filter for validating resource version change
 func (ResourceVersionChangedPredicate) Update(e event.UpdateEvent) bool {
 	if e.ObjectOld == nil {
-		log.Error(nil, "UpdateEvent has no old metadata", "event", e)
-		return false
-	}
-	if e.ObjectOld == nil {
-		log.Error(nil, "GenericEvent has no old runtime object to update", "event", e)
+		log.Error(nil, "Update event has no old object to update", "event", e)
 		return false
 	}
 	if e.ObjectNew == nil {
-		log.Error(nil, "GenericEvent has no new runtime object for update", "event", e)
+		log.Error(nil, "Update event has no new object to update", "event", e)
 		return false
 	}
-	if e.ObjectNew == nil {
-		log.Error(nil, "UpdateEvent has no new metadata", "event", e)
-		return false
-	}
+
 	return e.ObjectNew.GetResourceVersion() != e.ObjectOld.GetResourceVersion()
 }
 
@@ -163,22 +159,75 @@ type GenerationChangedPredicate struct {
 // Update implements default UpdateEvent filter for validating generation change
 func (GenerationChangedPredicate) Update(e event.UpdateEvent) bool {
 	if e.ObjectOld == nil {
-		log.Error(nil, "Update event has no old metadata", "event", e)
-		return false
-	}
-	if e.ObjectOld == nil {
-		log.Error(nil, "Update event has no old runtime object to update", "event", e)
+		log.Error(nil, "Update event has no old object to update", "event", e)
 		return false
 	}
 	if e.ObjectNew == nil {
-		log.Error(nil, "Update event has no new runtime object for update", "event", e)
+		log.Error(nil, "Update event has no new object for update", "event", e)
 		return false
 	}
-	if e.ObjectNew == nil {
-		log.Error(nil, "Update event has no new metadata", "event", e)
-		return false
-	}
+
 	return e.ObjectNew.GetGeneration() != e.ObjectOld.GetGeneration()
+}
+
+// AnnotationChangedPredicate implements a default update predicate function on annotation change.
+//
+// This predicate will skip update events that have no change in the object's annotation.
+// It is intended to be used in conjunction with the GenerationChangedPredicate, as in the following example:
+//
+// Controller.Watch(
+//		&source.Kind{Type: v1.MyCustomKind},
+// 		&handler.EnqueueRequestForObject{},
+//		predicate.Or(predicate.GenerationChangedPredicate{}, predicate.AnnotationChangedPredicate{}))
+//
+// This is mostly useful for controllers that needs to trigger both when the resource's generation is incremented
+// (i.e., when the resource' .spec changes), or an annotation changes (e.g., for a staging/alpha API).
+type AnnotationChangedPredicate struct {
+	Funcs
+}
+
+// Update implements default UpdateEvent filter for validating annotation change
+func (AnnotationChangedPredicate) Update(e event.UpdateEvent) bool {
+	if e.ObjectOld == nil {
+		log.Error(nil, "Update event has no old object to update", "event", e)
+		return false
+	}
+	if e.ObjectNew == nil {
+		log.Error(nil, "Update event has no new object for update", "event", e)
+		return false
+	}
+
+	return !reflect.DeepEqual(e.ObjectNew.GetAnnotations(), e.ObjectOld.GetAnnotations())
+}
+
+// LabelChangedPredicate implements a default update predicate function on label change.
+//
+// This predicate will skip update events that have no change in the object's label.
+// It is intended to be used in conjunction with the GenerationChangedPredicate, as in the following example:
+//
+// Controller.Watch(
+//		&source.Kind{Type: v1.MyCustomKind},
+// 		&handler.EnqueueRequestForObject{},
+//		predicate.Or(predicate.GenerationChangedPredicate{}, predicate.LabelChangedPredicate{}))
+//
+// This will be helpful when object's labels is carrying some extra specification information beyond object's spec,
+// and the controller will be triggered if any valid spec change (not only in spec, but also in labels) happens.
+type LabelChangedPredicate struct {
+	Funcs
+}
+
+// Update implements default UpdateEvent filter for checking label change
+func (LabelChangedPredicate) Update(e event.UpdateEvent) bool {
+	if e.ObjectOld == nil {
+		log.Error(nil, "Update event has no old object to update", "event", e)
+		return false
+	}
+	if e.ObjectNew == nil {
+		log.Error(nil, "Update event has no new object for update", "event", e)
+		return false
+	}
+
+	return !reflect.DeepEqual(e.ObjectNew.GetLabels(), e.ObjectOld.GetLabels())
 }
 
 // And returns a composite predicate that implements a logical AND of the predicates passed to it.

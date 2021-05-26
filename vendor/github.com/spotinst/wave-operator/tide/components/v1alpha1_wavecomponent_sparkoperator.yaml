@@ -7,9 +7,11 @@ spec:
   name: spark-operator
   url: https://charts.spot.io
   state: present
-  version: 1.0.5
+  version: 1.0.6
   valuesConfiguration: |
     sparkJobNamespace: spark-jobs
     webhook:
       enable: true
-
+      generateCerts: false
+      useCertManager: true
+      certIssuer: wave-issuer
