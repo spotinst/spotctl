@@ -11,10 +11,8 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/spotinst/wave-operator/api/v1alpha1"
-	"github.com/spotinst/wave-operator/catalog"
-	"github.com/spotinst/wave-operator/install"
-	tideconfig "github.com/spotinst/wave-operator/tide/config"
+	"k8s.io/client-go/rest"
+
 	goyaml "gopkg.in/yaml.v3"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -34,9 +32,15 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrlrt "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"github.com/spotinst/wave-operator/api/v1alpha1"
+	"github.com/spotinst/wave-operator/catalog"
+	"github.com/spotinst/wave-operator/install"
+	tideconfig "github.com/spotinst/wave-operator/tide/config"
 )
 
 const (
+	WaveOperatorDeployment = "wave-operator"
 	WaveOperatorChart      = "wave-operator"
 	WaveOperatorRepository = "https://charts.spot.io"
 	WaveOperatorVersion    = "" // empty string indicates latest chart version
@@ -44,7 +48,7 @@ const (
 
 	CertManagerChart      = "cert-manager"
 	CertManagerRepository = "https://charts.jetstack.io"
-	CertManagerVersion    = "v1.1.0"
+	CertManagerVersion    = "v1.3.1"
 	CertManagerValues     = "installCRDs: true"
 
 	spotConfigMapNamespace        = metav1.NamespaceSystem
@@ -75,12 +79,11 @@ func init() {
 }
 
 type Manager interface {
+	EnvironmentGetter
 	SetWaveInstallSpec(spec install.InstallSpec) error
 
 	SetConfiguration(config map[string]interface{}) (*v1alpha1.WaveEnvironment, error)
 	DeleteConfiguration(deleteEnvironmentCRD bool) error
-	GetConfiguration() (*v1alpha1.WaveEnvironment, error)
-
 	Create(env v1alpha1.WaveEnvironment) error
 	Delete() error
 
@@ -92,7 +95,9 @@ type manager struct {
 	spec              install.InstallSpec
 	clusterIdentifier string
 	log               logr.Logger
+	rc                ctrlrt.Client
 	kubeClientGetter  genericclioptions.RESTClientGetter
+	kc                kubernetes.Interface
 }
 
 func NewManager(log logr.Logger) (Manager, error) {
@@ -120,17 +125,20 @@ func NewManager(log logr.Logger) (Manager, error) {
 	}
 	log.Info("Reading ocean configuration", "clusterIdentifier", clusterIdentifier)
 
-	kubeConfig := genericclioptions.NewConfigFlags(false)
-	kubeConfig.APIServer = &conf.Host
-	kubeConfig.BearerToken = &conf.BearerToken
-	kubeConfig.CAFile = &conf.CAFile
-	ns := catalog.SystemNamespace
-	kubeConfig.Namespace = &ns
+	rt, err := getControllerRuntimeClient(conf)
+	if err != nil {
+		return nil, err
+	}
+
+	restClientGetter, err := buildRESTClientGetter(conf)
+	if err != nil {
+		return nil, err
+	}
 
 	return &manager{
 		clusterIdentifier: clusterIdentifier,
 		log:               log,
-		kubeClientGetter:  kubeConfig,
+		kubeClientGetter:  restClientGetter,
 		spec: install.InstallSpec{
 			Name:       WaveOperatorChart,
 			Repository: WaveOperatorRepository,
@@ -138,7 +146,18 @@ func NewManager(log logr.Logger) (Manager, error) {
 			Values:     WaveOperatorValues,
 			Enabled:    map[v1alpha1.ChartName]bool{},
 		},
+		kc: kc,
+		rc: rt,
 	}, nil
+}
+
+func buildRESTClientGetter(conf *rest.Config) (genericclioptions.RESTClientGetter, error) {
+	kubeConfig := genericclioptions.NewConfigFlags(false)
+	kubeConfig.APIServer = &conf.Host
+	kubeConfig.BearerToken = &conf.BearerToken
+	kubeConfig.CAFile = &conf.CAFile
+	*(kubeConfig.Namespace) = catalog.SystemNamespace
+	return kubeConfig, nil
 }
 
 func (m *manager) SetWaveInstallSpec(spec install.InstallSpec) error {
@@ -195,20 +214,7 @@ func validateConfig(input map[string]interface{}) (*validatedConfig, error) {
 	return vc, nil
 }
 
-func (m *manager) getKubernetesClient() (kubernetes.Interface, error) {
-	conf, err := m.kubeClientGetter.ToRESTConfig()
-	if err != nil {
-		return nil, err
-	}
-	return kubernetes.NewForConfig(conf)
-}
-
-func (m *manager) getControllerRuntimeClient() (ctrlrt.Client, error) {
-	conf, err := m.kubeClientGetter.ToRESTConfig()
-	if err != nil {
-		return nil, err
-	}
-
+func getControllerRuntimeClient(conf *rest.Config) (ctrlrt.Client, error) {
 	opts := ctrlrt.Options{
 		Scheme: scheme,
 		Mapper: nil,
@@ -296,16 +302,12 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 		return nil, fmt.Errorf("invalid input, %w", err)
 	}
 
-	kc, err := m.getKubernetesClient()
-	if err != nil {
-		return nil, err
-	}
 	ns := &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: catalog.SystemNamespace,
 		},
 	}
-	_, err = kc.CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
+	_, err = m.kc.CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{})
 	if err != nil && !k8serrors.IsAlreadyExists(err) {
 		return nil, err
 	}
@@ -327,12 +329,8 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 	if err := scheme.Convert(crd, ucrd, gv); err != nil {
 		return nil, fmt.Errorf("failed to convert, %w", err)
 	}
-	rc, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return nil, err
-	}
 
-	err = rc.Create(ctx, crd, &ctrlrt.CreateOptions{})
+	err = m.rc.Create(ctx, crd, &ctrlrt.CreateOptions{})
 	if err != nil && !k8serrors.IsAlreadyExists(err) {
 		return nil, fmt.Errorf("failed to create crd, %w", err)
 	}
@@ -359,7 +357,7 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 		return nil, err
 	}
 
-	err = rc.Create(ctx, uenv)
+	err = m.rc.Create(ctx, uenv)
 	if err != nil {
 		if k8serrors.IsAlreadyExists(err) {
 			m.log.Info("WaveEnvironment CR already exists", "message", err.Error())
@@ -372,14 +370,10 @@ func (m *manager) SetConfiguration(input map[string]interface{}) (*v1alpha1.Wave
 }
 
 func (m *manager) GetConfiguration() (*v1alpha1.WaveEnvironment, error) {
-	client, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return nil, err
-	}
 	env := &v1alpha1.WaveEnvironment{}
 	ctx := context.TODO()
 	key := ctrlrt.ObjectKey{Name: m.clusterIdentifier, Namespace: catalog.SystemNamespace}
-	err = client.Get(ctx, key, env)
+	err := m.rc.Get(ctx, key, env)
 	if err != nil {
 		return nil, err
 	}
@@ -387,12 +381,8 @@ func (m *manager) GetConfiguration() (*v1alpha1.WaveEnvironment, error) {
 }
 
 func (m *manager) SaveConfiguration(env *v1alpha1.WaveEnvironment) error {
-	client, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return err
-	}
 	ctx := context.TODO()
-	err = client.Update(ctx, env)
+	err := m.rc.Update(ctx, env)
 	if err != nil {
 		return err
 	}
@@ -421,22 +411,17 @@ func (m *manager) Create(env v1alpha1.WaveEnvironment) error {
 		return err
 	}
 
-	rc, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return fmt.Errorf("kubernetes config error, %w", err)
-	}
-
 	for _, wc := range waveComponents {
 		m.log.Info("installing wave component", "name", wc.Name)
 		wc.Namespace = catalog.SystemNamespace
-		err = rc.Create(ctx, wc)
+		err = m.rc.Create(ctx, wc)
 		if err != nil {
 			if k8serrors.IsAlreadyExists(err) {
 				m.log.Info("wave component already exists, patching", "name", wc.Name)
 
 				objName := ctrlrt.ObjectKeyFromObject(wc)
 				existing := &v1alpha1.WaveComponent{}
-				err = rc.Get(ctx, objName, existing)
+				err = m.rc.Get(ctx, objName, existing)
 				if err != nil {
 					return fmt.Errorf("error retrieving object, %w", err)
 				}
@@ -446,7 +431,7 @@ func (m *manager) Create(env v1alpha1.WaveEnvironment) error {
 				if !stateSpecified {
 					wc.Spec.State = existing.Spec.State // remove state from patch if it was not explicitly specified
 				}
-				err = rc.Patch(ctx, wc, ctrlrt.MergeFrom(existing))
+				err = m.rc.Patch(ctx, wc, ctrlrt.MergeFrom(existing))
 				if err != nil {
 					return fmt.Errorf("patch error, %w", err)
 				}
@@ -466,13 +451,8 @@ func (m *manager) Delete() error {
 
 	m.log.Info("Deleting Wave")
 
-	rc, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return fmt.Errorf("kubernetes config error, %w", err)
-	}
-
 	components := &v1alpha1.WaveComponentList{}
-	err = rc.List(ctx, components)
+	err := m.rc.List(ctx, components)
 	if err != nil {
 		crdGone, ok := err.(*apimeta.NoKindMatchError)
 		if ok {
@@ -482,7 +462,7 @@ func (m *manager) Delete() error {
 		}
 	} else {
 		for _, wc := range components.Items {
-			if err := rc.Delete(ctx, &wc); err != nil {
+			if err := m.rc.Delete(ctx, &wc); err != nil {
 				m.log.Error(err, "could not delete wave component", wc.Name)
 			}
 		}
@@ -496,7 +476,7 @@ func (m *manager) Delete() error {
 				Name:      wc.Name,
 			}
 			// wait for IsNotFound on all wavecomponents
-			err := rc.Get(ctx, key, obj)
+			err := m.rc.Get(ctx, key, obj)
 			if err == nil {
 				return false, nil
 			} else if !k8serrors.IsNotFound(err) {
@@ -567,13 +547,8 @@ func (m *manager) DeleteConfiguration(deleteEnvironmentCRD bool) error {
 		return nil
 	}
 
-	rc, err := m.getControllerRuntimeClient()
-	if err != nil {
-		return fmt.Errorf("could not get controller runtime client, %w", err)
-	}
-
 	if crPresent {
-		err = rc.Delete(ctx, environment)
+		err = m.rc.Delete(ctx, environment)
 		if err != nil {
 			return fmt.Errorf("could not delete wave environment cr, %w", err)
 		}
@@ -585,7 +560,7 @@ func (m *manager) DeleteConfiguration(deleteEnvironmentCRD bool) error {
 			return fmt.Errorf("could not load crd, %w", err)
 		}
 
-		err = rc.Delete(ctx, crd)
+		err = m.rc.Delete(ctx, crd)
 		if err != nil {
 			return fmt.Errorf("could not delete crd, %w", err)
 		}
@@ -595,19 +570,15 @@ func (m *manager) DeleteConfiguration(deleteEnvironmentCRD bool) error {
 }
 
 func (m *manager) installCertManager(ctx context.Context) error {
-	kc, err := m.getKubernetesClient()
-	if err != nil {
-		return err
-	}
 	certNS := CertManagerChart // chart name == namespace
-	_, _ = kc.CoreV1().Namespaces().Create(
+	_, _ = m.kc.CoreV1().Namespaces().Create(
 		ctx,
 		&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: certNS}},
 		metav1.CreateOptions{},
 	)
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
 	installer.SetNamespace(certNS)
-	err = installer.Install(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
+	err := installer.Install(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
 	if err != nil {
 		return fmt.Errorf("cannot install cert manager, %w", err)
 	}
@@ -616,11 +587,11 @@ func (m *manager) installCertManager(ctx context.Context) error {
 	// Exited with error: cannot install wave operator, installation error, Internal error occurred: failed calling webhook "webhook.cert-manager.io": Post https://cert-manager-webhook.cert-manager.svc:443/mutate?timeout=10s: no endpoints available for service "cert-manager-webhook"
 
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
-		wh, err := kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
+		wh, err := m.kc.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
 		if err != nil || wh.Webhooks[0].ClientConfig.CABundle == nil {
 			return false, nil
 		}
-		ep, err := kc.CoreV1().Endpoints(certNS).Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
+		ep, err := m.kc.CoreV1().Endpoints(certNS).Get(ctx, "cert-manager-webhook", metav1.GetOptions{})
 		if err != nil || len(ep.Subsets) == 0 || len(ep.Subsets[0].Addresses) == 0 {
 			return false, nil
 		}
@@ -632,12 +603,7 @@ func (m *manager) installCertManager(ctx context.Context) error {
 }
 
 func (m *manager) installWaveOperator(ctx context.Context, waveOperatorImage string) error {
-	kc, err := m.getKubernetesClient()
-	if err != nil {
-		return err
-	}
-
-	_, _ = kc.CoreV1().Namespaces().Create(
+	_, _ = m.kc.CoreV1().Namespaces().Create(
 		ctx,
 		&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: catalog.SystemNamespace}},
 		metav1.CreateOptions{},
@@ -679,11 +645,11 @@ func (m *manager) installWaveOperator(ctx context.Context, waveOperatorImage str
 	}
 
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
-		dep, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "wave-operator", metav1.GetOptions{})
+		dep, err := m.kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, WaveOperatorDeployment, metav1.GetOptions{})
 		if err != nil || dep.Status.AvailableReplicas == 0 || dep.Status.UnavailableReplicas != 0 {
 			return false, nil
 		}
-		m.log.Info("polled", "deployment", "wave-operator", "replicas", dep.Status.AvailableReplicas)
+		m.log.Info("polled", "deployment", WaveOperatorDeployment, "replicas", dep.Status.AvailableReplicas)
 
 		return true, nil
 	})
@@ -738,19 +704,14 @@ func setImageInValues(valuesString string, image string) (string, error) {
 }
 
 func (m *manager) deleteWaveOperator(ctx context.Context) error {
-	kc, err := m.getKubernetesClient()
-	if err != nil {
-		return err
-	}
-
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
-	err = installer.Delete(m.spec.Name, m.spec.Repository, m.spec.Version, "")
+	err := installer.Delete(m.spec.Name, m.spec.Repository, m.spec.Version, "")
 	if err != nil {
 		return fmt.Errorf("cannot delete wave operator, %w", err)
 	}
 
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
-		_, err := kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
+		_, err := m.kc.AppsV1().Deployments(catalog.SystemNamespace).Get(ctx, "spotctl-wave-operator", metav1.GetOptions{})
 		if err == nil {
 			return false, nil
 		} else if !k8serrors.IsNotFound(err) {
@@ -762,21 +723,17 @@ func (m *manager) deleteWaveOperator(ctx context.Context) error {
 }
 
 func (m *manager) deleteCertManager(ctx context.Context) error {
-	kc, err := m.getKubernetesClient()
-	if err != nil {
-		return err
-	}
 	certNS := CertManagerChart // chart name == namespace
 
 	installer := install.GetHelm("", m.kubeClientGetter, m.log)
 	installer.SetNamespace(certNS)
-	err = installer.Delete(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
+	err := installer.Delete(CertManagerChart, CertManagerRepository, CertManagerVersion, CertManagerValues)
 	if err != nil {
 		return fmt.Errorf("cannot delete wave operator, %w", err)
 	}
 
 	err = wait.Poll(5*time.Second, 300*time.Second, func() (bool, error) {
-		_, err := kc.AppsV1().Deployments(certNS).Get(ctx, "cert-manager", metav1.GetOptions{})
+		_, err := m.kc.AppsV1().Deployments(certNS).Get(ctx, "cert-manager", metav1.GetOptions{})
 		if err == nil {
 			return false, nil
 		} else if !k8serrors.IsNotFound(err) {
@@ -792,11 +749,6 @@ func (m *manager) CreateTideRBAC() error {
 	ctx := context.TODO()
 	namespace := catalog.SystemNamespace
 
-	kubeClient, err := m.getKubernetesClient()
-	if err != nil {
-		return fmt.Errorf("could not create kubernetes client, %w", err)
-	}
-
 	sa, crb, err := loadTideRBAC(namespace)
 	if err != nil {
 		return fmt.Errorf("could not load tide RBAC objects, %w", err)
@@ -804,29 +756,25 @@ func (m *manager) CreateTideRBAC() error {
 
 	m.log.Info("Creating tide RBAC objects")
 
-	_, err = kubeClient.CoreV1().ServiceAccounts(namespace).Create(ctx, sa, metav1.CreateOptions{})
+	_, err = m.kc.CoreV1().ServiceAccounts(namespace).Create(ctx, sa, metav1.CreateOptions{})
 	if err != nil && !k8serrors.IsAlreadyExists(err) {
 		return fmt.Errorf("could not create tide service account, %w", err)
 	}
 
 	// create or patch clusterrolebinding
-	_, err = kubeClient.RbacV1().ClusterRoleBindings().Create(ctx, crb, metav1.CreateOptions{})
+	_, err = m.kc.RbacV1().ClusterRoleBindings().Create(ctx, crb, metav1.CreateOptions{})
 	if err != nil {
 		if !k8serrors.IsAlreadyExists(err) {
 			return fmt.Errorf("could not create tide cluster role binding, %w", err)
 		}
-		rc, err := m.getControllerRuntimeClient()
-		if err != nil {
-			return err
-		}
 		objName := ctrlrt.ObjectKeyFromObject(crb)
 		existing := &rbacv1.ClusterRoleBinding{}
-		err = rc.Get(ctx, objName, existing)
+		err = m.rc.Get(ctx, objName, existing)
 		if err != nil {
 			return fmt.Errorf("error retrieving clusterrolebinding, %w", err)
 		}
 		crb.ObjectMeta.ResourceVersion = existing.ObjectMeta.ResourceVersion
-		err = rc.Patch(ctx, crb, ctrlrt.MergeFrom(existing))
+		err = m.rc.Patch(ctx, crb, ctrlrt.MergeFrom(existing))
 		if err != nil {
 			return fmt.Errorf("patch error, %w", err)
 		}
@@ -840,19 +788,13 @@ func (m *manager) DeleteTideRBAC() error {
 	ctx := context.TODO()
 	namespace := catalog.SystemNamespace
 
-	kubeClient, err := m.getKubernetesClient()
-	if err != nil {
-		return fmt.Errorf("could not create kubernetes client, %w", err)
-	}
-
 	m.log.Info("Deleting tide RBAC objects")
-
-	err = kubeClient.CoreV1().ServiceAccounts(namespace).Delete(ctx, tideconfig.ServiceAccountName, metav1.DeleteOptions{})
+	err := m.kc.CoreV1().ServiceAccounts(namespace).Delete(ctx, tideconfig.ServiceAccountName, metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("could not delete tide service account, %w", err)
 	}
 
-	err = kubeClient.RbacV1().ClusterRoleBindings().Delete(ctx, tideconfig.RoleBindingName, metav1.DeleteOptions{})
+	err = m.kc.RbacV1().ClusterRoleBindings().Delete(ctx, tideconfig.RoleBindingName, metav1.DeleteOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return fmt.Errorf("could not delete tide cluster role binding, %w", err)
 	}
