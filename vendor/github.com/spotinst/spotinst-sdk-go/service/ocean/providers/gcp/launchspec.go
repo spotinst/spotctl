@@ -13,15 +13,21 @@ import (
 )
 
 type LaunchSpec struct {
-	ID                *string             `json:"id,omitempty"`
-	OceanID           *string             `json:"oceanId,omitempty"`
-	SourceImage       *string             `json:"sourceImage,omitempty"`
-	Metadata          []*Metadata         `json:"metadata,omitempty"`
-	Labels            []*Label            `json:"labels,omitempty"`
-	Taints            []*Taint            `json:"taints,omitempty"`
-	AutoScale         *AutoScale          `json:"autoScale,omitempty"`
-	RestrictScaleDown *bool               `json:"restrictScaleDown,omitempty"`
-	Strategy          *LaunchSpecStrategy `json:"strategy,omitempty"`
+	ID                     *string                 `json:"id,omitempty"`
+	Name                   *string                 `json:"name,omitempty"`
+	OceanID                *string                 `json:"oceanId,omitempty"`
+	SourceImage            *string                 `json:"sourceImage,omitempty"`
+	Metadata               []*Metadata             `json:"metadata,omitempty"`
+	Labels                 []*Label                `json:"labels,omitempty"`
+	Taints                 []*Taint                `json:"taints,omitempty"`
+	AutoScale              *AutoScale              `json:"autoScale,omitempty"`
+	RestrictScaleDown      *bool                   `json:"restrictScaleDown,omitempty"`
+	Tags                   []*Tag                  `json:"tags,omitempty"`
+	Strategy               *LaunchSpecStrategy     `json:"strategy,omitempty"`
+	RootVolumeSizeInGB     *int                    `json:"rootVolumeSizeInGb,omitempty"`
+	RootVolumeType         *string                 `json:"rootVolumeType,omitempty"`
+	ShieldedInstanceConfig *ShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
+	ServiceAccount         *string                 `json:"serviceAccount,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -76,6 +82,14 @@ type AutoScaleHeadroom struct {
 
 type LaunchSpecStrategy struct {
 	PreemptiblePercentage *int `json:"preemptiblePercentage,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShieldedInstanceConfig struct {
+	EnableSecureBoot          *bool `json:"enableSecureBoot,omitempty"`
+	EnableIntegrityMonitoring *bool `json:"enableIntegrityMonitoring,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -330,6 +344,13 @@ func (o *LaunchSpec) SetOceanId(v *string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetName(v *string) *LaunchSpec {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetSourceImage(v *string) *LaunchSpec {
 	if o.SourceImage = v; o.SourceImage == nil {
 		o.nullFields = append(o.nullFields, "SourceImage")
@@ -375,6 +396,41 @@ func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 func (o *LaunchSpec) SetStrategy(v *LaunchSpecStrategy) *LaunchSpec {
 	if o.Strategy = v; o.Strategy == nil {
 		o.nullFields = append(o.nullFields, "Strategy")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRootVolumeSizeInGB(v *int) *LaunchSpec {
+	if o.RootVolumeSizeInGB = v; o.RootVolumeSizeInGB == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeSizeInGB")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetRootVolumeType(v *string) *LaunchSpec {
+	if o.RootVolumeType = v; o.RootVolumeType == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeType")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetServiceAccount(v *string) *LaunchSpec {
+	if o.ServiceAccount = v; o.ServiceAccount == nil {
+		o.nullFields = append(o.nullFields, "ServiceAccount")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
+	if o.Tags = v; o.Tags == nil {
+		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetShieldedInstanceConfig(v *ShieldedInstanceConfig) *LaunchSpec {
+	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
+		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
 	}
 	return o
 }
@@ -516,6 +572,30 @@ func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
 func (o *LaunchSpecStrategy) SetPreemptiblePercentage(v *int) *LaunchSpecStrategy {
 	if o.PreemptiblePercentage = v; o.PreemptiblePercentage == nil {
 		o.nullFields = append(o.nullFields, "PreemptiblePercentage")
+	}
+	return o
+}
+
+//endregion
+
+// region ShieldedInstanceConfig
+
+func (o ShieldedInstanceConfig) MarshalJSON() ([]byte, error) {
+	type noMethod ShieldedInstanceConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShieldedInstanceConfig) SetEnableIntegrityMonitoring(v *bool) *ShieldedInstanceConfig {
+	if o.EnableIntegrityMonitoring = v; o.EnableIntegrityMonitoring == nil {
+		o.nullFields = append(o.nullFields, "EnableIntegrityMonitoring")
+	}
+	return o
+}
+
+func (o *ShieldedInstanceConfig) SetEnableSecureBoot(v *bool) *ShieldedInstanceConfig {
+	if o.EnableSecureBoot = v; o.EnableSecureBoot == nil {
+		o.nullFields = append(o.nullFields, "EnableSecureBoot")
 	}
 	return o
 }
