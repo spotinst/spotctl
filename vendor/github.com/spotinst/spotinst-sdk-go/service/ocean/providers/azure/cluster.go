@@ -126,11 +126,13 @@ type LaunchSpecification struct {
 }
 
 type Extension struct {
-	APIVersion              *string `json:"apiVersion,omitempty"`
-	MinorVersionAutoUpgrade *bool   `json:"minorVersionAutoUpgrade,omitempty"`
-	Name                    *string `json:"name,omitempty"`
-	Publisher               *string `json:"publisher,omitempty"`
-	Type                    *string `json:"type,omitempty"`
+	APIVersion              *string     `json:"apiVersion,omitempty"`
+	MinorVersionAutoUpgrade *bool       `json:"minorVersionAutoUpgrade,omitempty"`
+	Name                    *string     `json:"name,omitempty"`
+	Publisher               *string     `json:"publisher,omitempty"`
+	Type                    *string     `json:"type,omitempty"`
+	ProtectedSettings       interface{} `json:"protectedSettings,omitempty"`
+	PublicSettings          interface{} `json:"publicSettings,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1110,6 +1112,20 @@ func (o *Extension) SetType(v *string) *Extension {
 func (o *Extension) SetMinorVersionAutoUpgrade(v *bool) *Extension {
 	if o.MinorVersionAutoUpgrade = v; o.MinorVersionAutoUpgrade == nil {
 		o.nullFields = append(o.nullFields, "MinorVersionAutoUpgrade")
+	}
+	return o
+}
+
+func (o *Extension) SetProtectedSettings(v interface{}) *Extension {
+	if o.ProtectedSettings = v; o.ProtectedSettings == nil {
+		o.nullFields = append(o.nullFields, "ProtectedSettings")
+	}
+	return o
+}
+
+func (o *Extension) SetPublicSettings(v interface{}) *Extension {
+	if o.PublicSettings = v; o.PublicSettings == nil {
+		o.nullFields = append(o.nullFields, "PublicSettings")
 	}
 	return o
 }
