@@ -28,6 +28,7 @@ type LaunchSpec struct {
 	RootVolumeType         *string                 `json:"rootVolumeType,omitempty"`
 	ShieldedInstanceConfig *ShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
 	ServiceAccount         *string                 `json:"serviceAccount,omitempty"`
+	InstanceTypes          []string                `json:"instanceTypes,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -431,6 +432,13 @@ func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
 func (o *LaunchSpec) SetShieldedInstanceConfig(v *ShieldedInstanceConfig) *LaunchSpec {
 	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
 		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
+	if o.InstanceTypes = v; o.InstanceTypes == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypes")
 	}
 	return o
 }

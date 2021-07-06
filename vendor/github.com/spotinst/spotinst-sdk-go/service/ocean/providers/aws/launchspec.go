@@ -24,6 +24,7 @@ type LaunchSpec struct {
 	SecurityGroupIDs         []string              `json:"securityGroupIds,omitempty"`
 	SubnetIDs                []string              `json:"subnetIds,omitempty"`
 	InstanceTypes            []string              `json:"instanceTypes,omitempty"`
+	PreferredSpotTypes       []string              `json:"preferredSpotTypes,omitempty"`
 	Strategy                 *LaunchSpecStrategy   `json:"strategy,omitempty"`
 	ResourceLimits           *ResourceLimits       `json:"resourceLimits,omitempty"`
 	IAMInstanceProfile       *IAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
@@ -418,6 +419,13 @@ func (o *LaunchSpec) SetSubnetIDs(v []string) *LaunchSpec {
 func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
 	if o.InstanceTypes = v; o.InstanceTypes == nil {
 		o.nullFields = append(o.nullFields, "InstanceTypes")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetPreferredSpotTypes(v []string) *LaunchSpec {
+	if o.PreferredSpotTypes = v; o.PreferredSpotTypes == nil {
+		o.nullFields = append(o.nullFields, "PreferredSpotTypes")
 	}
 	return o
 }
