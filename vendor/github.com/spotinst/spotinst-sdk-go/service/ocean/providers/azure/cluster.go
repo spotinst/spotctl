@@ -111,15 +111,16 @@ type VMSizes struct {
 }
 
 type LaunchSpecification struct {
-	ResourceGroupName   *string              `json:"resourceGroupName,omitempty"`
-	CustomData          *string              `json:"customData,omitempty"`
-	Image               *Image               `json:"image,omitempty"`
-	Network             *Network             `json:"network,omitempty"`
-	OSDisk              *OSDisk              `json:"osDisk,omitempty"`
-	Login               *Login               `json:"login,omitempty"`
-	LoadBalancersConfig *LoadBalancersConfig `json:"loadBalancersConfig,omitempty"`
-	Extensions          []*Extension         `json:"extensions,omitempty"`
-	Tags                []*Tag               `json:"tags,omitempty"`
+	ResourceGroupName        *string                   `json:"resourceGroupName,omitempty"`
+	CustomData               *string                   `json:"customData,omitempty"`
+	Image                    *Image                    `json:"image,omitempty"`
+	Network                  *Network                  `json:"network,omitempty"`
+	OSDisk                   *OSDisk                   `json:"osDisk,omitempty"`
+	Login                    *Login                    `json:"login,omitempty"`
+	LoadBalancersConfig      *LoadBalancersConfig      `json:"loadBalancersConfig,omitempty"`
+	ManagedServiceIdentities []*ManagedServiceIdentity `json:"managedServiceIdentities,omitempty"`
+	Extensions               []*Extension              `json:"extensions,omitempty"`
+	Tags                     []*Tag                    `json:"tags,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -212,6 +213,14 @@ type AdditionalIPConfig struct {
 }
 
 type SecurityGroup struct {
+	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
+	Name              *string `json:"name,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ManagedServiceIdentity struct {
 	ResourceGroupName *string `json:"resourceGroupName,omitempty"`
 	Name              *string `json:"name,omitempty"`
 
@@ -848,6 +857,13 @@ func (o *LaunchSpecification) SetLogin(v *Login) *LaunchSpecification {
 	return o
 }
 
+func (o *LaunchSpecification) SetManagedServiceIdentities(v []*ManagedServiceIdentity) *LaunchSpecification {
+	if o.ManagedServiceIdentities = v; o.ManagedServiceIdentities == nil {
+		o.nullFields = append(o.nullFields, "ManagedServiceIdentities")
+	}
+	return o
+}
+
 func (o *LaunchSpecification) SetExtensions(v []*Extension) *LaunchSpecification {
 	if o.Extensions = v; o.Extensions == nil {
 		o.nullFields = append(o.nullFields, "Extensions")
@@ -1210,6 +1226,30 @@ func (o *SecurityGroup) SetResourceGroupName(v *string) *SecurityGroup {
 }
 
 func (o *SecurityGroup) SetName(v *string) *SecurityGroup {
+	if o.Name = v; o.Name == nil {
+		o.nullFields = append(o.nullFields, "Name")
+	}
+	return o
+}
+
+// endregion
+
+// region ManagedServiceIdentity
+
+func (o ManagedServiceIdentity) MarshalJSON() ([]byte, error) {
+	type noMethod ManagedServiceIdentity
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ManagedServiceIdentity) SetResourceGroupName(v *string) *ManagedServiceIdentity {
+	if o.ResourceGroupName = v; o.ResourceGroupName == nil {
+		o.nullFields = append(o.nullFields, "ResourceGroupName")
+	}
+	return o
+}
+
+func (o *ManagedServiceIdentity) SetName(v *string) *ManagedServiceIdentity {
 	if o.Name = v; o.Name == nil {
 		o.nullFields = append(o.nullFields, "Name")
 	}
