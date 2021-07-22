@@ -171,6 +171,7 @@ type LaunchSpecification struct {
 	ServiceAccount     *string     `json:"serviceAccount,omitempty"`
 	SourceImage        *string     `json:"sourceImage,omitempty"`
 	Tags               []string    `json:"tags,omitempty"`
+	RootVolumeType     *string     `json:"rootVolumeType,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -849,6 +850,13 @@ func (o *LaunchSpecification) SetSourceImage(v *string) *LaunchSpecification {
 func (o *LaunchSpecification) SetTags(v []string) *LaunchSpecification {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetRootVolumeType(v *string) *LaunchSpecification {
+	if o.RootVolumeType = v; o.RootVolumeType == nil {
+		o.nullFields = append(o.nullFields, "RootVolumeType")
 	}
 	return o
 }
