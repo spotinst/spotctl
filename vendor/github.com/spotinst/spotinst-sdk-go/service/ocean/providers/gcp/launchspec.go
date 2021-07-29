@@ -29,6 +29,8 @@ type LaunchSpec struct {
 	ShieldedInstanceConfig *ShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
 	ServiceAccount         *string                 `json:"serviceAccount,omitempty"`
 	InstanceTypes          []string                `json:"instanceTypes,omitempty"`
+	Storage                *Storage                `json:"storage,omitempty"`
+	ResourceLimits         *ResourceLimits         `json:"resourceLimits,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -91,6 +93,20 @@ type LaunchSpecStrategy struct {
 type ShieldedInstanceConfig struct {
 	EnableSecureBoot          *bool `json:"enableSecureBoot,omitempty"`
 	EnableIntegrityMonitoring *bool `json:"enableIntegrityMonitoring,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Storage struct {
+	LocalSSDCount *int `json:"localSsdCount,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ResourceLimits struct {
+	MaxInstanceCount *int `json:"maxInstanceCount,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -443,6 +459,20 @@ func (o *LaunchSpec) SetInstanceTypes(v []string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetStorage(v *Storage) *LaunchSpec {
+	if o.Storage = v; o.Storage == nil {
+		o.nullFields = append(o.nullFields, "Storage")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
+	if o.ResourceLimits = v; o.ResourceLimits == nil {
+		o.nullFields = append(o.nullFields, "ResourceLimits")
+	}
+	return o
+}
+
 // endregion
 
 // region Label
@@ -604,6 +634,40 @@ func (o *ShieldedInstanceConfig) SetEnableIntegrityMonitoring(v *bool) *Shielded
 func (o *ShieldedInstanceConfig) SetEnableSecureBoot(v *bool) *ShieldedInstanceConfig {
 	if o.EnableSecureBoot = v; o.EnableSecureBoot == nil {
 		o.nullFields = append(o.nullFields, "EnableSecureBoot")
+	}
+	return o
+}
+
+//endregion
+
+// region Storage
+
+func (o Storage) MarshalJSON() ([]byte, error) {
+	type noMethod Storage
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Storage) SetLocalSSDCount(v *int) *Storage {
+	if o.LocalSSDCount = v; o.LocalSSDCount == nil {
+		o.nullFields = append(o.nullFields, "LocalSSDCount")
+	}
+	return o
+}
+
+//endregion
+
+// region ResourceLimits
+
+func (o ResourceLimits) MarshalJSON() ([]byte, error) {
+	type noMethod ResourceLimits
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ResourceLimits) SetMaxInstanceCount(v *int) *ResourceLimits {
+	if o.MaxInstanceCount = v; o.MaxInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MaxInstanceCount")
 	}
 	return o
 }
