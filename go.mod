@@ -6,12 +6,11 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.15
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
 	github.com/aws/aws-sdk-go v1.40.8
-	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.62.0
 	github.com/go-logr/logr v0.4.0
-	github.com/google/go-containerregistry v0.5.1
+	github.com/google/go-containerregistry v0.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
@@ -26,8 +25,8 @@ require (
 	github.com/spotinst/wave-operator v0.0.0-20210524091717-f8934344b1f2
 	github.com/theckman/yacspin v0.8.0
 	k8s.io/apiextensions-apiserver v0.20.4
-	k8s.io/apimachinery v0.20.4
-	k8s.io/client-go v0.20.4
+	k8s.io/apimachinery v0.20.6
+	k8s.io/client-go v0.20.6
 	sigs.k8s.io/controller-runtime v0.8.3
 )
 
