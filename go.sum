@@ -919,8 +919,8 @@ github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/y
 github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/spf13/viper v1.7.1/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/spf13/viper v1.8.1/go.mod h1:o0Pch8wJ9BVSWGQMbra6iw0oQ5oktSIBaujf1rJH9Ns=
-github.com/spotinst/spotinst-sdk-go v1.97.1 h1:SBVSpMoROH2i2RF/7LL+f7QkkG7HKs6iSMFQ1rjbK0M=
-github.com/spotinst/spotinst-sdk-go v1.97.1/go.mod h1:RuKksd1/RyQogMCxKFI5B75NeFRcgl3W+26DVX6S4m0=
+github.com/spotinst/spotinst-sdk-go v1.98.0 h1:cEvnsPvvLu1l8vt//YZYmI1abzxKVgQkiguRrSz+xms=
+github.com/spotinst/spotinst-sdk-go v1.98.0/go.mod h1:RuKksd1/RyQogMCxKFI5B75NeFRcgl3W+26DVX6S4m0=
 github.com/spotinst/wave-operator v0.0.0-20210524091717-f8934344b1f2 h1:Kn0S8scORI1vHnAybx976qrBQNK6P7WOMo9/oGuZdp0=
 github.com/spotinst/wave-operator v0.0.0-20210524091717-f8934344b1f2/go.mod h1:HGlQtTSST0NCt+Bpk/XAjL2lT80FGelb5UHsCBhTyII=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
