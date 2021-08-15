@@ -12,3 +12,6 @@ dist/
 .idea
 .vscode
 scratch
+
+# misc
+.envrc

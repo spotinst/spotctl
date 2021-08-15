@@ -35,6 +35,9 @@ type CommonOptions struct {
 	// without executing them.
 	DryRun bool
 
+	// Wait configures the command to wait for completion before exiting.
+	Wait bool
+
 	// Timeout configures the maximum duration before timing out the execution of
 	// the command.
 	Timeout time.Duration
@@ -82,7 +85,8 @@ func (x *CommonOptions) initDefaults() {
 	x.PprofProfile = "none"
 	x.PprofOutput = "profile.pprof"
 	x.Profile = credentials.DefaultProfile()
-	x.Timeout = time.Minute
+	x.Timeout = 5 * time.Minute
+	x.Wait = true
 	x.InstallPolicy = string(dep.InstallIfNotPresent)
 }
 
@@ -94,6 +98,7 @@ func (x *CommonOptions) initFlags(fs *pflag.FlagSet) {
 	fs.BoolVarP(&x.Verbose, "verbose", "v", x.Verbose, "enable verbose logging")
 	fs.BoolVarP(&x.Noninteractive, "noninteractive", "n", x.Noninteractive, "disable interactive mode user interface")
 	fs.BoolVarP(&x.DryRun, "dry-run", "d", x.DryRun, "only print the actions that would be executed, without executing them")
+	fs.BoolVarP(&x.Wait, "wait", "w", x.Wait, "wait for completion before exiting")
 	fs.DurationVarP(&x.Timeout, "timeout", "t", x.Timeout, "maximum duration before timing out the execution")
 }
 

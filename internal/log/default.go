@@ -17,6 +17,8 @@ func InitDefaultLogger(opts ...LoggerOption) {
 	}
 }
 
+func DefaultLogger() Logger { return defaultLogger }
+
 func initDefaultLogger() { InitDefaultLogger() }
 
 func Debugf(format string, args ...interface{}) {
