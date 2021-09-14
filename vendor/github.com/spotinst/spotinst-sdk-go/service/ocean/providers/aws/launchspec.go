@@ -190,6 +190,7 @@ type UpdateLaunchSpecOutput struct {
 
 type DeleteLaunchSpecInput struct {
 	LaunchSpecID *string `json:"launchSpecId,omitempty"`
+	ForceDelete  *bool   `json:"-"`
 }
 
 type DeleteLaunchSpecOutput struct{}
@@ -347,6 +348,10 @@ func (s *ServiceOp) DeleteLaunchSpec(ctx context.Context, input *DeleteLaunchSpe
 	}
 
 	r := client.NewRequest(http.MethodDelete, path)
+
+	if input.ForceDelete != nil {
+		r.Params.Set("forceDelete", strconv.FormatBool(spotinst.BoolValue(input.ForceDelete)))
+	}
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
