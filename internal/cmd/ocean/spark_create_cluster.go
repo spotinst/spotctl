@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/theckman/yacspin"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -28,6 +31,10 @@ type (
 		Tags              []string
 		KubernetesVersion string
 	}
+)
+
+var (
+	spinnerLogger *yacspin.Spinner
 )
 
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
@@ -102,7 +109,21 @@ func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
 }
 
 func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
-	fmt.Println("SHOULD CREATE OFAS CLUSTER")
+	shouldCreateCluster := x.opts.ClusterID == ""
+	if shouldCreateCluster {
+		log.Infof("Will create Ocean for Apache Spark cluster")
+	} else {
+		log.Infof("Will import Ocean cluster to Ocean for Apache Spark")
+	}
+
+	initSpinner()
+	spinnerMessage("Creating")
+	log.Infof("what")
+
+	time.Sleep(30 * time.Second)
+
+	clusterId := "osc-12345"
+	stopSpinner(fmt.Sprintf("Cluster %s successfully created", clusterId), true)
 
 	return nil
 }
@@ -154,4 +175,63 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 
 	// Install!
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
+}
+
+func spinnerMessage(message string) {
+	if spinnerLogger != nil {
+		spinnerLogger.Message(message)
+	} else {
+		log.Infof("%s", message)
+	}
+}
+
+func initSpinner() {
+	spinner, err := getSpinner()
+	if err != nil {
+		log.Warnf("Could not get spinner logger, err: %s", err.Error())
+	} else {
+		if err := spinner.Start(); err != nil {
+			log.Warnf("Could not start spinner, err: %s", err.Error())
+		} else {
+			spinnerLogger = spinner
+		}
+	}
+}
+
+func stopSpinner(message string, success bool) {
+	if spinnerLogger != nil {
+		var stopError error
+		if success {
+			spinnerLogger.StopMessage(message)
+			stopError = spinnerLogger.Stop()
+		} else {
+			spinnerLogger.StopFailMessage(message)
+			stopError = spinnerLogger.StopFail()
+		}
+		if stopError != nil {
+			log.Warnf("Could not stop spinner, err: %s", stopError.Error())
+		} else {
+			return
+		}
+	}
+	if success {
+		log.Infof("%s", message)
+	} else {
+		log.Errorf("%s", message)
+	}
+}
+
+func getSpinner() (*yacspin.Spinner, error) {
+	cfg := yacspin.Config{
+		Frequency:         250 * time.Millisecond,
+		CharSet:           yacspin.CharSets[33],
+		Suffix:            " Ocean for Apache Spark",
+		SuffixAutoColon:   true,
+		Message:           "start",
+		StopCharacter:     "✓",
+		StopColors:        []string{"green"},
+		StopFailCharacter: "x",
+		StopFailColors:    []string{"red"},
+	}
+	return yacspin.New(cfg)
 }
