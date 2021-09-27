@@ -419,9 +419,9 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 			args = append(args, "--version", x.opts.KubernetesVersion)
 		}
 
-		if len(x.opts.Profile) > 0 {
-			args = append(args, "--spot-profile", x.opts.Profile)
-		}
+		//if len(x.opts.Profile) > 0 {
+		//	args = append(args, "--spot-profile", x.opts.Profile)
+		//}
 
 		args = append(args, "--spot-ocean")
 	}
