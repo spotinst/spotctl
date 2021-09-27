@@ -68,6 +68,12 @@ const (
 	FlagWaveSparkApplicationEntityID string = "id"
 	FlagWaveSparkApplicationSparkID  string = "spark-id"
 	FlagWaveSparkApplicationState    string = "state"
+
+	// Ocean for Apache Spark.
+	FlagOFASClusterRegion string = "region"
+	FlagOFASClusterID     string = "cluster-id"
+	FlagOFASClusterName   string = "cluster-name"
+	FlagOFASConfigFile    string = "config-file"
 )
 
 func Log(cmd *cobra.Command) {
