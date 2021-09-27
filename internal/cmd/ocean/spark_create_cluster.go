@@ -8,15 +8,20 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/errors"
+	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
+	"github.com/spotinst/spotctl/internal/wave"
 	"github.com/theckman/yacspin"
 	"io"
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"net/http"
 	"os"
 	"regexp"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"strings"
 	"time"
 
@@ -221,10 +226,71 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
 	}
 
+	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
+		return fmt.Errorf("cluster context validation failure, %w", err)
+	}
+
+	log.Infof("Verified cluster %s", x.opts.ClusterName)
+
+	// TODO Should we be doing this here? (does not play well with beta versions)
+	spinnerMessage("Updating Ocean controller")
+	if err := updateOceanController(ctx); err != nil {
+		return fmt.Errorf("could not apply ocean update, %w", err)
+	}
+
+	spinnerMessage("Installing Ocean for Apache Spark")
 	time.Sleep(30 * time.Second)
 
-	clusterId := "osc-12345"
-	stopSpinner(fmt.Sprintf("Cluster %s successfully created", clusterId), true)
+	/*
+
+		spinner.Message("installing wave")
+
+		manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner))
+		if err != nil {
+			return err
+		}
+
+		if x.opts.WaveChartSpec != "" {
+			is := &install.InstallSpec{}
+			err := json.Unmarshal([]byte(x.opts.WaveChartSpec), is)
+			if err != nil {
+				return fmt.Errorf("bad helm chart spec for wave operator \"%s\", %w", x.opts.WaveChartSpec, err)
+			}
+			err = manager.SetWaveInstallSpec(*is)
+			if err != nil {
+				return fmt.Errorf("cannot set install spec for manager \"%s\", %w", x.opts.WaveChartSpec, err)
+			}
+		}
+
+		waveConfig := map[string]interface{}{
+			tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
+			tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
+			tide.ConfigInitialWaveOperatorImage:  x.opts.WaveOperatorImage,
+		}
+
+		env, err := manager.SetConfiguration(waveConfig)
+		if err != nil {
+			return fmt.Errorf("unable to set wave configuration, %w", err)
+		}
+
+		err = manager.CreateTideRBAC()
+		if err != nil {
+			return fmt.Errorf("could not create tide rbac objects, %w", err)
+		}
+
+		err = manager.Create(*env)
+		if err != nil {
+			spinner.StopFail()
+			return err
+		}
+
+		spinner.StopMessage("wave operator is managing components")
+		spinner.Stop()
+
+		return nil
+	*/
+
+	stopSpinner(fmt.Sprintf("Cluster %s successfully created", x.opts.ClusterName), true)
 
 	return nil
 }
@@ -505,6 +571,48 @@ func (c *stackCollection) describeStacks() ([]*Stack, error) {
 	return out, nil
 }
 
+func updateOceanController(ctx context.Context) error {
+	conf, err := config.GetConfig()
+	if err != nil {
+		return fmt.Errorf("could not get cluster config, %w", err)
+	}
+
+	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
+
+	res, err := http.Get(oceanControllerURL)
+	if err != nil {
+		return fmt.Errorf("error fetching ocean manifests, %w", err)
+	}
+
+	data, err := ioutil.ReadAll(res.Body)
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Warnf("Could not close response body, err: %s", err.Error())
+		}
+	}()
+	if err != nil {
+		return fmt.Errorf("error reading ocean manifests, %w", err)
+	}
+
+	delim := regexp.MustCompile("(?m)^---$")
+	objects := delim.Split(string(data), -1)
+
+	whitespace := regexp.MustCompile("^[[:space:]]*$")
+
+	for _, o := range objects {
+		if whitespace.Match([]byte(o)) {
+			log.Debugf("Whitespace match: %s", o)
+			continue
+		}
+		err := kubernetes.DoServerSideApply(ctx, conf, o, log.GetLogrLogger())
+		if err != nil {
+			return fmt.Errorf("error applying object from manifests <<%s>>, %w", o, err)
+		}
+	}
+
+	return nil
+}
+
 type clusterConfig struct {
 	Metadata struct {
 		Name   string `json:"name"`
@@ -584,6 +692,7 @@ func stopSpinner(message string, success bool) {
 	}
 }
 
+// TODO Get spinner for each waiting operation?
 func getSpinner() (*yacspin.Spinner, error) {
 	cfg := yacspin.Config{
 		Frequency:         250 * time.Millisecond,
