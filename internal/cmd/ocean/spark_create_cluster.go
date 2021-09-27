@@ -40,10 +40,10 @@ type (
 
 	// TODO
 	/*
-	- Fix deletion
-	- Remove config file
-	- What happens if I create a cluster with a controllerClusterId that already exists?
-	- Test k8s 1.21
+		- Fix deletion
+		- Remove config file
+		- What happens if I create a cluster with a controllerClusterId that already exists?
+		- Test k8s 1.21
 	*/
 
 	CmdSparkCreateClusterOptions struct {
