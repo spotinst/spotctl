@@ -3,6 +3,7 @@ package ocean
 import (
 	"context"
 	"fmt"
+	"github.com/spotinst/spotctl/internal/errors"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -125,6 +126,15 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
+	if x.ClusterID != "" && x.ClusterName != "" {
+		return errors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
+	}
+	if x.ClusterID != "" && x.ConfigFile != "" {
+		return errors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASConfigFile)
+	}
+	if x.ClusterName != "" && x.ConfigFile != "" {
+		return errors.RequiredXor(flags.FlagOFASClusterName, flags.FlagOFASConfigFile)
+	}
 	return x.CmdSparkCreateOptions.Validate()
 }
 
