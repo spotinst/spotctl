@@ -649,58 +649,14 @@ func readConfigFile(fileName string) (*clusterConfig, error) {
 	return cfg, nil
 }
 
-/*func spinnerMessage(message string) {
-	if spinnerLogger != nil {
-		spinnerLogger.Message(message)
-	} else {
-		log.Infof("%s", message)
-	}
-}*/
-
-/*func initSpinner() {
-	spinner, err := getSpinner()
-	if err != nil {
-		log.Warnf("Could not get spinner logger, err: %s", err.Error())
-	} else {
-		if err := spinner.Start(); err != nil {
-			log.Warnf("Could not start spinner, err: %s", err.Error())
-		} else {
-			spinnerLogger = spinner
-		}
-	}
-}*/
-
-/*func stopSpinner(message string, success bool) {
-	if spinnerLogger != nil {
-		var stopError error
-		if success {
-			spinnerLogger.StopMessage(message)
-			stopError = spinnerLogger.Stop()
-		} else {
-			spinnerLogger.StopFailMessage(message)
-			stopError = spinnerLogger.StopFail()
-		}
-		if stopError != nil {
-			log.Warnf("Could not stop spinner, err: %s", stopError.Error())
-		} else {
-			return
-		}
-	}
-	if success {
-		log.Infof("%s", message)
-	} else {
-		log.Errorf("%s", message)
-	}
-}*/
-
 // startSpinnerWithMessage starts a new spinner logger with the given message.
 // Best effort. On error, logs the message using the default logger and returns nil.
 func startSpinnerWithMessage(message string) *yacspin.Spinner {
 	cfg := yacspin.Config{
 		Frequency:         250 * time.Millisecond,
 		CharSet:           yacspin.CharSets[33],
-		Suffix:            " Ocean for Apache Spark",
-		SuffixAutoColon:   true,
+		Suffix:            " ",
+		SuffixAutoColon:   false,
 		Message:           message,
 		StopCharacter:     "✓",
 		StopColors:        []string{"green"},
