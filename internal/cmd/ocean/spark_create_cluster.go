@@ -49,10 +49,6 @@ type (
 	}
 )
 
-var (
-	spinnerLogger *yacspin.Spinner
-)
-
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
 	return newCmdSparkCreateCluster(opts).cmd
 }
@@ -125,12 +121,10 @@ func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
 }
 
 func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
-	initSpinner()
 	shouldCreateCluster := x.opts.ClusterID == ""
 
 	if shouldCreateCluster {
 		log.Infof("Will create Ocean for Apache Spark cluster")
-		spinnerMessage("Creating")
 
 		if x.opts.ConfigFile != "" {
 			configFile, err := readConfigFile(x.opts.ConfigFile)
@@ -183,22 +177,25 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		// TODO Allow creation of cluster if previous stack failed
 		// TODO Check for in-progress stacks
 		if !stackExists {
-			spinnerMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
+			spinner := startSpinnerWithMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
 			createClusterArgs := x.buildEksctlCreateClusterArgs()
 			if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
+				stopSpinnerWithMessage(spinner, "Could not create EKS cluster", true)
 				return fmt.Errorf("could not create EKS cluster, %w", err)
 			}
+			stopSpinnerWithMessage(spinner, "EKS cluster created", false)
 		}
 
-		spinnerMessage("Creating node group")
+		spinner := startSpinnerWithMessage("Creating node group")
 		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
 		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
+			stopSpinnerWithMessage(spinner, "Could not create node group", true)
 			return fmt.Errorf("could not create node group, %w", err)
 		}
+		stopSpinnerWithMessage(spinner, "Node group created", false)
 
 	} else {
 		log.Infof("Will import Ocean cluster %s into Ocean for Apache Spark", x.opts.ClusterID)
-		spinnerMessage("Importing")
 
 		if x.opts.Region == "" {
 			return errors.Required(flags.FlagOFASClusterRegion)
@@ -233,13 +230,14 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
 
 	// TODO Should we be doing this here? (does not play well with beta versions)
-	spinnerMessage("Updating Ocean controller")
+	log.Infof("Updating Ocean controller")
 	if err := updateOceanController(ctx); err != nil {
 		return fmt.Errorf("could not apply ocean update, %w", err)
 	}
 
-	spinnerMessage("Installing Ocean for Apache Spark")
+	spinner := startSpinnerWithMessage("Installing Ocean for Apache Spark")
 	time.Sleep(30 * time.Second)
+	stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installed", false)
 
 	/*
 
@@ -290,7 +288,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		return nil
 	*/
 
-	stopSpinner(fmt.Sprintf("Cluster %s successfully created", x.opts.ClusterName), true)
+	log.Infof("Cluster %s successfully created", x.opts.ClusterName)
 
 	return nil
 }
@@ -324,6 +322,9 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 		return errors.RequiredXor(flags.FlagOFASClusterName, flags.FlagOFASConfigFile)
 	}
 	if x.ClusterID != "" && x.Region == "" {
+		return errors.Required(flags.FlagOFASClusterRegion)
+	}
+	if x.ConfigFile == "" && x.Region == "" {
 		return errors.Required(flags.FlagOFASClusterRegion)
 	}
 	return x.CmdSparkCreateOptions.Validate()
@@ -648,15 +649,15 @@ func readConfigFile(fileName string) (*clusterConfig, error) {
 	return cfg, nil
 }
 
-func spinnerMessage(message string) {
+/*func spinnerMessage(message string) {
 	if spinnerLogger != nil {
 		spinnerLogger.Message(message)
 	} else {
 		log.Infof("%s", message)
 	}
-}
+}*/
 
-func initSpinner() {
+/*func initSpinner() {
 	spinner, err := getSpinner()
 	if err != nil {
 		log.Warnf("Could not get spinner logger, err: %s", err.Error())
@@ -667,9 +668,9 @@ func initSpinner() {
 			spinnerLogger = spinner
 		}
 	}
-}
+}*/
 
-func stopSpinner(message string, success bool) {
+/*func stopSpinner(message string, success bool) {
 	if spinnerLogger != nil {
 		var stopError error
 		if success {
@@ -690,20 +691,58 @@ func stopSpinner(message string, success bool) {
 	} else {
 		log.Errorf("%s", message)
 	}
-}
+}*/
 
-// TODO Get spinner for each waiting operation?
-func getSpinner() (*yacspin.Spinner, error) {
+// startSpinnerWithMessage starts a new spinner logger with the given message.
+// Best effort. On error, logs the message using the default logger and returns nil.
+func startSpinnerWithMessage(message string) *yacspin.Spinner {
 	cfg := yacspin.Config{
 		Frequency:         250 * time.Millisecond,
 		CharSet:           yacspin.CharSets[33],
 		Suffix:            " Ocean for Apache Spark",
 		SuffixAutoColon:   true,
-		Message:           "start",
+		Message:           message,
 		StopCharacter:     "✓",
 		StopColors:        []string{"green"},
 		StopFailCharacter: "x",
 		StopFailColors:    []string{"red"},
 	}
-	return yacspin.New(cfg)
+
+	spinner, err := yacspin.New(cfg)
+	if err != nil {
+		log.Warnf("Could not create spinner, err: %s", err.Error())
+		log.Infof("%s", message)
+		return nil
+	}
+
+	err = spinner.Start()
+	if err != nil {
+		log.Warnf("Could not start spinner, err: %s", err.Error())
+		log.Infof("%s", message)
+		return nil
+	}
+
+	return spinner
+}
+
+// stopSpinnerWithMessage stops the given spinner, setting the message as the stop message
+// or the stop failure message. Fail determines if the spinner should succeed or fail.
+// Best effort. On error, log the message using the default logger.
+func stopSpinnerWithMessage(spinner *yacspin.Spinner, message string, fail bool) {
+	if spinner != nil {
+		var stopError error
+		if fail {
+			spinner.StopFailMessage(message)
+			stopError = spinner.StopFail()
+		} else {
+			spinner.StopMessage(message)
+			stopError = spinner.Stop()
+		}
+		if stopError != nil {
+			log.Warnf("Could not stop spinner, err: %s", stopError.Error())
+			log.Infof(message)
+		}
+	} else {
+		log.Infof(message)
+	}
 }
