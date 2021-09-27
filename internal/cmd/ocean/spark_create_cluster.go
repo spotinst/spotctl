@@ -38,6 +38,14 @@ type (
 		opts CmdSparkCreateClusterOptions
 	}
 
+	// TODO
+	/*
+	- Fix deletion
+	- Remove config file
+	- What happens if I create a cluster with a controllerClusterId that already exists?
+	- Test k8s 1.21
+	*/
+
 	CmdSparkCreateClusterOptions struct {
 		*CmdSparkCreateOptions
 		ConfigFile        string
@@ -47,6 +55,10 @@ type (
 		Tags              []string
 		KubernetesVersion string
 	}
+)
+
+const (
+	defaultK8sVersion = "1.18"
 )
 
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
@@ -305,10 +317,10 @@ func (x *CmdSparkCreateClusterOptions) initDefaults(opts *CmdSparkCreateOptions)
 func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&x.ConfigFile, flags.FlagOFASConfigFile, "f", x.ConfigFile, "load configuration from a file (or stdin if set to '-')")
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "cluster id (will be created if empty)")
-	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "cluster name")
+	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "cluster name (will be created if empty)")
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
-	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", "1.18", "kubernetes version")
+	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version")
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
