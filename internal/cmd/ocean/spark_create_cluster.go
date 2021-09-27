@@ -3,10 +3,21 @@ package ocean
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
+	"github.com/spotinst/spotctl/internal/uuid"
 	"github.com/theckman/yacspin"
+	"io"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -109,16 +120,106 @@ func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
 }
 
 func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
+	initSpinner()
 	shouldCreateCluster := x.opts.ClusterID == ""
+
 	if shouldCreateCluster {
 		log.Infof("Will create Ocean for Apache Spark cluster")
-	} else {
-		log.Infof("Will import Ocean cluster to Ocean for Apache Spark")
-	}
+		spinnerMessage("Creating")
 
-	initSpinner()
-	spinnerMessage("Creating")
-	log.Infof("what")
+		if x.opts.ConfigFile != "" {
+			configFile, err := readConfigFile(x.opts.ConfigFile)
+			if err != nil {
+				return fmt.Errorf("could not read config file, %w", err)
+			}
+
+			x.opts.ClusterName = configFile.Metadata.Name
+			x.opts.Region = configFile.Metadata.Region
+		} else if x.opts.ClusterName == "" {
+			// Generate unique name
+			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
+		}
+
+		// Verify configuration
+		if x.opts.ClusterName == "" {
+			return errors.Required(flags.FlagOFASClusterName)
+		}
+		if x.opts.Region == "" {
+			return errors.Required(flags.FlagOFASClusterRegion)
+		}
+
+		cloudProviderOpts := []cloud.ProviderOption{
+			cloud.WithProfile(x.opts.Profile),
+			cloud.WithRegion(x.opts.Region),
+		}
+
+		cloudProvider, err := x.opts.Clientset.NewCloud(cloud.ProviderName(x.opts.CloudProvider), cloudProviderOpts...)
+		if err != nil {
+			return fmt.Errorf("could not get cloud provider, %w", err)
+		}
+
+		stackCollection, err := x.newStackCollection(cloudProvider)
+		if err != nil {
+			return fmt.Errorf("could not get stack collection, %w", err)
+		}
+
+		stackExists := true
+		if _, err = stackCollection.describeStacks(); err != nil {
+			if err.Error() == stackCollection.errStackNotFound().Error() {
+				stackExists = false
+			}
+		}
+
+		cmdEksctl, err := x.opts.Clientset.NewCommand(eksctl.CommandName)
+		if err != nil {
+			return fmt.Errorf("could not create eksctl command, %w", err)
+		}
+
+		// TODO Allow creation of cluster if previous stack failed
+		// TODO Check for in-progress stacks
+		if !stackExists {
+			spinnerMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
+			createClusterArgs := x.buildEksctlCreateClusterArgs()
+			if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
+				return fmt.Errorf("could not create EKS cluster, %w", err)
+			}
+		}
+
+		spinnerMessage("Creating node group")
+		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
+		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
+			return fmt.Errorf("could not create node group, %w", err)
+		}
+
+	} else {
+		log.Infof("Will import Ocean cluster %s into Ocean for Apache Spark", x.opts.ClusterID)
+		spinnerMessage("Importing")
+
+		if x.opts.Region == "" {
+			return errors.Required(flags.FlagOFASClusterRegion)
+		}
+
+		spotClientOpts := []spot.ClientOption{
+			spot.WithCredentialsProfile(x.opts.Profile),
+		}
+
+		spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+		if err != nil {
+			return fmt.Errorf("could not get Spot client, %w", err)
+		}
+
+		oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+		if err != nil {
+			return fmt.Errorf("could not get Ocean client, %w", err)
+		}
+
+		oceanCluster, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+		if err != nil {
+			return fmt.Errorf("could not get Ocean cluster, %w", err)
+		}
+
+		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
+	}
 
 	time.Sleep(30 * time.Second)
 
@@ -156,6 +257,9 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 	if x.ClusterName != "" && x.ConfigFile != "" {
 		return errors.RequiredXor(flags.FlagOFASClusterName, flags.FlagOFASConfigFile)
 	}
+	if x.ClusterID != "" && x.Region == "" {
+		return errors.Required(flags.FlagOFASClusterRegion)
+	}
 	return x.CmdSparkCreateOptions.Validate()
 }
 
@@ -175,6 +279,265 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 
 	// Install!
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
+}
+
+func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
+	log.Debugf("Building up command arguments (create cluster)")
+
+	args := []string{
+		"create", "cluster",
+		"--timeout", "60m",
+		"--color", "false",
+		"--without-nodegroup",
+	}
+
+	if len(x.opts.ConfigFile) > 0 {
+		args = append(args, "--config-file", x.opts.ConfigFile)
+
+	} else {
+		if len(x.opts.ClusterName) > 0 {
+			args = append(args, "--name", x.opts.ClusterName)
+		}
+
+		if len(x.opts.Region) > 0 {
+			args = append(args, "--region", x.opts.Region)
+		}
+
+		if len(x.opts.Tags) > 0 {
+			args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
+		}
+
+		if len(x.opts.KubernetesVersion) > 0 {
+			args = append(args, "--version", x.opts.KubernetesVersion)
+		}
+	}
+
+	if x.opts.Verbose {
+		args = append(args, "--verbose", "4")
+	} else {
+		args = append(args, "--verbose", "0")
+	}
+
+	return args
+}
+
+func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
+	log.Debugf("Building up command arguments (create nodegroup)")
+
+	args := []string{
+		"create", "nodegroup",
+		"--timeout", "60m",
+		"--color", "false",
+	}
+
+	if len(x.opts.ConfigFile) > 0 {
+		args = append(args, "--config-file", x.opts.ConfigFile)
+
+	} else {
+		if len(x.opts.ClusterName) > 0 {
+			args = append(args,
+				"--cluster", x.opts.ClusterName,
+				"--name", fmt.Sprintf("ocean-%s", uuid.NewV4().Short()))
+		}
+
+		if len(x.opts.Region) > 0 {
+			args = append(args, "--region", x.opts.Region)
+		}
+
+		if len(x.opts.Tags) > 0 {
+			args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
+		}
+
+		if len(x.opts.KubernetesVersion) > 0 {
+			args = append(args, "--version", x.opts.KubernetesVersion)
+		}
+
+		if len(x.opts.Profile) > 0 {
+			args = append(args, "--spot-profile", x.opts.Profile)
+		}
+
+		args = append(args, "--spot-ocean")
+	}
+
+	if x.opts.Verbose {
+		args = append(args, "--verbose", "4")
+	} else {
+		args = append(args, "--verbose", "0")
+	}
+
+	return args
+}
+
+type stackCollection struct {
+	clusterName string
+	svc         *cloudformation.CloudFormation
+}
+
+func (x *CmdSparkCreateCluster) newStackCollection(cloudProvider cloud.Provider) (*stackCollection, error) {
+	sess, err := cloudProvider.Session(x.opts.Region, x.opts.Profile)
+	if err != nil {
+		return nil, fmt.Errorf("could not get cloud provider session, %w", err)
+	}
+
+	return &stackCollection{
+		clusterName: x.opts.ClusterName,
+		svc:         cloudformation.New(sess.(*session.Session)),
+	}, nil
+}
+
+type Stack = cloudformation.Stack
+
+func fmtStacksRegexForCluster(name string) string {
+	const ourStackRegexFmt = "^(eksctl|EKS)-%s-((cluster|nodegroup-.+|addon-.+)|(VPC|ServiceRole|ControlPlane|DefaultNodeGroup))$"
+	return fmt.Sprintf(ourStackRegexFmt, name)
+}
+
+// listStacks gets all of CloudFormation stacks.
+func (c *stackCollection) listStacks(statusFilters ...string) ([]*Stack, error) {
+	return c.listStacksMatching(fmtStacksRegexForCluster(c.clusterName), statusFilters...)
+}
+
+func defaultStackStatusFilter() []*string {
+	return aws.StringSlice(allNonDeletedStackStatuses())
+}
+
+func allNonDeletedStackStatuses() []string {
+	return []string{
+		cloudformation.StackStatusCreateInProgress,
+		cloudformation.StackStatusCreateFailed,
+		cloudformation.StackStatusCreateComplete,
+		cloudformation.StackStatusRollbackInProgress,
+		cloudformation.StackStatusRollbackFailed,
+		cloudformation.StackStatusRollbackComplete,
+		cloudformation.StackStatusDeleteInProgress,
+		cloudformation.StackStatusDeleteFailed,
+		cloudformation.StackStatusUpdateInProgress,
+		cloudformation.StackStatusUpdateCompleteCleanupInProgress,
+		cloudformation.StackStatusUpdateComplete,
+		cloudformation.StackStatusUpdateRollbackInProgress,
+		cloudformation.StackStatusUpdateRollbackFailed,
+		cloudformation.StackStatusUpdateRollbackCompleteCleanupInProgress,
+		cloudformation.StackStatusUpdateRollbackComplete,
+		cloudformation.StackStatusReviewInProgress,
+	}
+}
+
+// describeStack describes a cloudformation stack.
+func (c *stackCollection) describeStack(i *Stack) (*Stack, error) {
+	input := &cloudformation.DescribeStacksInput{
+		StackName: i.StackName,
+	}
+	resp, err := c.svc.DescribeStacks(input)
+	if err != nil {
+		return nil, fmt.Errorf("describing CloudFormation stack %q: %w", *i.StackName, err)
+	}
+	return resp.Stacks[0], nil
+}
+
+// listStacksMatching gets all of CloudFormation stacks with names matching nameRegex.
+func (c *stackCollection) listStacksMatching(nameRegex string, statusFilters ...string) ([]*Stack, error) {
+	var (
+		subErr error
+		stack  *Stack
+	)
+
+	re, err := regexp.Compile(nameRegex)
+	if err != nil {
+		return nil, fmt.Errorf("cannot list stacks: %w", err)
+	}
+	input := &cloudformation.ListStacksInput{
+		StackStatusFilter: defaultStackStatusFilter(),
+	}
+	if len(statusFilters) > 0 {
+		input.StackStatusFilter = aws.StringSlice(statusFilters)
+	}
+	var stacks []*Stack
+	pager := func(p *cloudformation.ListStacksOutput, _ bool) bool {
+		for _, s := range p.StackSummaries {
+			if re.MatchString(*s.StackName) {
+				stack, subErr = c.describeStack(&Stack{
+					StackName: s.StackName,
+					StackId:   s.StackId,
+				})
+				if subErr != nil {
+					return false
+				}
+				stacks = append(stacks, stack)
+			}
+		}
+		return true
+	}
+
+	if err = c.svc.ListStacksPages(input, pager); err != nil {
+		return nil, err
+	}
+	if subErr != nil {
+		return nil, subErr
+	}
+
+	return stacks, nil
+}
+
+func (c *stackCollection) errStackNotFound() error {
+	return fmt.Errorf("no eksctl-managed CloudFormation stacks found for %q", c.clusterName)
+}
+
+// describeStacks describes cloudformation stacks.
+func (c *stackCollection) describeStacks() ([]*Stack, error) {
+	log.Debugf("Describing stacks")
+
+	stacks, err := c.listStacks()
+	if err != nil {
+		return nil, fmt.Errorf("describing CloudFormation stacks for %q: %w", c.clusterName, err)
+	}
+	if len(stacks) == 0 {
+		return nil, c.errStackNotFound()
+	}
+
+	var out []*Stack
+	for _, s := range stacks {
+		if *s.StackStatus == cloudformation.StackStatusDeleteComplete {
+			continue
+		}
+		out = append(out, s)
+	}
+
+	return out, nil
+}
+
+type clusterConfig struct {
+	Metadata struct {
+		Name   string `json:"name"`
+		Region string `json:"region"`
+	} `json:"metadata"`
+}
+
+func readConfigFile(fileName string) (*clusterConfig, error) {
+	var reader io.Reader
+
+	if fileName == "-" {
+		// Read from standard input
+		reader = os.Stdin
+	} else {
+		// Read from file
+		file, err := os.Open(fileName)
+		if err != nil {
+			return nil, fmt.Errorf("could not open file, %w", err)
+		}
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Errorf("could not close file, err: %s", err.Error())
+			}
+		}()
+		reader = file
+	}
+
+	cfg := new(clusterConfig)
+	if err := yaml.NewYAMLOrJSONDecoder(reader, 4096).Decode(cfg); err != nil {
+		return nil, fmt.Errorf("could not decode config, %w", err)
+	}
+
+	return cfg, nil
 }
 
 func spinnerMessage(message string) {
