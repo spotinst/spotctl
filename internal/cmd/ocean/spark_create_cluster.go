@@ -260,7 +260,10 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	spinner := startSpinnerWithMessage("Installing Ocean for Apache Spark")
-	time.Sleep(30 * time.Second)
+	if err := ofas.Deploy(ctx, spotSystemNamespace); err != nil {
+		stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installation failure", true)
+		return fmt.Errorf("could not deploy, %w", err)
+	}
 	stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installed", false)
 
 	/*
