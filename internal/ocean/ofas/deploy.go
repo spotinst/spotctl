@@ -1,9 +1,11 @@
 package ofas
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
+	"text/template"
 
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -64,6 +66,15 @@ func CreateDeployerRBAC(ctx context.Context, namespace string) error {
 	return nil
 }
 
+type jobValues struct {
+	Name            string
+	Namespace       string
+	ImagePullSecret string
+	ImageDeployer   string
+	ImageOperator   string
+	ServiceAccount  string
+}
+
 func Deploy(ctx context.Context, namespace string) error {
 	// TODO This is temporary
 	// We should call a /deploy API on the backend. The backend will then run the deployment on the cluster
@@ -73,15 +84,33 @@ func Deploy(ctx context.Context, namespace string) error {
 		return fmt.Errorf("could not get kubernetes client, %w", err)
 	}
 
-	job := &batchv1.Job{}
-	err = yamlutil.NewYAMLOrJSONDecoder(strings.NewReader(deployJob), len(deployJob)).Decode(job)
-	if err != nil {
-		return fmt.Errorf("could not decode job yaml, %w", err)
+	values := jobValues{
+		Name:            fmt.Sprintf("ofas-deployer-install-%s", uuid.NewV4().Short()),
+		Namespace:       namespace,
+		ImagePullSecret: "bigdata-dev-regcred",
+		ImageDeployer:   "598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-deployer:0.1.1-c31ad4f8",
+		ImageOperator:   "598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-operator:0.1.1-c31ad4f8",
+		ServiceAccount:  config.ServiceAccountName,
 	}
 
-	job.Name = fmt.Sprintf("ofas-deployer-install-%s", uuid.NewV4().Short())
-	job.Namespace = namespace
-	job.Spec.Template.Spec.ServiceAccountName = config.ServiceAccountName
+	jobTemplate, err := template.New("deployJob").Parse(deployJobTemplate)
+	if err != nil {
+		return fmt.Errorf("could not parse job template, %w", err)
+	}
+
+	jobManifestBytes := new(bytes.Buffer)
+	err = jobTemplate.Execute(jobManifestBytes, values)
+	if err != nil {
+		return fmt.Errorf("could not execute job template, %w", err)
+	}
+
+	jobManifest := jobManifestBytes.String()
+
+	job := &batchv1.Job{}
+	err = yamlutil.NewYAMLOrJSONDecoder(strings.NewReader(jobManifest), len(jobManifest)).Decode(job)
+	if err != nil {
+		return fmt.Errorf("could not decode job manifest, %w", err)
+	}
 
 	createdJob, err := client.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
@@ -89,35 +118,36 @@ func Deploy(ctx context.Context, namespace string) error {
 	}
 
 	fmt.Println(createdJob.Name)
+	fmt.Println(createdJob.Namespace)
 
 	return nil
 }
 
-const deployJob = `apiVersion: batch/v1
+const deployJobTemplate = `apiVersion: batch/v1
 kind: Job
 metadata:
-  name: job-name
-  namespace: job-ns
+  name: {{.Name}}
+  namespace: {{.Namespace}}
 spec:
   template:
     spec:
       imagePullSecrets:
-      - name: bigdata-dev-regcred
+      - name: {{.ImagePullSecret}}
       containers:
         - image:
-            598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-deployer:0.1.1-c31ad4f8
+            {{.ImageDeployer}}
           name: deployer
           args:
             - install
             - --create-bootstrap-environment
             - --image
-            - 598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-operator:0.1.1-c31ad4f8
+            - {{.ImageOperator}}
             - --image-pull-secret
-            - bigdata-dev-regcred
+            - {{.ImagePullSecret}}
             - --image-pull-policy
             - Always
           resources: { }
           imagePullPolicy: Always
-      serviceAccountName: job-sa
+      serviceAccountName: {{.ServiceAccount}}
       restartPolicy: Never
 `
