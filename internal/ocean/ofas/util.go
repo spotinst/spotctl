@@ -1,4 +1,4 @@
-package spark
+package ofas
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/spotinst/spotctl/internal/kubernetes"
-	ofasconfig "github.com/spotinst/spotctl/internal/ocean/spark/config"
+	ofasconfig "github.com/spotinst/spotctl/internal/ocean/ofas/config"
 )
 
 const (

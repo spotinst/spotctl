@@ -33,7 +33,7 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
-	ofas "github.com/spotinst/spotctl/internal/ocean/spark"
+	"github.com/spotinst/spotctl/internal/ocean/ofas"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"

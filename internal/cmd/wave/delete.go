@@ -13,7 +13,7 @@ import (
 
 	spoterrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
-	ofas "github.com/spotinst/spotctl/internal/ocean/spark"
+	"github.com/spotinst/spotctl/internal/ocean/ofas"
 	"github.com/spotinst/spotctl/internal/spot"
 )
 

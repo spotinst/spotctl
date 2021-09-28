@@ -10,7 +10,7 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/ocean/spark"
+	"github.com/spotinst/spotctl/internal/ocean/ofas"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
@@ -237,7 +237,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
 	}
 
-	if err := spark.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
+	if err := ofas.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
@@ -255,7 +255,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	log.Infof("Creating deployer RBAC")
-	if err := spark.CreateDeployerRBAC(ctx, spotSystemNamespace); err != nil {
+	if err := ofas.CreateDeployerRBAC(ctx, spotSystemNamespace); err != nil {
 		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 
