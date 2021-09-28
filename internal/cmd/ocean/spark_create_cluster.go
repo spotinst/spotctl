@@ -15,9 +15,7 @@ import (
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
 	"github.com/theckman/yacspin"
-	"io"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/util/yaml"
 	"net/http"
 	"os"
 	"regexp"
@@ -41,14 +39,11 @@ type (
 	// TODO
 	/*
 		- Fix deletion
-		- Remove config file
 		- What happens if I create a cluster with a controllerClusterId that already exists?
-		- Test k8s 1.21
 	*/
 
 	CmdSparkCreateClusterOptions struct {
 		*CmdSparkCreateOptions
-		ConfigFile        string
 		ClusterID         string
 		ClusterName       string
 		Region            string
@@ -139,25 +134,9 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	if shouldCreateCluster {
 		log.Infof("Will create Ocean for Apache Spark cluster")
 
-		if x.opts.ConfigFile != "" {
-			configFile, err := readConfigFile(x.opts.ConfigFile)
-			if err != nil {
-				return fmt.Errorf("could not read config file, %w", err)
-			}
-
-			x.opts.ClusterName = configFile.Metadata.Name
-			x.opts.Region = configFile.Metadata.Region
-		} else if x.opts.ClusterName == "" {
+		if x.opts.ClusterName == "" {
 			// Generate unique name
 			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
-		}
-
-		// Verify configuration
-		if x.opts.ClusterName == "" {
-			return errors.Required(flags.FlagOFASClusterName)
-		}
-		if x.opts.Region == "" {
-			return errors.Required(flags.FlagOFASClusterRegion)
 		}
 
 		cloudProviderOpts := []cloud.ProviderOption{
@@ -209,11 +188,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
 
 	} else {
-		log.Infof("Will import Ocean cluster %s into Ocean for Apache Spark", x.opts.ClusterID)
-
-		if x.opts.Region == "" {
-			return errors.Required(flags.FlagOFASClusterRegion)
-		}
+		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
 		spotClientOpts := []spot.ClientOption{
 			spot.WithCredentialsProfile(x.opts.Profile),
@@ -281,8 +256,7 @@ func (x *CmdSparkCreateClusterOptions) initDefaults(opts *CmdSparkCreateOptions)
 }
 
 func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&x.ConfigFile, flags.FlagOFASConfigFile, "f", x.ConfigFile, "load configuration from a file (or stdin if set to '-')")
-	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "cluster id (will be created if empty)")
+	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "cluster id (will be created if empty)") // TODO better explanation that this is an import
 	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "cluster name (will be created if empty)")
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
@@ -293,16 +267,7 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 	if x.ClusterID != "" && x.ClusterName != "" {
 		return errors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
 	}
-	if x.ClusterID != "" && x.ConfigFile != "" {
-		return errors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASConfigFile)
-	}
-	if x.ClusterName != "" && x.ConfigFile != "" {
-		return errors.RequiredXor(flags.FlagOFASClusterName, flags.FlagOFASConfigFile)
-	}
-	if x.ClusterID != "" && x.Region == "" {
-		return errors.Required(flags.FlagOFASClusterRegion)
-	}
-	if x.ConfigFile == "" && x.Region == "" {
+	if x.Region == "" {
 		return errors.Required(flags.FlagOFASClusterRegion)
 	}
 	return x.CmdSparkCreateOptions.Validate()
@@ -336,25 +301,20 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
 		"--without-nodegroup",
 	}
 
-	if len(x.opts.ConfigFile) > 0 {
-		args = append(args, "--config-file", x.opts.ConfigFile)
+	if len(x.opts.ClusterName) > 0 {
+		args = append(args, "--name", x.opts.ClusterName)
+	}
 
-	} else {
-		if len(x.opts.ClusterName) > 0 {
-			args = append(args, "--name", x.opts.ClusterName)
-		}
+	if len(x.opts.Region) > 0 {
+		args = append(args, "--region", x.opts.Region)
+	}
 
-		if len(x.opts.Region) > 0 {
-			args = append(args, "--region", x.opts.Region)
-		}
+	if len(x.opts.Tags) > 0 {
+		args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
+	}
 
-		if len(x.opts.Tags) > 0 {
-			args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
-		}
-
-		if len(x.opts.KubernetesVersion) > 0 {
-			args = append(args, "--version", x.opts.KubernetesVersion)
-		}
+	if len(x.opts.KubernetesVersion) > 0 {
+		args = append(args, "--version", x.opts.KubernetesVersion)
 	}
 
 	if x.opts.Verbose {
@@ -375,34 +335,29 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 		"--color", "false",
 	}
 
-	if len(x.opts.ConfigFile) > 0 {
-		args = append(args, "--config-file", x.opts.ConfigFile)
-
-	} else {
-		if len(x.opts.ClusterName) > 0 {
-			args = append(args,
-				"--cluster", x.opts.ClusterName,
-				"--name", fmt.Sprintf("ocean-%s", uuid.NewV4().Short()))
-		}
-
-		if len(x.opts.Region) > 0 {
-			args = append(args, "--region", x.opts.Region)
-		}
-
-		if len(x.opts.Tags) > 0 {
-			args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
-		}
-
-		if len(x.opts.KubernetesVersion) > 0 {
-			args = append(args, "--version", x.opts.KubernetesVersion)
-		}
-
-		//if len(x.opts.Profile) > 0 {
-		//	args = append(args, "--spot-profile", x.opts.Profile)
-		//}
-
-		args = append(args, "--spot-ocean")
+	if len(x.opts.ClusterName) > 0 {
+		args = append(args,
+			"--cluster", x.opts.ClusterName,
+			"--name", fmt.Sprintf("ocean-%s", uuid.NewV4().Short()))
 	}
+
+	if len(x.opts.Region) > 0 {
+		args = append(args, "--region", x.opts.Region)
+	}
+
+	if len(x.opts.Tags) > 0 {
+		args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
+	}
+
+	if len(x.opts.KubernetesVersion) > 0 {
+		args = append(args, "--version", x.opts.KubernetesVersion)
+	}
+
+	//if len(x.opts.Profile) > 0 {
+	//	args = append(args, "--spot-profile", x.opts.Profile)
+	//}
+
+	args = append(args, "--spot-ocean")
 
 	if x.opts.Verbose {
 		args = append(args, "--verbose", "4")
@@ -590,41 +545,6 @@ func updateOceanController(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-type clusterConfig struct {
-	Metadata struct {
-		Name   string `json:"name"`
-		Region string `json:"region"`
-	} `json:"metadata"`
-}
-
-func readConfigFile(fileName string) (*clusterConfig, error) {
-	var reader io.Reader
-
-	if fileName == "-" {
-		// Read from standard input
-		reader = os.Stdin
-	} else {
-		// Read from file
-		file, err := os.Open(fileName)
-		if err != nil {
-			return nil, fmt.Errorf("could not open file, %w", err)
-		}
-		defer func() {
-			if err := file.Close(); err != nil {
-				log.Errorf("could not close file, err: %s", err.Error())
-			}
-		}()
-		reader = file
-	}
-
-	cfg := new(clusterConfig)
-	if err := yaml.NewYAMLOrJSONDecoder(reader, 4096).Decode(cfg); err != nil {
-		return nil, fmt.Errorf("could not decode config, %w", err)
-	}
-
-	return cfg, nil
 }
 
 // startSpinnerWithMessage starts a new spinner logger with the given message.
