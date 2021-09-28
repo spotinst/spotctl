@@ -33,10 +33,10 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
+	ofas "github.com/spotinst/spotctl/internal/ocean/spark"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
-	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdCreate struct {
@@ -377,7 +377,7 @@ func (x *CmdCreate) run(ctx context.Context) error {
 
 	spinner.Message("installing wave")
 
-	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
+	if err := ofas.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 

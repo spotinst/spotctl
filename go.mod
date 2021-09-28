@@ -24,8 +24,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spotinst/spotinst-sdk-go v1.101.0
 	github.com/spotinst/wave-operator v0.0.0-20210524091717-f8934344b1f2
+	github.com/stretchr/testify v1.7.0
 	github.com/theckman/yacspin v0.8.0
-	k8s.io/apiextensions-apiserver v0.20.4
+	k8s.io/api v0.20.4
 	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v0.20.4
 	sigs.k8s.io/controller-runtime v0.8.3

@@ -13,8 +13,8 @@ import (
 
 	spoterrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
+	ofas "github.com/spotinst/spotctl/internal/ocean/spark"
 	"github.com/spotinst/spotctl/internal/spot"
-	"github.com/spotinst/spotctl/internal/wave"
 )
 
 type CmdDelete struct {
@@ -132,7 +132,7 @@ func (x *CmdDelete) run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if err := wave.ValidateClusterContext(cluster.Name); err != nil {
+		if err := ofas.ValidateClusterContext(ctx, cluster.Name); err != nil {
 			return fmt.Errorf("cluster context validation failure, %w", err)
 		}
 	}

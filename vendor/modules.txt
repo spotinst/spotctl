@@ -430,6 +430,8 @@ github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/prometheus/client_golang v1.10.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -492,6 +494,9 @@ github.com/spotinst/wave-operator/install
 github.com/spotinst/wave-operator/internal/version
 github.com/spotinst/wave-operator/tide
 github.com/spotinst/wave-operator/tide/config
+# github.com/stretchr/testify v1.7.0
+## explicit
+github.com/stretchr/testify/assert
 # github.com/theckman/yacspin v0.8.0
 ## explicit
 github.com/theckman/yacspin
@@ -659,6 +664,7 @@ helm.sh/helm/v3/pkg/storage
 helm.sh/helm/v3/pkg/storage/driver
 helm.sh/helm/v3/pkg/time
 # k8s.io/api v0.20.4
+## explicit
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
 k8s.io/api/admissionregistration/v1
@@ -706,7 +712,6 @@ k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
 # k8s.io/apiextensions-apiserver v0.20.4
-## explicit
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1

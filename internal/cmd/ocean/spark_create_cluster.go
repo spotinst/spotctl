@@ -10,10 +10,10 @@ import (
 	"github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/ocean/spark"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
-	"github.com/spotinst/spotctl/internal/wave"
 	"github.com/theckman/yacspin"
 	"io"
 	"io/ioutil"
@@ -58,7 +58,8 @@ type (
 )
 
 const (
-	defaultK8sVersion = "1.19"
+	defaultK8sVersion   = "1.19"
+	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
 )
 
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
@@ -198,6 +199,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			stopSpinnerWithMessage(spinner, "EKS cluster created", false)
 		}
 
+		// TODO Don't create nodegroup if it already exists
 		spinner := startSpinnerWithMessage("Creating Spot Ocean node group")
 		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
 		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
@@ -235,7 +237,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
 	}
 
-	if err := wave.ValidateClusterContext(x.opts.ClusterName); err != nil {
+	if err := spark.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
@@ -245,6 +247,16 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	log.Infof("Updating Ocean controller")
 	if err := updateOceanController(ctx); err != nil {
 		return fmt.Errorf("could not apply ocean update, %w", err)
+	}
+
+	log.Infof("Creating namespace %s", spotSystemNamespace)
+	if err := kubernetes.EnsureNamespace(ctx, spotSystemNamespace); err != nil {
+		return fmt.Errorf("could not create namespace, %w", err)
+	}
+
+	log.Infof("Creating deployer RBAC")
+	if err := spark.CreateDeployerRBAC(ctx, spotSystemNamespace); err != nil {
+		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 
 	spinner := startSpinnerWithMessage("Installing Ocean for Apache Spark")
