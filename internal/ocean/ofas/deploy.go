@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	yamlutil "k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/spotinst/spotctl/internal/kubernetes"
+	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/ocean/ofas/config"
 	"github.com/spotinst/spotctl/internal/uuid"
 )
@@ -21,6 +24,9 @@ const (
 	spotConfigMapNamespace        = metav1.NamespaceSystem
 	spotConfigMapName             = "spotinst-kubernetes-cluster-controller-config"
 	clusterIdentifierConfigMapKey = "spotinst.cluster-identifier"
+
+	pollInterval = 5 * time.Second
+	pollTimeout  = 5 * time.Minute
 )
 
 func ValidateClusterContext(ctx context.Context, clusterIdentifier string) error {
@@ -85,7 +91,7 @@ func Deploy(ctx context.Context, namespace string) error {
 	}
 
 	values := jobValues{
-		Name:            fmt.Sprintf("ofas-deployer-install-%s", uuid.NewV4().Short()),
+		Name:            fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
 		Namespace:       namespace,
 		ImagePullSecret: "bigdata-dev-regcred",
 		ImageDeployer:   "598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-deployer:0.1.1-c31ad4f8",
@@ -112,13 +118,42 @@ func Deploy(ctx context.Context, namespace string) error {
 		return fmt.Errorf("could not decode job manifest, %w", err)
 	}
 
+	log.Debugf("Creating deploy job %s/%s", job.Namespace, job.Name)
 	createdJob, err := client.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("could not create deploy job, %w", err)
 	}
 
-	fmt.Println(createdJob.Name)
-	fmt.Println(createdJob.Namespace)
+	err = wait.Poll(pollInterval, pollTimeout, func() (bool, error) {
+		job, err := client.BatchV1().Jobs(createdJob.Namespace).Get(ctx, createdJob.Name, metav1.GetOptions{})
+		if err != nil {
+			log.Debugf("Could not get deploy job, err: %s", err.Error())
+			return false, nil
+		}
+
+		activePods := job.Status.Active
+		failedPods := job.Status.Failed
+		succeededPods := job.Status.Succeeded
+		log.Debugf("Deploy job pods - active: %d, succeeded: %d, failed: %d", activePods, succeededPods, failedPods)
+
+		// TODO Should check conditions instead
+		if activePods == 0 && succeededPods > 0 {
+			log.Debugf("Deploy job complete")
+			return true, nil
+		}
+
+		return false, nil
+	})
+	if err != nil {
+		return fmt.Errorf("wait for deploy job completion failed, %w", err)
+	}
+
+	// TODO Verify that this deletes the job pods
+	log.Debugf("Deleting deploy job %s/%s", job.Namespace, job.Name)
+	if err := client.BatchV1().Jobs(job.Namespace).Delete(ctx, job.Name, metav1.DeleteOptions{}); err != nil {
+		// Best effort
+		log.Warnf("Could not delete deploy job %s/%s", job.Namespace, job.Name)
+	}
 
 	return nil
 }
@@ -129,6 +164,7 @@ metadata:
   name: {{.Name}}
   namespace: {{.Namespace}}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     spec:
       imagePullSecrets:

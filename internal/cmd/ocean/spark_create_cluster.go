@@ -266,55 +266,6 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 	stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installed", false)
 
-	/*
-
-		spinner.Message("installing wave")
-
-		manager, err := tide.NewManager(getSpinnerLogger(x.opts.ClusterName, spinner))
-		if err != nil {
-			return err
-		}
-
-		if x.opts.WaveChartSpec != "" {
-			is := &install.InstallSpec{}
-			err := json.Unmarshal([]byte(x.opts.WaveChartSpec), is)
-			if err != nil {
-				return fmt.Errorf("bad helm chart spec for wave operator \"%s\", %w", x.opts.WaveChartSpec, err)
-			}
-			err = manager.SetWaveInstallSpec(*is)
-			if err != nil {
-				return fmt.Errorf("cannot set install spec for manager \"%s\", %w", x.opts.WaveChartSpec, err)
-			}
-		}
-
-		waveConfig := map[string]interface{}{
-			tide.ConfigIsK8sProvisioned:          k8sClusterProvisioned,
-			tide.ConfigIsOceanClusterProvisioned: oceanClusterProvisioned,
-			tide.ConfigInitialWaveOperatorImage:  x.opts.WaveOperatorImage,
-		}
-
-		env, err := manager.SetConfiguration(waveConfig)
-		if err != nil {
-			return fmt.Errorf("unable to set wave configuration, %w", err)
-		}
-
-		err = manager.CreateTideRBAC()
-		if err != nil {
-			return fmt.Errorf("could not create tide rbac objects, %w", err)
-		}
-
-		err = manager.Create(*env)
-		if err != nil {
-			spinner.StopFail()
-			return err
-		}
-
-		spinner.StopMessage("wave operator is managing components")
-		spinner.Stop()
-
-		return nil
-	*/
-
 	log.Infof("Cluster %s successfully created", x.opts.ClusterName)
 
 	return nil
