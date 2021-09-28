@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/spotinst/spotctl/internal/kubernetes"
-	ofasconfig "github.com/spotinst/spotctl/internal/ocean/ofas/config"
+	"github.com/spotinst/spotctl/internal/ocean/ofas/config"
 )
 
 const (
@@ -42,7 +42,7 @@ func CreateDeployerRBAC(ctx context.Context, namespace string) error {
 		return fmt.Errorf("could not get kubernetes client, %w", err)
 	}
 
-	sa, crb, err := ofasconfig.GetDeployerRBAC(namespace)
+	sa, crb, err := config.GetDeployerRBAC(namespace)
 	if err != nil {
 		return fmt.Errorf("could not get deployer rbac objects, %w", err)
 	}
