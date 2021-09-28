@@ -58,7 +58,7 @@ type (
 )
 
 const (
-	defaultK8sVersion = "1.18"
+	defaultK8sVersion = "1.19"
 )
 
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
@@ -198,13 +198,13 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			stopSpinnerWithMessage(spinner, "EKS cluster created", false)
 		}
 
-		spinner := startSpinnerWithMessage("Creating node group")
+		spinner := startSpinnerWithMessage("Creating Spot Ocean node group")
 		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
 		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
 			stopSpinnerWithMessage(spinner, "Could not create node group", true)
 			return fmt.Errorf("could not create node group, %w", err)
 		}
-		stopSpinnerWithMessage(spinner, "Node group created", false)
+		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
 
 	} else {
 		log.Infof("Will import Ocean cluster %s into Ocean for Apache Spark", x.opts.ClusterID)
