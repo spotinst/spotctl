@@ -38,7 +38,6 @@ type (
 
 	// TODO
 	/*
-		- Fix deletion
 		- What happens if I create a cluster with a controllerClusterId that already exists?
 	*/
 
@@ -53,7 +52,7 @@ type (
 )
 
 const (
-	defaultK8sVersion   = "1.19"        // TODO test 1.21
+	defaultK8sVersion   = "1.21"
 	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
 )
 
@@ -512,7 +511,9 @@ func updateOceanController(ctx context.Context) error {
 		return fmt.Errorf("could not get cluster config, %w", err)
 	}
 
-	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
+	// TODO Stop using beta when it is out of beta
+	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller-beta/spotinst-kubernetes-cluster-controller-ga.yaml"
+	//const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
 
 	res, err := http.Get(oceanControllerURL)
 	if err != nil {

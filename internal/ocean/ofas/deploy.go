@@ -93,9 +93,8 @@ func Deploy(ctx context.Context, namespace string) error {
 	values := jobValues{
 		Name:            fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
 		Namespace:       namespace,
-		ImagePullSecret: "bigdata-dev-regcred",
-		ImageDeployer:   "598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-deployer:0.1.1-c31ad4f8",
-		ImageOperator:   "598800841386.dkr.ecr.us-east-2.amazonaws.com/private/bigdata-operator:0.1.1-c31ad4f8",
+		ImageDeployer:   "public.ecr.aws/l8m2k1n1/netapp/bigdata-deployer:0.1.1-c31ad4f8",
+		ImageOperator:   "public.ecr.aws/l8m2k1n1/netapp/bigdata-operator:0.1.1-c31ad4f8",
 		ServiceAccount:  config.ServiceAccountName,
 	}
 
@@ -166,9 +165,7 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 300
   template:
-    spec:
-      imagePullSecrets:
-      - name: {{.ImagePullSecret}}
+    spec: 
       containers:
         - image:
             {{.ImageDeployer}}
@@ -177,9 +174,7 @@ spec:
             - install
             - --create-bootstrap-environment
             - --image
-            - {{.ImageOperator}}
-            - --image-pull-secret
-            - {{.ImagePullSecret}}
+            - {{.ImageOperator}} 
             - --image-pull-policy
             - Always
           resources: { }
