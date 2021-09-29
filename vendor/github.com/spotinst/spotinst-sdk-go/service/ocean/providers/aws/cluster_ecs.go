@@ -141,12 +141,13 @@ type ECSIAMInstanceProfile struct {
 }
 
 type ECSAutoScaler struct {
-	IsEnabled      *bool                        `json:"isEnabled,omitempty"`
-	IsAutoConfig   *bool                        `json:"isAutoConfig,omitempty"`
-	Cooldown       *int                         `json:"cooldown,omitempty"`
-	Headroom       *ECSAutoScalerHeadroom       `json:"headroom,omitempty"`
-	ResourceLimits *ECSAutoScalerResourceLimits `json:"resourceLimits,omitempty"`
-	Down           *ECSAutoScalerDown           `json:"down,omitempty"`
+	IsEnabled              *bool                        `json:"isEnabled,omitempty"`
+	IsAutoConfig           *bool                        `json:"isAutoConfig,omitempty"`
+	Cooldown               *int                         `json:"cooldown,omitempty"`
+	Headroom               *ECSAutoScalerHeadroom       `json:"headroom,omitempty"`
+	ResourceLimits         *ECSAutoScalerResourceLimits `json:"resourceLimits,omitempty"`
+	Down                   *ECSAutoScalerDown           `json:"down,omitempty"`
+	AutoHeadroomPercentage *int                         `json:"autoHeadroomPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -937,6 +938,13 @@ func (o *ECSAutoScaler) SetResourceLimits(v *ECSAutoScalerResourceLimits) *ECSAu
 func (o *ECSAutoScaler) SetDown(v *ECSAutoScalerDown) *ECSAutoScaler {
 	if o.Down = v; o.Down == nil {
 		o.nullFields = append(o.nullFields, "Down")
+	}
+	return o
+}
+
+func (o *ECSAutoScaler) SetAutoHeadroomPercentage(v *int) *ECSAutoScaler {
+	if o.AutoHeadroomPercentage = v; o.AutoHeadroomPercentage == nil {
+		o.nullFields = append(o.nullFields, "AutoHeadroomPercentage")
 	}
 	return o
 }
