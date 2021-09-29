@@ -53,7 +53,7 @@ type (
 )
 
 const (
-	defaultK8sVersion   = "1.19"
+	defaultK8sVersion   = "1.19" // TODO test 1.21
 	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
 )
 
@@ -179,7 +179,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		}
 
 		// TODO Don't create nodegroup if it already exists
-		spinner := startSpinnerWithMessage("Creating Spot Ocean node group")
+		spinner := startSpinnerWithMessage("Creating Ocean node group")
 		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
 		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
 			stopSpinnerWithMessage(spinner, "Could not create node group", true)
@@ -357,6 +357,7 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	//	args = append(args, "--spot-profile", x.opts.Profile)
 	//}
 
+	args = append(args, "--managed=false") // Not EKS managed
 	args = append(args, "--spot-ocean")
 
 	if x.opts.Verbose {
