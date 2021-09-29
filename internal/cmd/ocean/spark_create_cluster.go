@@ -53,7 +53,7 @@ type (
 )
 
 const (
-	defaultK8sVersion   = "1.19" // TODO test 1.21
+	defaultK8sVersion   = "1.19"        // TODO test 1.21
 	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
 )
 
