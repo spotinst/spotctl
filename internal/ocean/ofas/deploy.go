@@ -91,11 +91,11 @@ func Deploy(ctx context.Context, namespace string) error {
 	}
 
 	values := jobValues{
-		Name:            fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
-		Namespace:       namespace,
-		ImageDeployer:   "public.ecr.aws/l8m2k1n1/netapp/bigdata-deployer:0.1.1-c31ad4f8",
-		ImageOperator:   "public.ecr.aws/l8m2k1n1/netapp/bigdata-operator:0.1.1-c31ad4f8",
-		ServiceAccount:  config.ServiceAccountName,
+		Name:           fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
+		Namespace:      namespace,
+		ImageDeployer:  "public.ecr.aws/l8m2k1n1/netapp/bigdata-deployer:0.1.1-c31ad4f8",
+		ImageOperator:  "public.ecr.aws/l8m2k1n1/netapp/bigdata-operator:0.1.1-c31ad4f8",
+		ServiceAccount: config.ServiceAccountName,
 	}
 
 	jobTemplate, err := template.New("deployJob").Parse(deployJobTemplate)
