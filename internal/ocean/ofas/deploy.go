@@ -146,13 +146,6 @@ func Deploy(ctx context.Context, namespace string) error {
 		return fmt.Errorf("wait for deploy job completion failed, %w", err)
 	}
 
-	// TODO Verify that this deletes the job pods
-	log.Debugf("Deleting deploy job %s/%s", job.Namespace, job.Name)
-	if err := client.BatchV1().Jobs(job.Namespace).Delete(ctx, job.Name, metav1.DeleteOptions{}); err != nil {
-		// Best effort
-		log.Warnf("Could not delete deploy job %s/%s", job.Namespace, job.Name)
-	}
-
 	return nil
 }
 
