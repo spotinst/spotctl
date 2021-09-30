@@ -189,21 +189,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	} else {
 		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
-		spotClientOpts := []spot.ClientOption{
-			spot.WithCredentialsProfile(x.opts.Profile),
-		}
-
-		spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
-		if err != nil {
-			return fmt.Errorf("could not get Spot client, %w", err)
-		}
-
-		oceanClient, err := spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
-		if err != nil {
-			return fmt.Errorf("could not get Ocean client, %w", err)
-		}
-
-		oceanCluster, err := oceanClient.GetCluster(ctx, x.opts.ClusterID)
+		oceanCluster, err := x.getOceanClusterById(ctx, x.opts.ClusterID)
 		if err != nil {
 			return fmt.Errorf("could not get Ocean cluster, %w", err)
 		}
@@ -288,6 +274,37 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 
 	// Install!
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
+}
+
+func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
+	spotClientOpts := []spot.ClientOption{
+		spot.WithCredentialsProfile(x.opts.Profile),
+	}
+
+	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return spotClient, nil
+}
+
+func (x *CmdSparkCreateCluster) getOceanClient() (spot.OceanInterface, error) {
+	spotClient, err := x.getSpotClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not get spot client, %w", err)
+	}
+
+	return spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
+}
+
+func (x *CmdSparkCreateCluster) getOceanClusterById(ctx context.Context, id string) (*spot.OceanCluster, error) {
+	oceanClient, err := x.getOceanClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not get ocean client, %w", err)
+	}
+
+	return oceanClient.GetCluster(ctx, id)
 }
 
 func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
