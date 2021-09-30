@@ -9,6 +9,7 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -122,6 +123,7 @@ func Deploy(ctx context.Context, namespace string) error {
 		return fmt.Errorf("could not create deploy job, %w", err)
 	}
 
+	jobSucceeded := false
 	err = wait.Poll(pollInterval, pollTimeout, func() (bool, error) {
 		job, err := client.BatchV1().Jobs(createdJob.Namespace).Get(ctx, createdJob.Name, metav1.GetOptions{})
 		if err != nil {
@@ -129,14 +131,9 @@ func Deploy(ctx context.Context, namespace string) error {
 			return false, nil
 		}
 
-		activePods := job.Status.Active
-		failedPods := job.Status.Failed
-		succeededPods := job.Status.Succeeded
-		log.Debugf("Deploy job pods - active: %d, succeeded: %d, failed: %d", activePods, succeededPods, failedPods)
-
-		// TODO Should check conditions instead
-		if activePods == 0 && succeededPods > 0 {
-			log.Debugf("Deploy job complete")
+		done, succeeded := checkJobStatus(job)
+		if done {
+			jobSucceeded = succeeded
 			return true, nil
 		}
 
@@ -146,7 +143,27 @@ func Deploy(ctx context.Context, namespace string) error {
 		return fmt.Errorf("wait for deploy job completion failed, %w", err)
 	}
 
+	if !jobSucceeded {
+		return fmt.Errorf("deploy job failure")
+	}
+
 	return nil
+}
+
+func checkJobStatus(job *batchv1.Job) (done bool, succeeded bool) {
+	log.Debugf("Deploy job conditions: %v", job.Status.Conditions)
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue {
+			if condition.Type == batchv1.JobComplete {
+				done = true
+				succeeded = true
+			} else if condition.Type == batchv1.JobFailed {
+				done = true
+				succeeded = false
+			}
+		}
+	}
+	return done, succeeded
 }
 
 const deployJobTemplate = `apiVersion: batch/v1
