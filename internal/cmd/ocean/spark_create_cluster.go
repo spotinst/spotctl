@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
+	"github.com/spotinst/spotctl/internal/ocean/ofas/eks"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,9 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spotinst/spotctl/internal/cloud"
 	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/kubernetes"
@@ -267,26 +266,73 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		return fmt.Errorf("could not get cloud provider, %w", err)
 	}
 
-	stackCollection, err := x.newStackCollection(cloudProvider)
-	if err != nil {
-		return fmt.Errorf("could not get stack collection, %w", err)
-	}
-
-	stackExists := true
-	if _, err = stackCollection.describeStacks(); err != nil {
-		if err.Error() == stackCollection.errStackNotFound().Error() {
-			stackExists = false
-		}
-	}
-
 	cmdEksctl, err := x.opts.Clientset.NewCommand(eksctl.CommandName)
 	if err != nil {
 		return fmt.Errorf("could not create eksctl command, %w", err)
 	}
 
-	// TODO Allow creation of cluster if previous stack failed
-	// TODO Check for in-progress stacks
-	if !stackExists {
+	stacks, err := eks.GetStacksForCluster(cloudProvider, x.opts.Profile, x.opts.Region, x.opts.ClusterName)
+	if err != nil {
+		return fmt.Errorf("could not get stacks for cluster, %w", err)
+	}
+	logStacks(stacks, true)
+
+	stacksByResourceType := eks.GroupStacksByResourceType(stacks)
+
+	if len(stacksByResourceType[eks.ResourceTypeUnknown]) > 0 {
+		logStacks(stacks, false)
+		return fmt.Errorf("found stacks of unknown resource type, aborting")
+	}
+
+	clusterStacksByStatus := eks.GroupStacksByStatus(stacksByResourceType[eks.ResourceTypeCluster])
+	nodegroupStackByStatus := eks.GroupStacksByStatus(stacksByResourceType[eks.ResourceTypeNodegroup])
+
+	analyzeStackStatuses := func (stacksByStatus map[string][]*eks.Stack) (shouldCreateResource, shouldAbort bool) {
+		// Check for stacks that are not finalized
+		for status := range stacksByStatus {
+			statusFinalized := status == cloudformation.StackStatusCreateComplete || status == cloudformation.StackStatusDeleteComplete
+			if !statusFinalized {
+				log.Infof("Found stack with non-finalized status %q, will abort", status)
+				return false, true
+			}
+		}
+
+		createdStacks := stacksByStatus[cloudformation.StackStatusCreateComplete]
+		deletedStacks := stacksByStatus[cloudformation.StackStatusDeleteComplete]
+
+		if len(createdStacks) > 0 {
+			return false, false
+		}
+
+		if len(deletedStacks) > 0 {
+			return true, false
+		}
+
+		return true, false
+	}
+
+	// TODO Allow creation of resources if previous stacks failed
+	shouldCreateCluster := true
+	shouldCreateNodegroup := true
+	shouldAbort := false
+
+	if len(clusterStacksByStatus) > 0 {
+		shouldCreateCluster, shouldAbort = analyzeStackStatuses(clusterStacksByStatus)
+		if shouldAbort {
+			logStacks(stacks, false)
+			return fmt.Errorf("found non-finalized cluster stacks, aborting")
+		}
+	}
+
+	if len(nodegroupStackByStatus) > 0 {
+		shouldCreateNodegroup, shouldAbort = analyzeStackStatuses(nodegroupStackByStatus)
+		if shouldAbort {
+			logStacks(stacks, false)
+			return fmt.Errorf("found non-finalized nodegroup stacks, aborting")
+		}
+	}
+
+	if shouldCreateCluster {
 		spinner := startSpinnerWithMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
 		createClusterArgs := x.buildEksctlCreateClusterArgs()
 		if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
@@ -296,16 +342,28 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
 	}
 
-	// TODO Don't create nodegroup if it already exists
-	spinner := startSpinnerWithMessage("Creating Ocean node group")
-	createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
-	if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
-		stopSpinnerWithMessage(spinner, "Could not create node group", true)
-		return fmt.Errorf("could not create node group, %w", err)
+	if shouldCreateNodegroup {
+		spinner := startSpinnerWithMessage("Creating Ocean node group")
+		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
+		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
+			stopSpinnerWithMessage(spinner, "Could not create node group", true)
+			return fmt.Errorf("could not create node group, %w", err)
+		}
+		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
 	}
-	stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
 
 	return nil
+}
+
+func logStacks(stacks []*eks.Stack, debug bool) {
+	lines := eks.StacksToString(stacks)
+	for _, l := range lines {
+		if debug {
+			log.Debugf(l)
+		} else {
+			log.Infof(l)
+		}
+	}
 }
 
 func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
@@ -454,143 +512,6 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	}
 
 	return args
-}
-
-type stackCollection struct {
-	clusterName string
-	svc         *cloudformation.CloudFormation
-}
-
-func (x *CmdSparkCreateCluster) newStackCollection(cloudProvider cloud.Provider) (*stackCollection, error) {
-	sess, err := cloudProvider.Session(x.opts.Region, x.opts.Profile)
-	if err != nil {
-		return nil, fmt.Errorf("could not get cloud provider session, %w", err)
-	}
-
-	return &stackCollection{
-		clusterName: x.opts.ClusterName,
-		svc:         cloudformation.New(sess.(*session.Session)),
-	}, nil
-}
-
-type Stack = cloudformation.Stack
-
-func fmtStacksRegexForCluster(name string) string {
-	const ourStackRegexFmt = "^(eksctl|EKS)-%s-((cluster|nodegroup-.+|addon-.+)|(VPC|ServiceRole|ControlPlane|DefaultNodeGroup))$"
-	return fmt.Sprintf(ourStackRegexFmt, name)
-}
-
-// listStacks gets all of CloudFormation stacks.
-func (c *stackCollection) listStacks(statusFilters ...string) ([]*Stack, error) {
-	return c.listStacksMatching(fmtStacksRegexForCluster(c.clusterName), statusFilters...)
-}
-
-func defaultStackStatusFilter() []*string {
-	return aws.StringSlice(allNonDeletedStackStatuses())
-}
-
-func allNonDeletedStackStatuses() []string {
-	return []string{
-		cloudformation.StackStatusCreateInProgress,
-		cloudformation.StackStatusCreateFailed,
-		cloudformation.StackStatusCreateComplete,
-		cloudformation.StackStatusRollbackInProgress,
-		cloudformation.StackStatusRollbackFailed,
-		cloudformation.StackStatusRollbackComplete,
-		cloudformation.StackStatusDeleteInProgress,
-		cloudformation.StackStatusDeleteFailed,
-		cloudformation.StackStatusUpdateInProgress,
-		cloudformation.StackStatusUpdateCompleteCleanupInProgress,
-		cloudformation.StackStatusUpdateComplete,
-		cloudformation.StackStatusUpdateRollbackInProgress,
-		cloudformation.StackStatusUpdateRollbackFailed,
-		cloudformation.StackStatusUpdateRollbackCompleteCleanupInProgress,
-		cloudformation.StackStatusUpdateRollbackComplete,
-		cloudformation.StackStatusReviewInProgress,
-	}
-}
-
-// describeStack describes a cloudformation stack.
-func (c *stackCollection) describeStack(i *Stack) (*Stack, error) {
-	input := &cloudformation.DescribeStacksInput{
-		StackName: i.StackName,
-	}
-	resp, err := c.svc.DescribeStacks(input)
-	if err != nil {
-		return nil, fmt.Errorf("describing CloudFormation stack %q: %w", *i.StackName, err)
-	}
-	return resp.Stacks[0], nil
-}
-
-// listStacksMatching gets all of CloudFormation stacks with names matching nameRegex.
-func (c *stackCollection) listStacksMatching(nameRegex string, statusFilters ...string) ([]*Stack, error) {
-	var (
-		subErr error
-		stack  *Stack
-	)
-
-	re, err := regexp.Compile(nameRegex)
-	if err != nil {
-		return nil, fmt.Errorf("cannot list stacks: %w", err)
-	}
-	input := &cloudformation.ListStacksInput{
-		StackStatusFilter: defaultStackStatusFilter(),
-	}
-	if len(statusFilters) > 0 {
-		input.StackStatusFilter = aws.StringSlice(statusFilters)
-	}
-	var stacks []*Stack
-	pager := func(p *cloudformation.ListStacksOutput, _ bool) bool {
-		for _, s := range p.StackSummaries {
-			if re.MatchString(*s.StackName) {
-				stack, subErr = c.describeStack(&Stack{
-					StackName: s.StackName,
-					StackId:   s.StackId,
-				})
-				if subErr != nil {
-					return false
-				}
-				stacks = append(stacks, stack)
-			}
-		}
-		return true
-	}
-
-	if err = c.svc.ListStacksPages(input, pager); err != nil {
-		return nil, err
-	}
-	if subErr != nil {
-		return nil, subErr
-	}
-
-	return stacks, nil
-}
-
-func (c *stackCollection) errStackNotFound() error {
-	return fmt.Errorf("no eksctl-managed CloudFormation stacks found for %q", c.clusterName)
-}
-
-// describeStacks describes cloudformation stacks.
-func (c *stackCollection) describeStacks() ([]*Stack, error) {
-	log.Debugf("Describing stacks")
-
-	stacks, err := c.listStacks()
-	if err != nil {
-		return nil, fmt.Errorf("describing CloudFormation stacks for %q: %w", c.clusterName, err)
-	}
-	if len(stacks) == 0 {
-		return nil, c.errStackNotFound()
-	}
-
-	var out []*Stack
-	for _, s := range stacks {
-		if *s.StackStatus == cloudformation.StackStatusDeleteComplete {
-			continue
-		}
-		out = append(out, s)
-	}
-
-	return out, nil
 }
 
 func updateOceanController(ctx context.Context) error {
