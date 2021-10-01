@@ -39,10 +39,7 @@ type (
 		opts CmdSparkCreateClusterOptions
 	}
 
-	// TODO
-	/*
-		- What happens if I create a cluster with a controllerClusterId that already exists?
-	*/
+	// TODO Refactor cloudformation stuff
 
 	CmdSparkCreateClusterOptions struct {
 		*CmdSparkCreateOptions
@@ -138,13 +135,12 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	shouldCreateCluster := x.opts.ClusterID == ""
 
 	if shouldCreateCluster {
-		log.Infof("Will create Ocean for Apache Spark cluster")
-
 		if x.opts.ClusterName == "" {
 			// Generate unique name
 			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
 		}
 
+		// Note that controllerClusterID == cluster name in Ocean for Apache Spark
 		ctrlClusterIDExists, err := x.doesControllerClusterIDExist(ctx, x.opts.ClusterName)
 		if err != nil {
 			return fmt.Errorf("could not check if controllerClusterID exists, %w", err)
@@ -154,54 +150,10 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			return fmt.Errorf("ocean cluster with controllerClusterID %q already exists", x.opts.ClusterName)
 		}
 
-		cloudProviderOpts := []cloud.ProviderOption{
-			cloud.WithProfile(x.opts.Profile),
-			cloud.WithRegion(x.opts.Region),
+		log.Infof("Will create Ocean for Apache Spark cluster %s", x.opts.ClusterName)
+		if err := x.createEKSCluster(ctx); err != nil {
+			return fmt.Errorf("could not create EKS cluster, %w", err)
 		}
-
-		cloudProvider, err := x.opts.Clientset.NewCloud(cloud.ProviderName(x.opts.CloudProvider), cloudProviderOpts...)
-		if err != nil {
-			return fmt.Errorf("could not get cloud provider, %w", err)
-		}
-
-		stackCollection, err := x.newStackCollection(cloudProvider)
-		if err != nil {
-			return fmt.Errorf("could not get stack collection, %w", err)
-		}
-
-		stackExists := true
-		if _, err = stackCollection.describeStacks(); err != nil {
-			if err.Error() == stackCollection.errStackNotFound().Error() {
-				stackExists = false
-			}
-		}
-
-		cmdEksctl, err := x.opts.Clientset.NewCommand(eksctl.CommandName)
-		if err != nil {
-			return fmt.Errorf("could not create eksctl command, %w", err)
-		}
-
-		// TODO Allow creation of cluster if previous stack failed
-		// TODO Check for in-progress stacks
-		if !stackExists {
-			spinner := startSpinnerWithMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
-			createClusterArgs := x.buildEksctlCreateClusterArgs()
-			if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
-				stopSpinnerWithMessage(spinner, "Could not create EKS cluster", true)
-				return fmt.Errorf("could not create EKS cluster, %w", err)
-			}
-			stopSpinnerWithMessage(spinner, "EKS cluster created", false)
-		}
-
-		// TODO Don't create nodegroup if it already exists
-		spinner := startSpinnerWithMessage("Creating Ocean node group")
-		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
-		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
-			stopSpinnerWithMessage(spinner, "Could not create node group", true)
-			return fmt.Errorf("could not create node group, %w", err)
-		}
-		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
-
 	} else {
 		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
@@ -210,6 +162,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			return fmt.Errorf("could not get Ocean cluster, %w", err)
 		}
 
+		// Note that controllerClusterID == cluster name in Ocean for Apache Spark
 		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
 	}
 
@@ -303,9 +256,55 @@ func (x *CmdSparkCreateCluster) doesControllerClusterIDExist(ctx context.Context
 	return false, err
 }
 
-func (x *CmdSparkCreateCluster) createK8sCluster() error {
-	// TODO Refactor cluster creation code to here
-	// TODO Refactor clouformation stuff to its own package
+func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
+	cloudProviderOpts := []cloud.ProviderOption{
+		cloud.WithProfile(x.opts.Profile),
+		cloud.WithRegion(x.opts.Region),
+	}
+
+	cloudProvider, err := x.opts.Clientset.NewCloud(cloud.ProviderName(x.opts.CloudProvider), cloudProviderOpts...)
+	if err != nil {
+		return fmt.Errorf("could not get cloud provider, %w", err)
+	}
+
+	stackCollection, err := x.newStackCollection(cloudProvider)
+	if err != nil {
+		return fmt.Errorf("could not get stack collection, %w", err)
+	}
+
+	stackExists := true
+	if _, err = stackCollection.describeStacks(); err != nil {
+		if err.Error() == stackCollection.errStackNotFound().Error() {
+			stackExists = false
+		}
+	}
+
+	cmdEksctl, err := x.opts.Clientset.NewCommand(eksctl.CommandName)
+	if err != nil {
+		return fmt.Errorf("could not create eksctl command, %w", err)
+	}
+
+	// TODO Allow creation of cluster if previous stack failed
+	// TODO Check for in-progress stacks
+	if !stackExists {
+		spinner := startSpinnerWithMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
+		createClusterArgs := x.buildEksctlCreateClusterArgs()
+		if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
+			stopSpinnerWithMessage(spinner, "Could not create EKS cluster", true)
+			return fmt.Errorf("could not create EKS cluster, %w", err)
+		}
+		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
+	}
+
+	// TODO Don't create nodegroup if it already exists
+	spinner := startSpinnerWithMessage("Creating Ocean node group")
+	createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
+	if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
+		stopSpinnerWithMessage(spinner, "Could not create node group", true)
+		return fmt.Errorf("could not create node group, %w", err)
+	}
+	stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
+
 	return nil
 }
 
