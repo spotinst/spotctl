@@ -145,12 +145,12 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
 		}
 
-		clusterExists, err := x.doesClusterExist(ctx, x.opts.ClusterName)
+		ctrlClusterIDExists, err := x.doesControllerClusterIDExist(ctx, x.opts.ClusterName)
 		if err != nil {
-			return fmt.Errorf("could not check if cluster exists, %w", err)
+			return fmt.Errorf("could not check if controllerClusterID exists, %w", err)
 		}
 
-		if clusterExists {
+		if ctrlClusterIDExists {
 			return fmt.Errorf("ocean cluster with controllerClusterID %q already exists", x.opts.ClusterName)
 		}
 
@@ -292,7 +292,7 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
-func (x *CmdSparkCreateCluster) doesClusterExist(ctx context.Context, controllerClusterID string) (bool, error) {
+func (x *CmdSparkCreateCluster) doesControllerClusterIDExist(ctx context.Context, controllerClusterID string) (bool, error) {
 	_, err := x.getOceanClusterByControllerClusterID(ctx, controllerClusterID)
 	if err == nil {
 		return true, nil
