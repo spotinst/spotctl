@@ -2,26 +2,29 @@ package ocean
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spotinst/spotctl/internal/cloud"
-	"github.com/spotinst/spotctl/internal/errors"
+	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/ocean/ofas"
 	"github.com/spotinst/spotctl/internal/spot"
 	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
 	"github.com/spotinst/spotctl/internal/uuid"
+	oceanaws "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/theckman/yacspin"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -54,6 +57,10 @@ type (
 const (
 	defaultK8sVersion   = "1.21"
 	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
+)
+
+var (
+	errClusterNotFound = errors.New("cluster not found")
 )
 
 func NewCmdSparkCreateCluster(opts *CmdSparkCreateOptions) *cobra.Command {
@@ -138,6 +145,15 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
 		}
 
+		clusterExists, err := x.doesClusterExist(ctx, x.opts.ClusterName)
+		if err != nil {
+			return fmt.Errorf("could not check if cluster exists, %w", err)
+		}
+
+		if clusterExists {
+			return fmt.Errorf("ocean cluster with controllerClusterID %q already exists", x.opts.ClusterName)
+		}
+
 		cloudProviderOpts := []cloud.ProviderOption{
 			cloud.WithProfile(x.opts.Profile),
 			cloud.WithRegion(x.opts.Region),
@@ -189,7 +205,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	} else {
 		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
-		oceanCluster, err := x.getOceanClusterById(ctx, x.opts.ClusterID)
+		oceanCluster, err := x.getOceanClusterByID(ctx, x.opts.ClusterID)
 		if err != nil {
 			return fmt.Errorf("could not get Ocean cluster, %w", err)
 		}
@@ -250,10 +266,10 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
 	if x.ClusterID != "" && x.ClusterName != "" {
-		return errors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
+		return spotctlerrors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
 	}
 	if x.Region == "" {
-		return errors.Required(flags.FlagOFASClusterRegion)
+		return spotctlerrors.Required(flags.FlagOFASClusterRegion)
 	}
 	return x.CmdSparkCreateOptions.Validate()
 }
@@ -276,17 +292,29 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
 }
 
+func (x *CmdSparkCreateCluster) doesClusterExist(ctx context.Context, controllerClusterID string) (bool, error) {
+	_, err := x.getOceanClusterByControllerClusterID(ctx, controllerClusterID)
+	if err == nil {
+		return true, nil
+	}
+	if err == errClusterNotFound {
+		return false, nil
+	}
+	return false, err
+}
+
+func (x *CmdSparkCreateCluster) createK8sCluster() error {
+	// TODO Refactor cluster creation code to here
+	// TODO Refactor clouformation stuff to its own package
+	return nil
+}
+
 func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
 	spotClientOpts := []spot.ClientOption{
 		spot.WithCredentialsProfile(x.opts.Profile),
 	}
 
-	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return spotClient, nil
+	return x.opts.Clientset.NewSpotClient(spotClientOpts...)
 }
 
 func (x *CmdSparkCreateCluster) getOceanClient() (spot.OceanInterface, error) {
@@ -298,13 +326,57 @@ func (x *CmdSparkCreateCluster) getOceanClient() (spot.OceanInterface, error) {
 	return spotClient.Services().Ocean(x.opts.CloudProvider, spot.OrchestratorKubernetes)
 }
 
-func (x *CmdSparkCreateCluster) getOceanClusterById(ctx context.Context, id string) (*spot.OceanCluster, error) {
+func (x *CmdSparkCreateCluster) getOceanClusterByID(ctx context.Context, id string) (*spot.OceanCluster, error) {
 	oceanClient, err := x.getOceanClient()
 	if err != nil {
 		return nil, fmt.Errorf("could not get ocean client, %w", err)
 	}
 
 	return oceanClient.GetCluster(ctx, id)
+}
+
+// getOceanClusterByControllerClusterID finds Ocean cluster with the given controllerClusterID.
+// Returns errClusterNotFound if it is not found
+// Returns error if multiple clusters found with the given controllerClusterID
+func (x *CmdSparkCreateCluster) getOceanClusterByControllerClusterID(ctx context.Context, controllerClusterID string) (*spot.OceanCluster, error) {
+	oceanClient, err := x.getOceanClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not get ocean client, %w", err)
+	}
+
+	clusters, err := oceanClient.ListClusters(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not list ocean clusters, %w", err)
+	}
+
+	foundClusters := make([]*spot.OceanCluster, 0)
+	for i := range clusters {
+		clusterID := clusters[i].ID
+
+		awsOceanCluster, ok := clusters[i].Obj.(*oceanaws.Cluster)
+		if !ok || awsOceanCluster == nil {
+			log.Warnf("Could not cast Ocean cluster object for cluster: %s", clusterID)
+			continue
+		}
+
+		if awsOceanCluster.ControllerClusterID == nil {
+			log.Warnf("Got nil controllerClusterID for Ocean cluster: %s", clusterID)
+			continue
+		}
+
+		if *awsOceanCluster.ControllerClusterID == controllerClusterID {
+			foundClusters = append(foundClusters, clusters[i])
+		}
+	}
+
+	switch len(foundClusters) {
+	case 0:
+		return nil, errClusterNotFound
+	case 1:
+		return foundClusters[0], nil
+	default:
+		return nil, fmt.Errorf("found %d ocean clusters with controllerClusterID %q, expected at most 1", len(foundClusters), controllerClusterID)
+	}
 }
 
 func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
