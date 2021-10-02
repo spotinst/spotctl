@@ -107,6 +107,7 @@ type Storage struct {
 
 type ResourceLimits struct {
 	MaxInstanceCount *int `json:"maxInstanceCount,omitempty"`
+	MinInstanceCount *int `json:"minInstanceCount,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -668,6 +669,13 @@ func (o ResourceLimits) MarshalJSON() ([]byte, error) {
 func (o *ResourceLimits) SetMaxInstanceCount(v *int) *ResourceLimits {
 	if o.MaxInstanceCount = v; o.MaxInstanceCount == nil {
 		o.nullFields = append(o.nullFields, "MaxInstanceCount")
+	}
+	return o
+}
+
+func (o *ResourceLimits) SetMinInstanceCount(v *int) *ResourceLimits {
+	if o.MinInstanceCount = v; o.MinInstanceCount == nil {
+		o.nullFields = append(o.nullFields, "MinInstanceCount")
 	}
 	return o
 }
