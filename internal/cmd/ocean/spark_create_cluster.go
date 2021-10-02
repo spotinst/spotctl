@@ -155,13 +155,13 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	} else {
 		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
-		oceanCluster, err := x.getOceanClusterByID(ctx, x.opts.ClusterID)
+		controllerClusterID, err := x.getControllerClusterIDForClusterID(ctx, x.opts.ClusterID)
 		if err != nil {
-			return fmt.Errorf("could not get Ocean cluster, %w", err)
+			return fmt.Errorf("could not get controllerClusterID for cluster %s, %w", x.opts.ClusterID, err)
 		}
 
 		// Note that controllerClusterID == cluster name in Ocean for Apache Spark
-		x.opts.ClusterName = oceanCluster.Name // TODO Does this have to be the controller cluster id?
+		x.opts.ClusterName = controllerClusterID
 	}
 
 	if err := ofas.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
@@ -343,6 +343,24 @@ func (x *CmdSparkCreateCluster) getOceanClusterByID(ctx context.Context, id stri
 	}
 
 	return oceanClient.GetCluster(ctx, id)
+}
+
+func (x *CmdSparkCreateCluster) getControllerClusterIDForClusterID(ctx context.Context, clusterID string) (string, error) {
+	oceanCluster, err := x.getOceanClusterByID(ctx, clusterID)
+	if err != nil {
+		return "", fmt.Errorf("could not get ocean cluster, %w", err)
+	}
+
+	awsOceanCluster, ok := oceanCluster.Obj.(*oceanaws.Cluster)
+	if !ok || awsOceanCluster == nil {
+		return "", fmt.Errorf("could not get aws ocean cluster for cluster %q", clusterID)
+	}
+
+	if awsOceanCluster.ControllerClusterID == nil {
+		return "", fmt.Errorf("controllerClusterID for cluster %q is nil", clusterID)
+	}
+
+	return *awsOceanCluster.ControllerClusterID, nil
 }
 
 // getOceanClusterByControllerClusterID finds Ocean cluster with the given controllerClusterID.
