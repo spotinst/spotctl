@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/spotinst/spotctl/internal/ocean/ofas/eks"
 	"io/ioutil"
 	"net/http"
@@ -275,61 +274,18 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not get stacks for cluster, %w", err)
 	}
-	logStacks(stacks, true)
 
-	stacksByResourceType := eks.GroupStacksByResourceType(stacks)
-
-	if len(stacksByResourceType[eks.ResourceTypeUnknown]) > 0 {
-		logStacks(stacks, false)
-		return fmt.Errorf("found stacks of unknown resource type, aborting")
-	}
-
-	clusterStacksByStatus := eks.GroupStacksByStatus(stacksByResourceType[eks.ResourceTypeCluster])
-	nodegroupStackByStatus := eks.GroupStacksByStatus(stacksByResourceType[eks.ResourceTypeNodegroup])
-
-	analyzeStackStatuses := func (stacksByStatus map[string][]*eks.Stack) (shouldCreateResource, shouldAbort bool) {
-		// Check for stacks that are not finalized
-		for status := range stacksByStatus {
-			statusFinalized := status == cloudformation.StackStatusCreateComplete || status == cloudformation.StackStatusDeleteComplete
-			if !statusFinalized {
-				log.Infof("Found stack with non-finalized status %q, will abort", status)
-				return false, true
-			}
-		}
-
-		createdStacks := stacksByStatus[cloudformation.StackStatusCreateComplete]
-		deletedStacks := stacksByStatus[cloudformation.StackStatusDeleteComplete]
-
-		if len(createdStacks) > 0 {
-			return false, false
-		}
-
-		if len(deletedStacks) > 0 {
-			return true, false
-		}
-
-		return true, false
-	}
+	notDeletedStacks := filterStacks(stacks, func(stack *eks.Stack) bool {
+		return !eks.IsStackDeleted(stack)
+	})
 
 	// TODO Allow creation of resources if previous stacks failed
-	shouldCreateCluster := true
-	shouldCreateNodegroup := true
-	shouldAbort := false
 
-	if len(clusterStacksByStatus) > 0 {
-		shouldCreateCluster, shouldAbort = analyzeStackStatuses(clusterStacksByStatus)
-		if shouldAbort {
-			logStacks(stacks, false)
-			return fmt.Errorf("found non-finalized cluster stacks, aborting")
-		}
-	}
-
-	if len(nodegroupStackByStatus) > 0 {
-		shouldCreateNodegroup, shouldAbort = analyzeStackStatuses(nodegroupStackByStatus)
-		if shouldAbort {
-			logStacks(stacks, false)
-			return fmt.Errorf("found non-finalized nodegroup stacks, aborting")
-		}
+	clusterStacks := filterStacks(notDeletedStacks, eks.IsClusterStack)
+	// Only create cluster if we don't have any cluster stacks
+	shouldCreateCluster := len(clusterStacks) == 0
+	if !shouldCreateCluster {
+		log.Infof("Found cluster stacks, will not create cluster:\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
 	}
 
 	if shouldCreateCluster {
@@ -340,6 +296,18 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 			return fmt.Errorf("could not create EKS cluster, %w", err)
 		}
 		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
+	}
+
+	nodegroupStacks := filterStacks(notDeletedStacks, eks.IsNodegroupStack)
+	createdClusterStacks := filterStacks(clusterStacks, eks.IsStackCreated)
+	// Only create nodegroup if we don't have any nodegroup stacks, and if we just created the cluster or if it was created previously
+	shouldCreateNodegroup := len(nodegroupStacks) == 0 && (shouldCreateCluster || len(createdClusterStacks) > 0)
+	if !shouldCreateNodegroup {
+		if len(nodegroupStacks) > 0 {
+			log.Infof("Found nodegroup stacks, will not create nodegroup:\n%s", strings.Join(eks.StacksToStrings(nodegroupStacks), "\n"))
+		} else {
+			log.Infof("Will not create nodegroup")
+		}
 	}
 
 	if shouldCreateNodegroup {
@@ -355,15 +323,15 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	return nil
 }
 
-func logStacks(stacks []*eks.Stack, debug bool) {
-	lines := eks.StacksToString(stacks)
-	for _, l := range lines {
-		if debug {
-			log.Debugf(l)
-		} else {
-			log.Infof(l)
+func filterStacks(stacks []*eks.Stack, filter func(stack *eks.Stack) bool) []*eks.Stack {
+	res := make([]*eks.Stack, 0)
+	for i := range stacks {
+		stack := stacks[i]
+		if filter(stack) {
+			res = append(res, stack)
 		}
 	}
+	return res
 }
 
 func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {

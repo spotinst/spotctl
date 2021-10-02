@@ -14,20 +14,11 @@ import (
 )
 
 type Stack = cloudformation.Stack
-type ResourceType string
 
 type stackCollection struct {
 	clusterName string
 	svc         *cloudformation.CloudFormation
 }
-
-const (
-	ResourceTypeCluster   ResourceType = "cluster"
-	ResourceTypeNodegroup ResourceType = "nodegroup"
-	ResourceTypeUnknown   ResourceType = "unknown"
-
-	StackStatusUnknown = "unknown"
-)
 
 func GetStacksForCluster(cloudProvider cloud.Provider, profile string, region string, clusterName string) ([]*Stack, error) {
 	stackCollection, err := newStackCollection(cloudProvider, profile, region, clusterName)
@@ -40,67 +31,35 @@ func GetStacksForCluster(cloudProvider cloud.Provider, profile string, region st
 		return nil, fmt.Errorf("could not describe stacks, %w", err)
 	}
 
+	log.Debugf("Stacks for cluster %q:\n%s", clusterName, strings.Join(StacksToStrings(stacks), "\n"))
+
 	return stacks, nil
 }
 
-func GroupStacksByResourceType(stacks []*Stack) map[ResourceType][]*Stack {
-	res := make(map[ResourceType][]*Stack)
-
-	for i := range stacks {
-		stack := stacks[i]
-		isClusterStack := isClusterStack(stack)
-		isNodegroupStack := isNodegroupStack(stack)
-		if isClusterStack && isNodegroupStack {
-			res[ResourceTypeUnknown] = append(res[ResourceTypeUnknown], stack)
-		} else if isClusterStack {
-			res[ResourceTypeCluster] = append(res[ResourceTypeCluster], stack)
-		} else if isNodegroupStack {
-			res[ResourceTypeNodegroup] = append(res[ResourceTypeNodegroup], stack)
-		} else {
-			res[ResourceTypeUnknown] = append(res[ResourceTypeUnknown], stack)
-		}
-	}
-
-	return res
+func IsStackCreated(stack *Stack) bool {
+	return isStackOfStatus(stack, cloudformation.StackStatusCreateComplete)
 }
 
-func GroupStacksByStatus(stacks []*Stack) map[string][]*Stack {
-	res := make(map[string][]*Stack)
-
-	for i := range stacks {
-		stack := stacks[i]
-		if stack == nil {
-			res[StackStatusUnknown] = append(res[StackStatusUnknown], stack)
-			continue
-		}
-		if stack.StackStatus == nil {
-			res[StackStatusUnknown] = append(res[StackStatusUnknown], stack)
-			continue
-		}
-		status := *stack.StackStatus
-		res[status] = append(res[status], stack)
-	}
-
-	return res
+func IsStackDeleted(stack *Stack) bool {
+	return isStackOfStatus(stack, cloudformation.StackStatusDeleteComplete)
 }
 
-func isClusterStack(stack *Stack) bool {
-	if stack == nil {
-		return false
-	}
-	name := stack.StackName
-	if name != nil && strings.HasSuffix(*name, "-cluster") {
+func isStackOfStatus(stack *Stack, status string) bool {
+	if stack != nil && stack.StackStatus != nil && *stack.StackStatus == status {
 		return true
 	}
 	return false
 }
 
-func isNodegroupStack(stack *Stack) bool {
-	if stack == nil {
-		return false
+func IsClusterStack(stack *Stack) bool {
+	if stack != nil && stack.StackName != nil && strings.HasSuffix(*stack.StackName, "-cluster") {
+		return true
 	}
-	name := stack.StackName
-	if name != nil && strings.Contains(*name, "nodegroup-ocean") {
+	return false
+}
+
+func IsNodegroupStack(stack *Stack) bool {
+	if stack != nil && stack.StackName != nil && strings.Contains(*stack.StackName, "nodegroup-ocean") {
 		return true
 	}
 	return false
@@ -193,7 +152,7 @@ func (c *stackCollection) describeStacks() ([]*Stack, error) {
 
 	out := make([]*Stack, 0)
 	for _, s := range stacks {
-		if *s.StackStatus == cloudformation.StackStatusDeleteComplete {
+		if *s.StackStatus == cloudformation.StackStatusDeleteComplete { // TODO REMOVE THIS
 			// Ignore deleted stacks
 			continue
 		}
@@ -210,13 +169,6 @@ func fmtStacksRegexForCluster(name string) string {
 
 func defaultStackStatusFilter() []*string {
 	return aws.StringSlice(allNonDeletedStackStatuses())
-}
-
-func finalizedStackStatuses() []string {
-	return []string{
-		cloudformation.StackStatusDeleteComplete,
-		cloudformation.StackStatusCreateComplete,
-	}
 }
 
 func allNonDeletedStackStatuses() []string {
@@ -282,7 +234,7 @@ func allNonDeletedStackStatuses() []string {
 	*/
 }
 
-func StacksToString(stacks []*Stack) []string {
+func StacksToStrings(stacks []*Stack) []string {
 	out := make([]string, len(stacks))
 	for i := range stacks {
 		out[i] = stackToString(stacks[i])
