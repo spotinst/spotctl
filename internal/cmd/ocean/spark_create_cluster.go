@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/spotinst/spotctl/internal/ocean/ofas/eks"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,23 +11,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spotinst/spotctl/internal/cloud"
-	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
-	"github.com/spotinst/spotctl/internal/kubernetes"
-	"github.com/spotinst/spotctl/internal/log"
-	"github.com/spotinst/spotctl/internal/ocean/ofas"
-	"github.com/spotinst/spotctl/internal/spot"
-	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
-	"github.com/spotinst/spotctl/internal/uuid"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	oceanaws "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/theckman/yacspin"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-
+	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
+	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
+	"github.com/spotinst/spotctl/internal/kubernetes"
+	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotctl/internal/ocean/ofas"
+	"github.com/spotinst/spotctl/internal/ocean/ofas/eks"
+	"github.com/spotinst/spotctl/internal/spot"
+	"github.com/spotinst/spotctl/internal/thirdparty/commands/eksctl"
+	"github.com/spotinst/spotctl/internal/uuid"
 )
 
 type (
@@ -36,8 +35,6 @@ type (
 		cmd  *cobra.Command
 		opts CmdSparkCreateClusterOptions
 	}
-
-	// TODO Refactor cloudformation stuff
 
 	CmdSparkCreateClusterOptions struct {
 		*CmdSparkCreateOptions
