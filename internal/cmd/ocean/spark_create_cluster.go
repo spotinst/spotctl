@@ -285,7 +285,6 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	}
 
 	// TODO Allow creation of resources if previous stacks failed
-	// TODO Test adding an Ocean nodegroup to an existing non eksctl managed EKS cluster
 
 	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
 	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already
@@ -312,7 +311,10 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 
 	nodegroupStacks := eks.FilterStacks(stacks, eks.IsNodegroupStack)
 	createdClusterStacks := eks.FilterStacks(clusterStacks, eks.IsStackCreated)
-	// Only create nodegroup if we don't have any nodegroup stacks, and if we just created the cluster or if it was created previously
+	// Only create nodegroup if we don't have any nodegroup stacks, and if we just created the cluster or if it was created previously (via eksctl (cloudformation stacks))
+	// Note that we cannot add a nodegroup using eksctl unless the cluster was created by (and therefore managed by) eksctl.
+	// To check if a cluster is managed by eksctl, eksctl lists cloudformation stacks and checks for the "alpha.eksctl.io/cluster-name" tag
+	// Therefore, if we have no cluster stacks at all, we know it was not created by eksctl
 	shouldCreateNodegroup := len(nodegroupStacks) == 0 && (shouldCreateCluster || len(createdClusterStacks) > 0)
 	if !shouldCreateNodegroup {
 		if len(nodegroupStacks) > 0 {
