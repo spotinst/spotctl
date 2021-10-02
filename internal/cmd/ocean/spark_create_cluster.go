@@ -275,13 +275,29 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		return fmt.Errorf("could not get stacks for cluster, %w", err)
 	}
 
+	clusterAlreadyExists := false
+	if _, err := eks.GetEKSCluster(cloudProvider, x.opts.Profile, x.opts.Region, x.opts.ClusterName); err != nil {
+		if !errors.As(err, &eks.ErrClusterNotFound{}) {
+			return fmt.Errorf("could not check for existing EKS cluster, %w", err)
+		}
+	} else {
+		clusterAlreadyExists = true
+	}
+
 	// TODO Allow creation of resources if previous stacks failed
+	// TODO Test adding an Ocean nodegroup to an existing non eksctl managed EKS cluster
 
 	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
-	// Only create cluster if we don't have any cluster stacks
-	shouldCreateCluster := len(clusterStacks) == 0
+	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already
+	shouldCreateCluster := len(clusterStacks) == 0 && !clusterAlreadyExists
 	if !shouldCreateCluster {
-		log.Infof("Found cluster stacks, will not create cluster:\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
+		if len(clusterStacks) > 0 {
+			log.Infof("Found cluster stacks, will not create cluster:\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
+		} else if clusterAlreadyExists {
+			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)
+		} else {
+			log.Infof("Will not create EKS cluster")
+		}
 	}
 
 	if shouldCreateCluster {
