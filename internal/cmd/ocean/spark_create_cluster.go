@@ -167,7 +167,6 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
 
-	// TODO Should we be doing this here? (does not play well with beta versions)
 	log.Infof("Updating Ocean controller")
 	if err := updateOceanController(ctx); err != nil {
 		return fmt.Errorf("could not apply ocean update, %w", err)
