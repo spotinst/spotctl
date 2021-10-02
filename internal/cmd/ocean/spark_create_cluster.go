@@ -208,18 +208,18 @@ func (x *CmdSparkCreateClusterOptions) initDefaults(opts *CmdSparkCreateOptions)
 }
 
 func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "cluster id (will be created if empty)") // TODO better explanation that this is an import
-	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "cluster name (will be created if empty)")
+	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "ID of Ocean cluster that should be imported into Ocean for Apache Spark. Note that your machine must be configured to access the cluster.")
+	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "name of cluster that will be created (will be generated if empty)")
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
-	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources (eg: \"Owner=john@example.com,Team=DevOps\")")
-	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version")
+	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources that will be created (eg: \"Owner=john@example.com,Team=DevOps\")")
+	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version of cluster that will be created")
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
 	if x.ClusterID != "" && x.ClusterName != "" {
 		return spotctlerrors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
 	}
-	if x.Region == "" {
+	if x.ClusterID == "" && x.Region == "" {
 		return spotctlerrors.Required(flags.FlagOFASClusterRegion)
 	}
 	return x.CmdSparkCreateOptions.Validate()
