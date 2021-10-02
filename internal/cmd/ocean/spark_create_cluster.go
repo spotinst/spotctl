@@ -275,13 +275,9 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		return fmt.Errorf("could not get stacks for cluster, %w", err)
 	}
 
-	notDeletedStacks := filterStacks(stacks, func(stack *eks.Stack) bool {
-		return !eks.IsStackDeleted(stack)
-	})
-
 	// TODO Allow creation of resources if previous stacks failed
 
-	clusterStacks := filterStacks(notDeletedStacks, eks.IsClusterStack)
+	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
 	// Only create cluster if we don't have any cluster stacks
 	shouldCreateCluster := len(clusterStacks) == 0
 	if !shouldCreateCluster {
@@ -298,8 +294,8 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
 	}
 
-	nodegroupStacks := filterStacks(notDeletedStacks, eks.IsNodegroupStack)
-	createdClusterStacks := filterStacks(clusterStacks, eks.IsStackCreated)
+	nodegroupStacks := eks.FilterStacks(stacks, eks.IsNodegroupStack)
+	createdClusterStacks := eks.FilterStacks(clusterStacks, eks.IsStackCreated)
 	// Only create nodegroup if we don't have any nodegroup stacks, and if we just created the cluster or if it was created previously
 	shouldCreateNodegroup := len(nodegroupStacks) == 0 && (shouldCreateCluster || len(createdClusterStacks) > 0)
 	if !shouldCreateNodegroup {
@@ -321,17 +317,6 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func filterStacks(stacks []*eks.Stack, filter func(stack *eks.Stack) bool) []*eks.Stack {
-	res := make([]*eks.Stack, 0)
-	for i := range stacks {
-		stack := stacks[i]
-		if filter(stack) {
-			res = append(res, stack)
-		}
-	}
-	return res
 }
 
 func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
