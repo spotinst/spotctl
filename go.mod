@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
-	github.com/aws/aws-sdk-go v1.40.48
+	github.com/aws/aws-sdk-go v1.40.54
 	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
@@ -22,7 +22,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.101.0
+	github.com/spotinst/spotinst-sdk-go v1.102.0
 	github.com/spotinst/wave-operator v0.0.0-20210524091717-f8934344b1f2
 	github.com/stretchr/testify v1.7.0
 	github.com/theckman/yacspin v0.8.0
