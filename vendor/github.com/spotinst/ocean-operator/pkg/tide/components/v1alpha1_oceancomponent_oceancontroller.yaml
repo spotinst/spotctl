@@ -1,0 +1,15 @@
+apiVersion: ocean.spot.io/v1alpha1
+kind: OceanComponent
+metadata:
+  name: ocean-controller
+spec:
+  type: Helm
+  name: spotinst-kubernetes-cluster-controller
+  url: https://spotinst.github.io/spotinst-kubernetes-helm-charts
+  state: Present
+  version: 1.0.93
+  values: |
+    secret:
+      enabled: true
+    metrics-server:
+      deployChart: false
