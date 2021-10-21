@@ -505,9 +505,7 @@ func updateOceanController(ctx context.Context) error {
 		return fmt.Errorf("could not get cluster config, %w", err)
 	}
 
-	// TODO Stop using beta when it is out of beta
-	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller-beta/spotinst-kubernetes-cluster-controller-ga.yaml"
-	//const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
+	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
 
 	res, err := http.Get(oceanControllerURL)
 	if err != nil {
