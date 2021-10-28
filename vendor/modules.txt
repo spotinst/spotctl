@@ -54,7 +54,7 @@ github.com/PuerkitoBio/urlesc
 github.com/andybalholm/brotli
 # github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.41.11
+# github.com/aws/aws-sdk-go v1.41.13
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
