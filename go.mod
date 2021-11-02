@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
-	github.com/mholt/archiver/v3 v3.5.0
+	github.com/mholt/archiver/v3 v3.5.1
 	github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.8.1
