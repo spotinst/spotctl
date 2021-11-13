@@ -9,7 +9,7 @@ require (
 	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-ini/ini v1.63.2
+	github.com/go-ini/ini v1.64.0
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-containerregistry v0.5.1
 	github.com/hashicorp/go-multierror v1.1.1
