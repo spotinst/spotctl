@@ -24,10 +24,12 @@ import (
 // Catalog returns the repositories in a registry's catalog.
 func Catalog(src string, opt ...Option) (res []string, err error) {
 	o := makeOptions(opt...)
-	reg, err := name.NewRegistry(src, o.name...)
+	reg, err := name.NewRegistry(src, o.Name...)
 	if err != nil {
 		return nil, err
 	}
 
-	return remote.Catalog(context.TODO(), reg, o.remote...)
+	// This context gets overridden by remote.WithContext, which is set by
+	// crane.WithContext.
+	return remote.Catalog(context.Background(), reg, o.Remote...)
 }
