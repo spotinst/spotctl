@@ -94,7 +94,7 @@ func Deploy(ctx context.Context, namespace string) error {
 	values := jobValues{
 		Name:           fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
 		Namespace:      namespace,
-		ImageDeployer:  "public.ecr.aws/l8m2k1n1/netapp/bigdata-deployer:main", // TODO Temporary
+		ImageDeployer:  "public.ecr.aws/f4k1p1n4/bigdata-deployer:main", // TODO Temporary
 		ServiceAccount: config.ServiceAccountName,
 	}
 
