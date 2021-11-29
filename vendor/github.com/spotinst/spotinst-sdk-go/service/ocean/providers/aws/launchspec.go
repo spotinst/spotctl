@@ -36,6 +36,7 @@ type LaunchSpec struct {
 	Tags                     []*Tag                `json:"tags,omitempty"`
 	AssociatePublicIPAddress *bool                 `json:"associatePublicIpAddress,omitempty"`
 	RestrictScaleDown        *bool                 `json:"restrictScaleDown,omitempty"`
+	LaunchSpecScheduling     *LaunchSpecScheduling `json:"scheduling,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -151,6 +152,40 @@ type TagSelector struct {
 
 type LaunchSpecStrategy struct {
 	SpotPercentage *int `json:"spotPercentage,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecScheduling struct {
+	Tasks []*LaunchSpecTask `json:"tasks,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecTask struct {
+	IsEnabled      *bool       `json:"isEnabled,omitempty"`
+	CronExpression *string     `json:"cronExpression,omitempty"`
+	TaskType       *string     `json:"taskType,omitempty"`
+	Config         *TaskConfig `json:"config,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type TaskConfig struct {
+	TaskHeadrooms []*LaunchSpecTaskHeadroom `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecTaskHeadroom struct {
+	CPUPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	GPUPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	NumOfUnits    *int `json:"numOfUnits,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -520,6 +555,13 @@ func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetScheduling(v *LaunchSpecScheduling) *LaunchSpec {
+	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecScheduling")
+	}
+	return o
+}
+
 // endregion
 
 // region BlockDeviceMapping
@@ -850,6 +892,116 @@ func (o LaunchSpecStrategy) MarshalJSON() ([]byte, error) {
 func (o *LaunchSpecStrategy) SetSpotPercentage(v *int) *LaunchSpecStrategy {
 	if o.SpotPercentage = v; o.SpotPercentage == nil {
 		o.nullFields = append(o.nullFields, "SpotPercentage")
+	}
+	return o
+}
+
+// endregion
+
+//region Scheduling
+
+func (o LaunchSpecScheduling) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecScheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecScheduling) SetTasks(v []*LaunchSpecTask) *LaunchSpecScheduling {
+	if o.Tasks = v; o.Tasks == nil {
+		o.nullFields = append(o.nullFields, "Tasks")
+	}
+	return o
+}
+
+// endregion
+
+//region LaunchSpecTask
+
+func (o LaunchSpecTask) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecTask
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecTask) SetIsEnabled(v *bool) *LaunchSpecTask {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetCronExpression(v *string) *LaunchSpecTask {
+	if o.CronExpression = v; o.CronExpression == nil {
+		o.nullFields = append(o.nullFields, "CronExpression")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetTaskType(v *string) *LaunchSpecTask {
+	if o.TaskType = v; o.TaskType == nil {
+		o.nullFields = append(o.nullFields, "TaskType")
+	}
+	return o
+}
+
+func (o *LaunchSpecTask) SetTaskConfig(v *TaskConfig) *LaunchSpecTask {
+	if o.Config = v; o.Config == nil {
+		o.nullFields = append(o.nullFields, "Config")
+	}
+	return o
+}
+
+// endregion
+
+//region TaskConfig
+
+func (o TaskConfig) MarshalJSON() ([]byte, error) {
+	type noMethod TaskConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *TaskConfig) SetHeadrooms(v []*LaunchSpecTaskHeadroom) *TaskConfig {
+	if o.TaskHeadrooms = v; o.TaskHeadrooms == nil {
+		o.nullFields = append(o.nullFields, "TaskHeadrooms")
+	}
+	return o
+}
+
+// endregion
+
+// region LaunchSpecTaskHeadroom
+
+func (o LaunchSpecTaskHeadroom) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecTaskHeadroom
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecTaskHeadroom) SetCPUPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.CPUPerUnit = v; o.CPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CPUPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetGPUPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.GPUPerUnit = v; o.GPUPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GPUPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetMemoryPerUnit(v *int) *LaunchSpecTaskHeadroom {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *LaunchSpecTaskHeadroom) SetNumOfUnits(v *int) *LaunchSpecTaskHeadroom {
+	if o.NumOfUnits = v; o.NumOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumOfUnits")
 	}
 	return o
 }
