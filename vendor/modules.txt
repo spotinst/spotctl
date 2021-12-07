@@ -205,7 +205,7 @@ github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 ## explicit
 github.com/ghodss/yaml
-# github.com/go-ini/ini v1.64.0
+# github.com/go-ini/ini v1.66.2
 ## explicit
 github.com/go-ini/ini
 # github.com/go-logr/logr v1.2.1

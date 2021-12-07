@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.42.12
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/go-ini/ini v1.64.0
+	github.com/go-ini/ini v1.66.2
 	github.com/go-logr/logr v1.2.1
 	github.com/google/go-containerregistry v0.7.0
 	github.com/hashicorp/go-multierror v1.1.1
