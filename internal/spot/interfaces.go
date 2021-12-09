@@ -31,8 +31,6 @@ type (
 		// Ocean returns an instance of Ocean interface by cloud provider and
 		// orchestrator names.
 		Ocean(provider CloudProviderName, orchestrator OrchestratorName) (OceanInterface, error)
-		// Wave returns an instance of Wave interface
-		Wave() (WaveInterface, error)
 	}
 
 	// OceanInterface defines the interface of the Spot Ocean API.
@@ -108,25 +106,6 @@ type (
 	// concrete implementation should obey.
 	OceanRolloutBuilder interface {
 		Build() (*OceanRollout, error)
-	}
-
-	// WaveInterface defines the interface of the Spot Wave API.
-	WaveInterface interface {
-
-		// ListClusters returns a list of Wave clusters.
-		ListClusters(ctx context.Context, filter *WaveClustersFilter) ([]*WaveCluster, error)
-
-		// GetCluster returns a Wave cluster by ID.
-		GetCluster(ctx context.Context, clusterID string) (*WaveCluster, error)
-
-		// DeleteCluster deletes a Wave cluster by ID.
-		DeleteCluster(ctx context.Context, clusterID string, deleteOcean bool) error
-
-		// ListSparkApplications returns a list of Wave Spark applications.
-		ListSparkApplications(ctx context.Context, filter *SparkApplicationsFilter) ([]*SparkApplication, error)
-
-		// GetSparkApplication returns a Wave Spark application by ID.
-		GetSparkApplication(ctx context.Context, id string) (*SparkApplication, error)
 	}
 
 	// CloudProviderName represents the name of a cloud provider.

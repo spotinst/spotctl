@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spotinst/spotinst-sdk-go/service/ocean"
-	waveService "github.com/spotinst/spotinst-sdk-go/service/wave"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
 )
 
@@ -45,9 +44,4 @@ func (x *apiServices) oceanGCP(orchestrator OrchestratorName) (OceanInterface, e
 	default:
 		return nil, fmt.Errorf("spot: unsupported orchestrator: %s", orchestrator)
 	}
-}
-
-func (x *apiServices) Wave() (WaveInterface, error) {
-	svc := waveService.New(x.session)
-	return &wave{svc}, nil
 }
