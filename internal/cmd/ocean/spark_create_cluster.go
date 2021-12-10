@@ -220,7 +220,7 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources that will be created (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version of cluster that will be created")
-	fs.StringVar(&x.KubeConfigPath, flags.FlagKubeConfigPath, kubernetes.GetDefaultKubeConfigPath(), "path to local kubeconfig")
+	fs.StringVar(&x.KubeConfigPath, flags.FlagOFASKubeConfigPath, kubernetes.GetDefaultKubeConfigPath(), "path to local kubeconfig")
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
@@ -231,7 +231,7 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 		return spotctlerrors.Required(flags.FlagOFASClusterRegion)
 	}
 	if x.KubeConfigPath == "" {
-		return spotctlerrors.Required(flags.FlagKubeConfigPath)
+		return spotctlerrors.Required(flags.FlagOFASKubeConfigPath)
 	}
 	return x.CmdSparkCreateOptions.Validate()
 }

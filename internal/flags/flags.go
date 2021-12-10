@@ -55,10 +55,10 @@ const (
 	FlagOceanRolloutInstanceIDs         string = "instance-ids"
 
 	// Ocean for Apache Spark.
-	FlagOFASClusterRegion string = "region"
-	FlagOFASClusterID     string = "cluster-id"
-	FlagOFASClusterName   string = "cluster-name"
-	FlagKubeConfigPath    string = "kubeconfig"
+	FlagOFASClusterRegion  string = "region"
+	FlagOFASClusterID      string = "cluster-id"
+	FlagOFASClusterName    string = "cluster-name"
+	FlagOFASKubeConfigPath string = "kubeconfig"
 )
 
 func Log(cmd *cobra.Command) {
