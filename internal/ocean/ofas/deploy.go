@@ -76,7 +76,7 @@ func Deploy(ctx context.Context, client kubernetes.Interface, namespace string) 
 	values := jobValues{
 		Name:           fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
 		Namespace:      namespace,
-		ImageDeployer:  "public.ecr.aws/f4k1p1n4/bigdata-deployer:main", // TODO Temporary
+		ImageDeployer:  "public.ecr.aws/f4k1p1n4/bigdata-deployer:main", // TODO(thorsteinn) temporary, will be done from backend
 		ServiceAccount: config.ServiceAccountName,
 	}
 
