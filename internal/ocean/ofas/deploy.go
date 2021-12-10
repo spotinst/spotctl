@@ -83,9 +83,6 @@ type jobValues struct {
 }
 
 func Deploy(ctx context.Context, namespace string) error {
-	// TODO This is temporary
-	// We should call a /deploy API on the backend. The backend will then run the deployment on the cluster
-
 	client, err := kubernetes.GetClient()
 	if err != nil {
 		return fmt.Errorf("could not get kubernetes client, %w", err)
