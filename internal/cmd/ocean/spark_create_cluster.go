@@ -538,7 +538,7 @@ func updateOceanController(ctx context.Context, config *rest.Config) error {
 			log.Debugf("Whitespace match: %s", o)
 			continue
 		}
-		err := kubernetes.DoServerSideApply(ctx, config, o, log.GetLogrLogger())
+		err := kubernetes.DoServerSideApply(ctx, config, o)
 		if err != nil {
 			return fmt.Errorf("error applying object from manifests <<%s>>, %w", o, err)
 		}
