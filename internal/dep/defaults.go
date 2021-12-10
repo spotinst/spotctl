@@ -29,7 +29,7 @@ var (
 )
 
 // DefaultDependencyListKubernetes returns the default list of packages needed
-// to work with Kubernetes-based products, such as Ocean and Wave.
+// to work with Kubernetes-based products, such as Ocean.
 func DefaultDependencyListKubernetes() []Dependency {
 	return []Dependency{
 		DependencyKubectl,
