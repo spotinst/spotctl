@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/pflag"
 	oceanaws "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/theckman/yacspin"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"k8s.io/client-go/rest"
 
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
@@ -43,12 +43,13 @@ type (
 		Region            string
 		Tags              []string
 		KubernetesVersion string
+		KubeConfigPath    string
 	}
 )
 
 const (
 	defaultK8sVersion   = "1.21"
-	spotSystemNamespace = "spot-system" // TODO Get this from deployer job config
+	spotSystemNamespace = "spot-system"
 )
 
 var (
@@ -161,29 +162,39 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		x.opts.ClusterName = controllerClusterID
 	}
 
-	if err := ofas.ValidateClusterContext(ctx, x.opts.ClusterName); err != nil {
+	kubeConfig, err := kubernetes.GetConfig(x.opts.KubeConfigPath)
+	if err != nil {
+		return fmt.Errorf("could not get kubeconfig, %w", err)
+	}
+
+	client, err := kubernetes.GetClient(kubeConfig)
+	if err != nil {
+		return fmt.Errorf("could not get kubernetes client, %w", err)
+	}
+
+	if err := ofas.ValidateClusterContext(ctx, client, x.opts.ClusterName); err != nil {
 		return fmt.Errorf("cluster context validation failure, %w", err)
 	}
 
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
 
 	log.Infof("Updating Ocean controller")
-	if err := updateOceanController(ctx); err != nil {
+	if err := updateOceanController(ctx, kubeConfig); err != nil {
 		return fmt.Errorf("could not apply ocean update, %w", err)
 	}
 
 	log.Infof("Creating namespace %s", spotSystemNamespace)
-	if err := kubernetes.EnsureNamespace(ctx, spotSystemNamespace); err != nil {
+	if err := kubernetes.EnsureNamespace(ctx, client, spotSystemNamespace); err != nil {
 		return fmt.Errorf("could not create namespace, %w", err)
 	}
 
 	log.Infof("Creating deployer RBAC")
-	if err := ofas.CreateDeployerRBAC(ctx, spotSystemNamespace); err != nil {
+	if err := ofas.CreateDeployerRBAC(ctx, client, spotSystemNamespace); err != nil {
 		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 
 	spinner := startSpinnerWithMessage("Installing Ocean for Apache Spark")
-	if err := ofas.Deploy(ctx, spotSystemNamespace); err != nil {
+	if err := ofas.Deploy(ctx, client, spotSystemNamespace); err != nil {
 		stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installation failure", true)
 		return fmt.Errorf("could not deploy, %w", err)
 	}
@@ -209,6 +220,7 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources that will be created (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version of cluster that will be created")
+	fs.StringVar(&x.KubeConfigPath, flags.FlagKubeConfigPath, kubernetes.GetDefaultKubeConfigPath(), "path to local kubeconfig")
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
@@ -217,6 +229,9 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 	}
 	if x.ClusterID == "" && x.Region == "" {
 		return spotctlerrors.Required(flags.FlagOFASClusterRegion)
+	}
+	if x.KubeConfigPath == "" {
+		return spotctlerrors.Required(flags.FlagKubeConfigPath)
 	}
 	return x.CmdSparkCreateOptions.Validate()
 }
@@ -495,12 +510,7 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	return args
 }
 
-func updateOceanController(ctx context.Context) error {
-	conf, err := config.GetConfig()
-	if err != nil {
-		return fmt.Errorf("could not get cluster config, %w", err)
-	}
-
+func updateOceanController(ctx context.Context, config *rest.Config) error {
 	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
 
 	res, err := http.Get(oceanControllerURL)
@@ -528,7 +538,7 @@ func updateOceanController(ctx context.Context) error {
 			log.Debugf("Whitespace match: %s", o)
 			continue
 		}
-		err := kubernetes.DoServerSideApply(ctx, conf, o, log.GetLogrLogger())
+		err := kubernetes.DoServerSideApply(ctx, config, o, log.GetLogrLogger())
 		if err != nil {
 			return fmt.Errorf("error applying object from manifests <<%s>>, %w", o, err)
 		}

@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.3.0
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/kr/pty v1.1.5 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
@@ -36,5 +37,4 @@ require (
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.4
 	k8s.io/client-go v0.22.2
-	sigs.k8s.io/controller-runtime v0.10.3
 )

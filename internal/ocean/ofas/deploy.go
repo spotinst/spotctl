@@ -14,8 +14,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	yamlutil "k8s.io/apimachinery/pkg/util/yaml"
+	"k8s.io/client-go/kubernetes"
 
-	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/ocean/ofas/config"
 	"github.com/spotinst/spotctl/internal/uuid"
@@ -30,12 +30,7 @@ const (
 	pollTimeout  = 5 * time.Minute
 )
 
-func ValidateClusterContext(ctx context.Context, clusterIdentifier string) error {
-	client, err := kubernetes.GetClient()
-	if err != nil {
-		return fmt.Errorf("could not get kubernetes client, %w", err)
-	}
-
+func ValidateClusterContext(ctx context.Context, client kubernetes.Interface, clusterIdentifier string) error {
 	cm, err := client.CoreV1().ConfigMaps(spotConfigMapNamespace).Get(ctx, spotConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("could not get ocean configuration, %w", err)
@@ -49,12 +44,7 @@ func ValidateClusterContext(ctx context.Context, clusterIdentifier string) error
 	return nil
 }
 
-func CreateDeployerRBAC(ctx context.Context, namespace string) error {
-	client, err := kubernetes.GetClient()
-	if err != nil {
-		return fmt.Errorf("could not get kubernetes client, %w", err)
-	}
-
+func CreateDeployerRBAC(ctx context.Context, client kubernetes.Interface, namespace string) error {
 	sa, crb, err := config.GetDeployerRBAC(namespace)
 	if err != nil {
 		return fmt.Errorf("could not get deployer rbac objects, %w", err)
@@ -82,12 +72,7 @@ type jobValues struct {
 	ServiceAccount  string
 }
 
-func Deploy(ctx context.Context, namespace string) error {
-	client, err := kubernetes.GetClient()
-	if err != nil {
-		return fmt.Errorf("could not get kubernetes client, %w", err)
-	}
-
+func Deploy(ctx context.Context, client kubernetes.Interface, namespace string) error {
 	values := jobValues{
 		Name:           fmt.Sprintf("ofas-deploy-%s", uuid.NewV4().Short()),
 		Namespace:      namespace,

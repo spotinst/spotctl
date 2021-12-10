@@ -58,6 +58,7 @@ const (
 	FlagOFASClusterRegion string = "region"
 	FlagOFASClusterID     string = "cluster-id"
 	FlagOFASClusterName   string = "cluster-name"
+	FlagKubeConfigPath    string = "kubeconfig"
 )
 
 func Log(cmd *cobra.Command) {
