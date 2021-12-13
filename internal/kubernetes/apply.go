@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -12,17 +11,18 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/discovery/cached/memory"
-
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
+
+	"github.com/spotinst/spotctl/internal/log"
 )
 
 const Owner = "spotctl"
 
 var decUnstructured = k8syaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
 
-func DoServerSideApply(ctx context.Context, cfg *rest.Config, content string, logger logr.Logger) error {
+func DoServerSideApply(ctx context.Context, cfg *rest.Config, content string) error {
 
 	// RESTMapper will find group-version-resource
 	dc, err := discovery.NewDiscoveryClientForConfig(cfg)
@@ -71,7 +71,7 @@ func DoServerSideApply(ctx context.Context, cfg *rest.Config, content string, lo
 	//  Create or Update the object with SSA
 	//  types.ApplyPatchType indicates SSA.
 	//  FieldManager specifies the field owner ID.
-	logger.Info("applying object", "name", obj.GetName())
+	log.Infof("Applying object (name: %s, kind: %s)", obj.GetName(), obj.GetKind())
 	force := true
 	_, err = dri.Patch(ctx, obj.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{
 		FieldManager: Owner,
