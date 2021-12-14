@@ -84,6 +84,7 @@ func (x *CmdDescribeClusterKubernetes) validate(ctx context.Context) error {
 func (x *CmdDescribeClusterKubernetes) run(ctx context.Context) error {
 	spotClientOpts := []spot.ClientOption{
 		spot.WithCredentialsProfile(x.opts.Profile),
+		spot.WithDryRun(x.opts.DryRun),
 	}
 
 	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)

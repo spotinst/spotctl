@@ -109,6 +109,7 @@ func (x *Cmd) configureCredentialsSpotinst(ctx context.Context) error {
 				// Instantiate a Spotinst client instance.
 				spotClientOpts := []spot.ClientOption{
 					spot.WithCredentialsStatic(x.opts.CredentialsSpotinst.Token, ""),
+					spot.WithDryRun(x.opts.DryRun),
 				}
 
 				spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)

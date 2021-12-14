@@ -54,7 +54,6 @@ func New(options ...ClientOption) Client {
 	{
 		if opts.DryRun {
 			cfg.HTTPClient.Transport = new(roundTripperMock)
-			cfg.WithCredentials(credentials.NewStaticCredentials("dry-run", "dry-run"))
 			log.Debugf("Configured dry-run mode")
 		}
 	}
