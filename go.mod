@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
-	github.com/aws/aws-sdk-go v1.42.22
+	github.com/aws/aws-sdk-go v1.42.23
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.66.2
@@ -27,7 +27,6 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.107.0
 	github.com/stretchr/testify v1.7.0
 	github.com/theckman/yacspin v0.13.2
-	golang.org/x/net v0.0.0-20211111160137-58aab5ef257a // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
