@@ -3,12 +3,18 @@
 // project. Specifically this project borrows the default character sets, and
 // color mappings to github.com/fatih/color colors, from that project.
 //
-// This also supports an alternate mode of operation for Winodws OS and dumb
-// terminals. This is discovered automatically when creating the spinner.
+// This spinner should support all major operating systems, and is tested
+// against Linux, MacOS, and Windows.
+//
+// This spinner also supports an alternate mode of operation when the TERM
+// environment variable is set to "dumb". This is discovered automatically when
+// constructing the spinner.
 //
 // Within the yacspin package there are some default spinners stored in the
-// yacspin.CharSets variable, but you can also provide your own. There is also a
-// list of known colors in the yacspin.ValidColors variable.
+// yacspin.CharSets variable, and you can also provide your own. There is also a
+// list of known colors in the yacspin.ValidColors variable, if you'd like to
+// see what's supported. If you've used github.com/fatih/color before, they
+// should look familiar.
 //
 //		cfg := yacspin.Config{
 //			Frequency:     100 * time.Millisecond,
@@ -33,20 +39,26 @@
 //		time.Sleep(2 * time.Second)
 //
 //		spinner.Stop()
+//
+// Check out the Config struct to see all of the possible configuration options
+// supported by the Spinner.
 package yacspin
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-isatty"
 	"github.com/mattn/go-runewidth"
-	"github.com/pkg/errors"
 )
 
 type character struct {
@@ -82,24 +94,30 @@ type Config struct {
 	// Frequency specifies how often to animate the spinner. Optimal value
 	// depends on the character set you use.
 	//
-	// Note: This is a required value (cannot be 0)
+	// Note: This is a required value (cannot be 0).
 	Frequency time.Duration
 
-	// Delay is deprecated by the Frequency configuration field, with Frequency
-	// taking precedent if both are present.
-	Delay time.Duration
-
 	// Writer is the place where we are outputting the spinner, and can't be
-	// changed on the fly. If omitted, this defaults to os.Stdout.
+	// changed after the *Spinner has been constructed. If omitted (nil), this
+	// defaults to os.Stdout.
 	Writer io.Writer
 
-	// HideCursor describes whether the cursor should be hidden by the spinner.
-	// If it is hidden, it will be restored when the spinner stops. This can't
-	// be changed on the fly.
+	// HideCursor describes whether the cursor should be hidden by the spinner
+	// while animating. If it is hidden, it will be restored when the spinner
+	// stops. This can't be changed after the *Spinner has been constructed.
+	//
+	// Please note, if the program crashes or is killed you may need to reset
+	// your terminal for the cursor to appear again.
 	HideCursor bool
 
+	// SpinnerAtEnd configures the spinner to render the animation at the end of
+	// the line instead of the beginning. The default behavior is to render the
+	// animated spinner at the beginning of the line.
+	SpinnerAtEnd bool
+
 	// ColorAll describes whether to color everything (all) or just the spinner
-	// character(s). This cannot be changed.
+	// character(s). This cannot be changed after the *Spinner has been
+	// constructed.
 	ColorAll bool
 
 	// Colors are the colors used for the different printed messages. This
@@ -110,30 +128,45 @@ type Config struct {
 	CharSet []string
 
 	// Prefix is the string printed immediately before the spinner.
+	//
+	// If SpinnerAtEnd is set to true, it's recommended that this string start
+	// with a space character (` `).
 	Prefix string
 
-	// Suffix is the string printed immediately after the spinner. It's
-	// recommended that this string starts with an space ` ` character.
+	// Suffix is the string printed immediately after the spinner and before the
+	// message.
+	//
+	// If SpinnerAtEnd is set to false, it's recommended that this string starts
+	// with an space character (` `).
 	Suffix string
 
 	// SuffixAutoColon configures whether the spinner adds a colon after the
 	// suffix automatically. If there is a message, a colon followed by a space
 	// is added to the suffix. Otherwise, if there is no message the colon is
 	// omitted.
+	//
+	// If SpinnerAtEnd is set to true, this option is ignored.
 	SuffixAutoColon bool
 
-	// Message is the string printed after the suffix. If a suffix is present,
-	// `: ` is appended to the suffix before printing the message. It results in
-	// a message like:
+	// Message is the message string printed by the spinner. If SpinnerAtEnd is
+	// set to false and SuffixAutoColon is set to true, the printed line will
+	// look like:
 	//
-	// <prefix><spinner><suffix>: <message>
+	//    <prefix><spinner><suffix>: <message>
+	//
+	// If SpinnerAtEnd is set to true, the printed line will instead look like
+	// this:
+	//
+	//    <message><prefix><spinner><suffix>
+	//
+	// In this case, it may be preferred to set the Prefix to empty space (` `).
 	Message string
 
 	// StopMessage is the message used when Stop() is called.
 	StopMessage string
 
 	// StopCharacter is spinner character used when Stop() is called.
-	// Recommended character is ✓.
+	// Recommended character is ✓, and can be more than just one character.
 	StopCharacter string
 
 	// StopColors are the colors used for the Stop() printed line. This respects
@@ -143,26 +176,36 @@ type Config struct {
 	// StopFailMessage is the message used when StopFail() is called.
 	StopFailMessage string
 
-	// StopFailCharacter is the spinner character used when StopFail() is called.
-	// Recommended character is ✗.
+	// StopFailCharacter is the spinner character used when StopFail() is
+	// called. Recommended character is ✗, and can be more than just one
+	// character.
 	StopFailCharacter string
 
 	// StopFailColors are the colors used for the StopFail() printed line. This
 	// respects the ColorAll field.
 	StopFailColors []string
+
+	// NotTTY tells the spinner that the Writer should not be treated as a TTY.
+	// This results in the animation being disabled, with the animation only
+	// happening whenever the data is updated. This mode also renders each
+	// update on new line, versus reusing the current line.
+	NotTTY bool
 }
 
-// Spinner is the struct type representing a spinner. It's configured via the
-// Config type, and controlled via its methods. Some configuration can also be
-// updated via methods.
+// Spinner is a type representing an animated CLi terminal spinner. It's
+// configured via the Config struct type, and controlled via its methods. Some
+// of its configuration can also be updated via methods.
 //
 // Note: You need to use New() to construct a *Spinner.
 type Spinner struct {
 	writer          io.Writer
+	buffer          *bytes.Buffer
 	colorAll        bool
 	cursorHidden    bool
 	suffixAutoColon bool
 	isDumbTerm      bool
+	isNotTTY        bool
+	spinnerAtEnd    bool
 
 	status       *uint32
 	lastPrintLen int
@@ -202,27 +245,30 @@ const (
 	statusUnpausing
 )
 
-// New creates a new unstarted spinner.
+// New creates a new unstarted spinner. If stdout does not appear to be a TTY,
+// this constructor implicitly sets cfg.NotTTY to true.
 func New(cfg Config) (*Spinner, error) {
-	if cfg.Delay > 0 && cfg.Frequency == 0 {
-		cfg.Frequency = cfg.Delay
-	}
-
 	if cfg.Frequency < 1 {
 		return nil, errors.New("cfg.Frequency must be greater than 0")
 	}
 
+	if !isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		cfg.NotTTY = true
+	}
+
 	s := &Spinner{
+		buffer:            bytes.NewBuffer(make([]byte, 2048)),
 		mu:                &sync.Mutex{},
 		frequency:         cfg.Frequency,
 		status:            uint32Ptr(0),
-		frequencyUpdateCh: make(chan time.Duration),
+		frequencyUpdateCh: make(chan time.Duration), // use unbuffered for now to avoid .Frequency() panic
 		dataUpdateCh:      make(chan struct{}),
 
 		colorAll:        cfg.ColorAll,
 		cursorHidden:    cfg.HideCursor,
+		spinnerAtEnd:    cfg.SpinnerAtEnd,
 		suffixAutoColon: cfg.SuffixAutoColon,
-		isDumbTerm:      os.Getenv("TERM") == "dumb" || runtime.GOOS == "windows",
+		isDumbTerm:      os.Getenv("TERM") == "dumb",
 		colorFn:         fmt.Sprintf,
 		stopColorFn:     fmt.Sprintf,
 		stopFailColorFn: fmt.Sprintf,
@@ -247,8 +293,13 @@ func New(cfg Config) (*Spinner, error) {
 	// can only error if the charset is empty, and we prevent that above
 	_ = s.CharSet(cfg.CharSet)
 
+	if cfg.NotTTY {
+		s.isNotTTY = true
+		s.isDumbTerm = true
+	}
+
 	if cfg.Writer == nil {
-		cfg.Writer = os.Stdout
+		cfg.Writer = colorable.NewColorableStdout()
 	}
 
 	s.writer = cfg.Writer
@@ -292,18 +343,8 @@ func (s *Spinner) notifyDataChange() {
 	}
 }
 
-// Active is deprecated and will be removed in a future release. It was replaced
-// by the Status() method.
-//
-// Active returns whether the spinner is active. Active means the spinner is
-// either starting or running.
-func (s *Spinner) Active() bool {
-	v := atomic.LoadUint32(s.status)
-	return v == 1 || v == 2
-}
-
-// SpinnerStatus describes the status of the spinner. See the possible constant
-// values.
+// SpinnerStatus describes the status of the spinner. See the package constants
+// for the list of all possible statuses
 type SpinnerStatus uint32
 
 const (
@@ -325,7 +366,7 @@ const (
 	// SpinnerPaused is a paused spinner
 	SpinnerPaused
 
-	// SpinnerUnpausing is a unpausing spinner
+	// SpinnerUnpausing is an unpausing spinner
 	SpinnerUnpausing
 )
 
@@ -350,20 +391,14 @@ func (s SpinnerStatus) String() string {
 	}
 }
 
-// Status returns the current status of the internal state machine. Returned
-// value is of type SpinnerStatus which has package constants available.
+// Status returns the current status of the spinner. The returned value is of
+// type SpinnerStatus, which can be compared against the exported Spinner*
+// package-level constants (e.g., SpinnerRunning).
 func (s *Spinner) Status() SpinnerStatus {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if s.status == nil {
-		panic("status field is nil")
-	}
-
 	return SpinnerStatus(atomic.LoadUint32(s.status))
 }
 
-// Start begins the spinner on the Writer in the Config provided to New(). Onnly
+// Start begins the spinner on the Writer in the Config provided to New(). Only
 // possible error is if the spinner is already runninng.
 func (s *Spinner) Start() error {
 	// move us to the starting state
@@ -371,15 +406,22 @@ func (s *Spinner) Start() error {
 		return errors.New("spinner already running or shutting down")
 	}
 
-	// we now have atomic guarantees of no other threads starting or running
+	// we now have atomic guarantees of no other goroutines starting or running
 
 	s.mu.Lock()
 
-	s.frequencyUpdateCh = make(chan time.Duration, 1)
+	s.frequencyUpdateCh = make(chan time.Duration, 4)
 	s.dataUpdateCh, s.cancelCh = make(chan struct{}, 1), make(chan struct{}, 1)
+
+	if s.isNotTTY {
+		// hack to prevent the animation from running if not a TTY
+		s.frequency = time.Duration(math.MaxInt64)
+	}
 
 	s.mu.Unlock()
 
+	// because of the atomic swap above, we know it's safe to mutate these
+	// values outside of mutex
 	s.doneCh = make(chan struct{})
 	s.pauseCh = make(chan struct{}) // unbuffered since we want this to be synchronous
 
@@ -394,8 +436,8 @@ func (s *Spinner) Start() error {
 }
 
 // Pause puts the spinner in a state where it no longer animates or renders
-// updates to data. This function blocks until the spinner's internal goroutine
-// enters a paused state.
+// updates to data. This function blocks until the spinner's internal painting
+// goroutine enters a paused state.
 //
 // If you want to make a few configuration changes and have them to appear at
 // the same time, like changing the suffix, message, and color, you can Pause()
@@ -411,7 +453,7 @@ func (s *Spinner) Pause() error {
 	// set up the channels the painter will use
 	s.unpauseCh, s.unpausedCh = make(chan struct{}), make(chan struct{})
 
-	// inform the painter to pause
+	// inform the painter to pause as a blocking send
 	s.pauseCh <- struct{}{}
 
 	if !atomic.CompareAndSwapUint32(s.status, statusPausing, statusPaused) {
@@ -423,7 +465,7 @@ func (s *Spinner) Pause() error {
 
 // Unpause returns the spinner back to a running state after pausing. See
 // Pause() documentation for more detail. This function blocks until the
-// spinner's internal goroutine acknowledges the request to unpause.
+// spinner's internal painting goroutine acknowledges the request to unpause.
 //
 // If the spinner is not paused this returns an error.
 func (s *Spinner) Unpause() error {
@@ -499,6 +541,8 @@ func (s *Spinner) stop(fail bool) error {
 
 	s.mu.Unlock()
 
+	// because of atomic swaps and channel receive above we know it's
+	// safe to mutate these fields outside of the mutex
 	s.index = 0
 	s.cancelCh = nil
 	s.doneCh = nil
@@ -548,14 +592,15 @@ func (s *Spinner) painter(cancel, dataUpdate, pause <-chan struct{}, done chan<-
 		case <-timer.C:
 			lastTick = time.Now()
 
-			s.paintUpdate(timer, false)
+			s.paintUpdate(timer, true)
 
 		case <-pause:
 			<-s.unpauseCh
 			close(s.unpausedCh)
 
 		case <-dataUpdate:
-			s.paintUpdate(timer, true)
+			// if this is not a TTY: animate the spinner on the data update
+			s.paintUpdate(timer, s.isNotTTY)
 
 		case frequency := <-frequencyUpdate:
 			handleFrequencyUpdate(frequency, timer, lastTick)
@@ -569,11 +614,10 @@ func (s *Spinner) painter(cancel, dataUpdate, pause <-chan struct{}, done chan<-
 
 			return
 		}
-
 	}
 }
 
-func (s *Spinner) paintUpdate(timer *time.Timer, dataUpdate bool) {
+func (s *Spinner) paintUpdate(timer *time.Timer, animate bool) {
 	s.mu.Lock()
 
 	p := s.prefix
@@ -584,13 +628,12 @@ func (s *Spinner) paintUpdate(timer *time.Timer, dataUpdate bool) {
 	d := s.frequency
 	index := s.index
 
-	if !dataUpdate {
+	if animate {
 		s.index++
 
 		if s.index == len(s.chars) {
 			s.index = 0
 		}
-
 	} else {
 		// for data updates use the last spinner char
 		index--
@@ -604,27 +647,28 @@ func (s *Spinner) paintUpdate(timer *time.Timer, dataUpdate bool) {
 
 	s.mu.Unlock()
 
+	defer s.buffer.Reset()
+
 	if !s.isDumbTerm {
-		if err := s.erase(); err != nil {
+		if err := erase(s.buffer); err != nil {
 			panic(fmt.Sprintf("failed to erase line: %v", err))
 		}
 
 		if s.cursorHidden {
-			if err := s.hideCursor(); err != nil {
+			if err := hideCursor(s.buffer); err != nil {
 				panic(fmt.Sprintf("failed to hide cursor: %v", err))
 			}
 		}
 
-		if _, err := paint(s.writer, mw, c, p, m, suf, s.suffixAutoColon, s.colorAll, cFn); err != nil {
+		if _, err := paint(s.buffer, mw, c, p, m, suf, s.suffixAutoColon, s.colorAll, s.spinnerAtEnd, false, s.isNotTTY, cFn); err != nil {
 			panic(fmt.Sprintf("failed to paint line: %v", err))
 		}
 	} else {
-		if err := s.eraseWindows(); err != nil {
+		if err := s.eraseDumbTerm(s.buffer); err != nil {
 			panic(fmt.Sprintf("failed to erase line: %v", err))
 		}
 
-		n, err := paint(s.writer, mw, c, p, m, suf, s.suffixAutoColon, false, fmt.Sprintf)
-
+		n, err := paint(s.buffer, mw, c, p, m, suf, s.suffixAutoColon, false, s.spinnerAtEnd, false, s.isNotTTY, fmt.Sprintf)
 		if err != nil {
 			panic(fmt.Sprintf("failed to paint line: %v", err))
 		}
@@ -632,7 +676,13 @@ func (s *Spinner) paintUpdate(timer *time.Timer, dataUpdate bool) {
 		s.lastPrintLen = n
 	}
 
-	if !dataUpdate {
+	if s.buffer.Len() > 0 {
+		if _, err := s.writer.Write(s.buffer.Bytes()); err != nil {
+			panic(fmt.Sprintf("failed to output buffer to writer: %v", err))
+		}
+	}
+
+	if animate {
 		timer.Reset(d)
 	}
 }
@@ -660,64 +710,71 @@ func (s *Spinner) paintStop(chanOk bool) {
 
 	s.mu.Unlock()
 
+	defer s.buffer.Reset()
+
 	if !s.isDumbTerm {
-		if err := s.erase(); err != nil {
+		if err := erase(s.buffer); err != nil {
 			panic(fmt.Sprintf("failed to erase line: %v", err))
 		}
 
 		if s.cursorHidden {
-			if err := s.unhideCursor(); err != nil {
+			if err := unhideCursor(s.buffer); err != nil {
 				panic(fmt.Sprintf("failed to hide cursor: %v", err))
 			}
 		}
 
-		if c.Size == 0 && len(m) == 0 {
-			return
+		if c.Size > 0 || len(m) > 0 {
+			// paint the line with a newline as it's the final line
+			if _, err := paint(s.buffer, mw, c, p, m, suf, s.suffixAutoColon, s.colorAll, s.spinnerAtEnd, true, s.isNotTTY, cFn); err != nil {
+				panic(fmt.Sprintf("failed to paint line: %v", err))
+			}
 		}
-
-		// paint the line with a newline as it's the final line
-		if _, err := paint(s.writer, mw, c, p, m+"\n", suf, s.suffixAutoColon, s.colorAll, cFn); err != nil {
-			panic(fmt.Sprintf("failed to paint line: %v", err))
-		}
-
 	} else {
-		if err := s.eraseWindows(); err != nil {
+		if err := s.eraseDumbTerm(s.buffer); err != nil {
 			panic(fmt.Sprintf("failed to erase line: %v", err))
 		}
 
-		if c.Size == 0 && len(m) == 0 {
-			return
-		}
-
-		if _, err := paint(s.writer, mw, c, p, m+"\n", suf, s.suffixAutoColon, false, fmt.Sprintf); err != nil {
-			panic(fmt.Sprintf("failed to paint line: %v", err))
+		if c.Size > 0 || len(m) > 0 {
+			if _, err := paint(s.buffer, mw, c, p, m, suf, s.suffixAutoColon, false, s.spinnerAtEnd, true, s.isNotTTY, fmt.Sprintf); err != nil {
+				panic(fmt.Sprintf("failed to paint line: %v", err))
+			}
 		}
 
 		s.lastPrintLen = 0
 	}
+
+	if s.buffer.Len() > 0 {
+		if _, err := s.writer.Write(s.buffer.Bytes()); err != nil {
+			panic(fmt.Sprintf("failed to output buffer to writer: %v", err))
+		}
+	}
 }
 
 // erase clears the line
-func (s *Spinner) erase() error {
-	_, err := fmt.Fprint(s.writer, "\r\033[K\r")
+func erase(w io.Writer) error {
+	_, err := fmt.Fprint(w, "\r\033[K\r")
 	return err
 }
 
-// eraseWindows clears the line on Windows
-func (s *Spinner) eraseWindows() error {
+// eraseDumbTerm clears the line on dumb terminals
+func (s *Spinner) eraseDumbTerm(w io.Writer) error {
+	if s.isNotTTY {
+		return nil
+	}
+
 	clear := "\r" + strings.Repeat(" ", s.lastPrintLen) + "\r"
 
-	_, err := fmt.Fprint(s.writer, clear)
+	_, err := fmt.Fprint(w, clear)
 	return err
 }
 
-func (s *Spinner) hideCursor() error {
-	_, err := fmt.Fprint(s.writer, "\r\033[?25l\r")
+func hideCursor(w io.Writer) error {
+	_, err := fmt.Fprint(w, "\r\033[?25l\r")
 	return err
 }
 
-func (s *Spinner) unhideCursor() error {
-	_, err := fmt.Fprint(s.writer, "\r\033[?25h\r")
+func unhideCursor(w io.Writer) error {
+	_, err := fmt.Fprint(w, "\r\033[?25h\r")
 	return err
 }
 
@@ -728,41 +785,62 @@ func padChar(char character, maxWidth int) string {
 	return char.Value + strings.Repeat(" ", padSize)
 }
 
-// paint writes a single line to the s.writer, using the provided character,
-// message, and color function
-func paint(w io.Writer, maxWidth int, char character, prefix, message, suffix string, suffixAutoColon, colorAll bool, colorFn func(format string, a ...interface{}) string) (int, error) {
-	if char.Size == 0 {
+// paint writes a single line to the w, using the provided character, message,
+// and color function
+func paint(w io.Writer, maxWidth int, char character, prefix, message, suffix string, suffixAutoColon, colorAll, spinnerAtEnd, finalPaint, notTTY bool, colorFn func(format string, a ...interface{}) string) (int, error) {
+	var output string
+
+	switch char.Size {
+	case 0:
 		if colorAll {
-			return fmt.Fprint(w, colorFn(message))
+			output = colorFn(message)
+			break
 		}
 
-		return fmt.Fprint(w, message)
-	}
+		output = message
 
-	c := padChar(char, maxWidth)
+	default:
+		c := padChar(char, maxWidth)
 
-	if suffixAutoColon {
-		if len(suffix) > 0 && len(message) > 0 && message != "\n" {
-			suffix += ": "
+		if spinnerAtEnd {
+			if colorAll {
+				output = colorFn("%s%s%s%s", message, prefix, c, suffix)
+				break
+			}
+
+			output = fmt.Sprintf("%s%s%s%s", message, prefix, colorFn(c), suffix)
+			break
 		}
+
+		if suffixAutoColon { // also implicitly !spinnerAtEnd
+			if len(suffix) > 0 && len(message) > 0 && message != "\n" {
+				suffix += ": "
+			}
+		}
+
+		if colorAll {
+			output = colorFn("%s%s%s%s", prefix, c, suffix, message)
+			break
+		}
+
+		output = fmt.Sprintf("%s%s%s%s", prefix, colorFn(c), suffix, message)
 	}
 
-	if colorAll {
-		return fmt.Fprint(w, colorFn("%s%s%s%s", prefix, c, suffix, message))
+	if finalPaint || notTTY {
+		output += "\n"
 	}
 
-	return fmt.Fprintf(w, "%s%s%s%s", prefix, colorFn(c), suffix, message)
-}
-
-// Delay is deprecated in favor of Frequency.
-func (s *Spinner) Delay(d time.Duration) error {
-	return s.Frequency(d)
+	return fmt.Fprint(w, output)
 }
 
 // Frequency updates the frequency of the spinner being animated.
 func (s *Spinner) Frequency(d time.Duration) error {
 	if d < 1 {
 		return errors.New("duration must be greater than 0")
+	}
+
+	if s.isNotTTY {
+		return nil
 	}
 
 	s.mu.Lock()
@@ -789,8 +867,8 @@ func (s *Spinner) Prefix(prefix string) {
 	s.notifyDataChange()
 }
 
-// Suffix updates the Suffix after the spinner character. It's recommended that
-// this start with an empty space.
+// Suffix updates the Suffix printed after the spinner character and before the
+// message. It's recommended that this start with an empty space.
 func (s *Spinner) Suffix(suffix string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -800,7 +878,7 @@ func (s *Spinner) Suffix(suffix string) {
 	s.notifyDataChange()
 }
 
-// Message updates the Message displayed after he suffix.
+// Message updates the Message displayed after the suffix.
 func (s *Spinner) Message(message string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -818,7 +896,7 @@ func (s *Spinner) Message(message string) {
 func (s *Spinner) Colors(colors ...string) error {
 	colorFn, err := colorFunc(colors...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to build color function")
+		return fmt.Errorf("failed to build color function: %w", err)
 	}
 
 	s.mu.Lock()
@@ -843,10 +921,13 @@ func (s *Spinner) StopMessage(message string) {
 
 // StopColors updates the colors used for the stop message. See Colors() method
 // documentation for more context.
+//
+// StopFailColors() is the method to control the colors in the failed stop
+// message.
 func (s *Spinner) StopColors(colors ...string) error {
 	colorFn, err := colorFunc(colors...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to build stop color function")
+		return fmt.Errorf("failed to build stop color function: %w", err)
 	}
 
 	s.mu.Lock()
@@ -859,8 +940,8 @@ func (s *Spinner) StopColors(colors ...string) error {
 	return nil
 }
 
-// StopCharacter sets the single "character" to use for the spinner. Recommended
-// character is ✓.
+// StopCharacter sets the single "character" to use for the spinner when
+// stopping. Recommended character is ✓.
 func (s *Spinner) StopCharacter(char string) {
 	n := runewidth.StringWidth(char)
 
@@ -891,7 +972,7 @@ func (s *Spinner) StopFailMessage(message string) {
 func (s *Spinner) StopFailColors(colors ...string) error {
 	colorFn, err := colorFunc(colors...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to build stop fail color function")
+		return fmt.Errorf("failed to build stop fail color function: %w", err)
 	}
 
 	s.mu.Lock()
@@ -904,8 +985,8 @@ func (s *Spinner) StopFailColors(colors ...string) error {
 	return nil
 }
 
-// StopFailCharacter sets the single "character" to use for the spinner. Recommended
-// character is ✗.
+// StopFailCharacter sets the single "character" to use for the spinner when
+// stopping for a failure. Recommended character is ✗.
 func (s *Spinner) StopFailCharacter(char string) {
 	n := runewidth.StringWidth(char)
 
@@ -922,7 +1003,7 @@ func (s *Spinner) StopFailCharacter(char string) {
 }
 
 // CharSet updates the set of characters (strings) to use for the spinner. You
-// can provide your own, or use one from the CharSets variable.
+// can provide your own, or use one from the yacspin.CharSets variable.
 //
 // The character sets available in the CharSets variable are from the
 // https://github.com/briandowns/spinner project.
