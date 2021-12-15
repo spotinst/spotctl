@@ -102,12 +102,24 @@ type Config struct {
 	// defaults to os.Stdout.
 	Writer io.Writer
 
+	// ShowCursor specifies that the cursor should be shown by the spinner while
+	// animating. If it is not shown, the cursor will be restored when the
+	// spinner stops. This can't be changed after the *Spinner has been
+	// constructed.
+	//
+	// Please note, if you don't show the cursor and the program crashes or is
+	// killed, you may need to reset your terminal for the cursor to appear
+	// again.
+	ShowCursor bool
+
 	// HideCursor describes whether the cursor should be hidden by the spinner
 	// while animating. If it is hidden, it will be restored when the spinner
 	// stops. This can't be changed after the *Spinner has been constructed.
 	//
 	// Please note, if the program crashes or is killed you may need to reset
 	// your terminal for the cursor to appear again.
+	//
+	// Deprecated: use ShowCursor instead.
 	HideCursor bool
 
 	// SpinnerAtEnd configures the spinner to render the animation at the end of
@@ -252,12 +264,23 @@ func New(cfg Config) (*Spinner, error) {
 		return nil, errors.New("cfg.Frequency must be greater than 0")
 	}
 
+	if cfg.ShowCursor && cfg.HideCursor {
+		return nil, errors.New("cfg.ShowCursor and cfg.HideCursor cannot be true")
+	}
+
+	if cfg.HideCursor {
+		cfg.ShowCursor = false
+	}
+
 	if !isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()) {
 		cfg.NotTTY = true
 	}
 
+	buf := bytes.NewBuffer(make([]byte, 2048))
+	buf.Reset()
+
 	s := &Spinner{
-		buffer:            bytes.NewBuffer(make([]byte, 2048)),
+		buffer:            buf,
 		mu:                &sync.Mutex{},
 		frequency:         cfg.Frequency,
 		status:            uint32Ptr(0),
@@ -265,7 +288,7 @@ func New(cfg Config) (*Spinner, error) {
 		dataUpdateCh:      make(chan struct{}),
 
 		colorAll:        cfg.ColorAll,
-		cursorHidden:    cfg.HideCursor,
+		cursorHidden:    !cfg.ShowCursor,
 		spinnerAtEnd:    cfg.SpinnerAtEnd,
 		suffixAutoColon: cfg.SuffixAutoColon,
 		isDumbTerm:      os.Getenv("TERM") == "dumb",
