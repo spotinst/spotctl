@@ -173,7 +173,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	if err := ofas.ValidateClusterContext(ctx, client, x.opts.ClusterName); err != nil {
-		return fmt.Errorf("cluster context validation failure, %w", err)
+		return fmt.Errorf("cluster context validation failure, make sure your kubectl has the target cluster in context, %w", err)
 	}
 
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
@@ -315,6 +315,7 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		createClusterArgs := x.buildEksctlCreateClusterArgs()
 		if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
 			stopSpinnerWithMessage(spinner, "Could not create EKS cluster", true)
+			log.Infof("To see more log output, run spotctl with the --verbose flag")
 			return fmt.Errorf("could not create EKS cluster, %w", err)
 		}
 		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
@@ -340,6 +341,7 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
 		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
 			stopSpinnerWithMessage(spinner, "Could not create node group", true)
+			log.Infof("To see more log output, run spotctl with the --verbose flag")
 			return fmt.Errorf("could not create node group, %w", err)
 		}
 		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
@@ -465,7 +467,7 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
 	if x.opts.Verbose {
 		args = append(args, "--verbose", "4")
 	} else {
-		args = append(args, "--verbose", "0")
+		args = append(args, "--verbose", "1")
 	}
 
 	return args
@@ -504,7 +506,7 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	if x.opts.Verbose {
 		args = append(args, "--verbose", "4")
 	} else {
-		args = append(args, "--verbose", "0")
+		args = append(args, "--verbose", "1")
 	}
 
 	return args
