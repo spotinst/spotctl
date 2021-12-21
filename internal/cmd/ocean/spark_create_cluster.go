@@ -353,6 +353,7 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
 	spotClientOpts := []spot.ClientOption{
 		spot.WithCredentialsProfile(x.opts.Profile),
+		spot.WithDryRun(x.opts.DryRun),
 	}
 
 	return x.opts.Clientset.NewSpotClient(spotClientOpts...)

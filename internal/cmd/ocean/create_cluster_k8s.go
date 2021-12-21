@@ -82,6 +82,7 @@ func (x *CmdCreateClusterKubernetes) validate(ctx context.Context) error {
 func (x *CmdCreateClusterKubernetes) run(ctx context.Context) error {
 	spotClientOpts := []spot.ClientOption{
 		spot.WithCredentialsProfile(x.opts.Profile),
+		spot.WithDryRun(x.opts.DryRun),
 	}
 
 	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
@@ -155,10 +156,9 @@ func (x *CmdCreateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.BoolVar(&x.EnableEBSOptimization, flags.FlagOceanEnableEBSOptimization, x.EnableEBSOptimization, "")
 		fs.StringVar(&x.IAMInstanceProfileName, flags.FlagOceanIamInstanceProfileName, x.IAMInstanceProfileName, "")
 		fs.StringVar(&x.IAMInstanceProfileARN, flags.FlagOceanIamInstanceProfileARN, x.IAMInstanceProfileARN, "")
-		fs.StringVar(&x.LoadBalancerName, flags.FlagOceanLoadBalancerName, x.LoadBalancerName, "")
-		fs.StringVar(&x.LoadBalancerARN, flags.FlagOceanLoadBalancerARN, x.LoadBalancerARN, "")
+		fs.StringSliceVar(&x.LoadBalancerNames, flags.FlagOceanLoadBalancerName, x.LoadBalancerNames, "")
+		fs.StringSliceVar(&x.LoadBalancerARNs, flags.FlagOceanLoadBalancerARN, x.LoadBalancerARNs, "")
 		fs.StringVar(&x.LoadBalancerType, flags.FlagOceanLoadBalancerType, x.LoadBalancerType, "")
-
 	}
 
 	// Auto Scaling.

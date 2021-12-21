@@ -605,23 +605,27 @@ func (x *oceanKubernetesAWSClusterBuilder) buildCompute() *aws.Compute {
 	}
 
 	if x.fs.Changed(flags.FlagOceanLoadBalancerName) ||
-		x.fs.Changed(flags.FlagOceanLoadBalancerARN) ||
-		x.fs.Changed(flags.FlagOceanLoadBalancerType) {
-		loadBalancer := new(aws.LoadBalancer)
+		x.fs.Changed(flags.FlagOceanLoadBalancerARN) {
 
-		if x.fs.Changed(flags.FlagOceanLoadBalancerName) {
-			loadBalancer.SetName(spotinst.String(x.opts.LoadBalancerName))
+		// Classic Load Balancers.
+		if x.fs.Changed(flags.FlagOceanLoadBalancerName) && len(x.opts.LoadBalancerNames) > 0 {
+			for _, name := range x.opts.LoadBalancerNames {
+				launchSpec.LoadBalancers = append(launchSpec.LoadBalancers, &aws.LoadBalancer{
+					Name: spotinst.String(name),
+					Type: spotinst.String("CLASSIC"),
+				})
+			}
 		}
 
-		if x.fs.Changed(flags.FlagOceanLoadBalancerARN) {
-			loadBalancer.SetArn(spotinst.String(x.opts.LoadBalancerARN))
+		// Target Groups.
+		if x.fs.Changed(flags.FlagOceanLoadBalancerARN) && len(x.opts.LoadBalancerARNs) > 0 {
+			for _, arn := range x.opts.LoadBalancerARNs {
+				launchSpec.LoadBalancers = append(launchSpec.LoadBalancers, &aws.LoadBalancer{
+					Arn:  spotinst.String(arn),
+					Type: spotinst.String("TARGET_GROUP"),
+				})
+			}
 		}
-
-		if x.fs.Changed(flags.FlagOceanLoadBalancerType) {
-			loadBalancer.SetType(spotinst.String(x.opts.LoadBalancerType))
-		}
-
-		launchSpec.SetLoadBalancers([]*aws.LoadBalancer{loadBalancer})
 	}
 
 	compute.SetLaunchSpecification(launchSpec)

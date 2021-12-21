@@ -111,9 +111,10 @@ type (
 		EnableEBSOptimization    bool
 		IAMInstanceProfileName   string
 		IAMInstanceProfileARN    string
-		LoadBalancerName         string
-		LoadBalancerARN          string
-		LoadBalancerType         string
+
+		LoadBalancerNames []string
+		LoadBalancerARNs  []string
+		LoadBalancerType  string // Deprecated: Inferred from name/arn.
 
 		// Auto Scaling.
 		EnableAutoScaler       bool
