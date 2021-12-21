@@ -173,7 +173,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	if err := ofas.ValidateClusterContext(ctx, client, x.opts.ClusterName); err != nil {
-		return fmt.Errorf("cluster context validation failure, make sure your kubectl has the target cluster in context, %w", err)
+		return fmt.Errorf("cluster context validation failure, make sure your kubeconfig has the target cluster in context, %w", err)
 	}
 
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
