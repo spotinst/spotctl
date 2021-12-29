@@ -25,7 +25,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spotinst/spotinst-sdk-go v1.107.0
 	github.com/stretchr/testify v1.7.0
-	github.com/theckman/yacspin v0.13.6
+	github.com/theckman/yacspin v0.13.7
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	k8s.io/api v0.23.1
 	k8s.io/apimachinery v0.23.1
