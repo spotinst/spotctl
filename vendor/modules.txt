@@ -209,7 +209,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
 # github.com/stretchr/testify v1.7.0
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/theckman/yacspin v0.13.6
+# github.com/theckman/yacspin v0.13.12
 ## explicit
 github.com/theckman/yacspin
 # github.com/ulikunitz/xz v0.5.9
