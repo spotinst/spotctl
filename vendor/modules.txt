@@ -115,7 +115,7 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-version v1.3.0
+# github.com/hashicorp/go-version v1.4.0
 ## explicit
 github.com/hashicorp/go-version
 # github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c
