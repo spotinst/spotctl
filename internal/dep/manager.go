@@ -85,6 +85,23 @@ func (x *manager) InstallBulk(ctx context.Context, deps []Dependency, options ..
 	return x.installWithSelect(ctx, missing, opts)
 }
 
+func (x *manager) DependencyPresent(dep Dependency, options ...InstallOption) (bool, error) {
+	opts := initDefaultOptions()
+	for _, opt := range options {
+		opt(opts)
+	}
+
+	path := filepath.Join(opts.BinaryDir, dep.Executable())
+	_, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		return false, err
+	}
+
+	present := err == nil
+
+	return present, nil
+}
+
 // shouldInstallDep returns whether we should install a Dependency according to
 // the presence and install policy.
 func shouldInstallDep(installPolicy InstallPolicy, present bool) bool {

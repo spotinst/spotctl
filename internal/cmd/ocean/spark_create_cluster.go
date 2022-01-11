@@ -127,10 +127,13 @@ func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
 	return x.opts.Validate()
 }
 
-func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
-	shouldCreateCluster := x.opts.ClusterID == ""
+func (x *CmdSparkCreateCluster) shouldCreateNewCluster() bool {
+	// If we have a cluster ID we will do an import, otherwise we create a new cluster
+	return x.opts.ClusterID == ""
+}
 
-	if shouldCreateCluster {
+func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
+	if x.shouldCreateNewCluster() {
 		if x.opts.ClusterName == "" {
 			// Generate unique name
 			x.opts.ClusterName = fmt.Sprintf("ocean-spark-cluster-%s", uuid.NewV4().Short())
@@ -237,6 +240,11 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 }
 
 func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
+	if !x.shouldCreateNewCluster() {
+		// Nothing to install
+		return nil
+	}
+
 	// Initialize a new dependency manager.
 	dm, err := x.opts.Clientset.NewDepManager()
 	if err != nil {
@@ -250,7 +258,20 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 		dep.WithDryRun(x.opts.DryRun),
 	}
 
-	return dm.Install(ctx, dep.DependencyEksctlSpot, installOpts...)
+	if err := dm.Install(ctx, dep.DependencyEksctlSpot, installOpts...); err != nil {
+		return fmt.Errorf("could not install required dependency, %w", err)
+	}
+
+	present, err := dm.DependencyPresent(dep.DependencyEksctlSpot, installOpts...)
+	if err != nil {
+		return fmt.Errorf("could not validate required dependency, %w", err)
+	}
+
+	if !present {
+		return fmt.Errorf("required dependency %s missing", dep.DependencyEksctlSpot.Name())
+	}
+
+	return nil
 }
 
 func (x *CmdSparkCreateCluster) doesControllerClusterIDExist(ctx context.Context, controllerClusterID string) (bool, error) {

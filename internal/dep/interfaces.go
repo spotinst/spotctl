@@ -17,6 +17,9 @@ type (
 
 		// InstallBulk installs a bulk of new dependencies.
 		InstallBulk(ctx context.Context, deps []Dependency, options ...InstallOption) error
+
+		// DependencyPresent determines if a dependency is present
+		DependencyPresent(dep Dependency, options ...InstallOption) (bool, error)
 	}
 
 	// Dependency represents an executable package.
