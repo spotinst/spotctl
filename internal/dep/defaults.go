@@ -19,10 +19,12 @@ var (
 			"v{{.version}}/kops-{{.os}}-{{.arch}}",
 	}
 
+	// Spot fork of eksctl
 	// See: https://github.com/spotinst/weaveworks-eksctl.
-	DependencyEksctl Dependency = &dependency{
-		name:    "eksctl",
-		version: "0.60.0-62eeb9c7",
+	DependencyEksctlSpot Dependency = &dependency{
+		name:               "eksctl-spot",
+		upstreamBinaryName: "eksctl",
+		version:            "0.60.0-62eeb9c7",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}
@@ -34,7 +36,7 @@ func DefaultDependencyListKubernetes() []Dependency {
 	return []Dependency{
 		DependencyKubectl,
 		DependencyKops,
-		DependencyEksctl,
+		DependencyEksctlSpot,
 	}
 }
 

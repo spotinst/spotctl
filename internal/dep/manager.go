@@ -162,7 +162,7 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 		return nil
 	}
 
-	log.Debugf("Installing dependency %s-%s", dep.Name(), dep.Version())
+	log.Infof("Installing dependency %s (v%s)", dep.Name(), dep.Version())
 
 	url, err := dep.URL()
 	if err != nil {
@@ -200,11 +200,11 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 			return fmt.Errorf("dep: unable to describe file: %w", err)
 		}
 		if fi.Mode().IsDir() {
-			intermediate = filepath.Join(d, dep.Name())
+			intermediate = filepath.Join(d, dep.UpstreamBinaryName())
 		}
 	}
 
-	log.Debugf("Copying dependency from %s", intermediate)
+	log.Debugf("Copying dependency from %s to %s", intermediate, executable)
 	if err = copyFile(intermediate, executable); err != nil {
 		return fmt.Errorf("dep: unable to copy file: %w", err)
 	}
@@ -221,6 +221,7 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("dep: unable to stat %s: %w", command, err)
 	}
+	log.Debugf("Creating symlink %s to %s", command, executable)
 	return os.Symlink(executable, command)
 }
 
@@ -239,14 +240,15 @@ func (x *manager) selectMulti(deps []Dependency) []Dependency {
 
 	depOpts := make([]interface{}, len(deps))
 	for i, dep := range deps {
-		depOpts[i] = dep.Name()
+		depOpts[i] = fmt.Sprintf("%s (v%s)", dep.Name(), dep.Version())
 	}
 
 	input := &survey.Select{
-		Message:  "Install missing required dependencies (deselect to avoid auto installing)",
-		Help:     "Spot CLI would like to install missing required dependencies",
-		Options:  depOpts,
-		Defaults: depOpts,
+		Message:   "Install missing required dependencies (deselect to avoid auto installing)",
+		Help:      "Spot CLI would like to install missing required dependencies",
+		Options:   depOpts,
+		Defaults:  depOpts,
+		Transform: survey.TransformOnlyId,
 	}
 
 	depNames, err := x.survey.SelectMulti(input)

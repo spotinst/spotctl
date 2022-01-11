@@ -250,8 +250,7 @@ func (x *CmdSparkCreateCluster) installDeps(ctx context.Context) error {
 		dep.WithDryRun(x.opts.DryRun),
 	}
 
-	// Install!
-	return dm.InstallBulk(ctx, dep.DefaultDependencyListKubernetes(), installOpts...)
+	return dm.Install(ctx, dep.DependencyEksctlSpot, installOpts...)
 }
 
 func (x *CmdSparkCreateCluster) doesControllerClusterIDExist(ctx context.Context, controllerClusterID string) (bool, error) {

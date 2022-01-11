@@ -24,6 +24,10 @@ type (
 		// Name returns the name of the dependency.
 		Name() string
 
+		// UpstreamBinaryName is the name of the dependency binary that we download.
+		// Can be different from our dependency name.
+		UpstreamBinaryName() string
+
 		// Version returns the version of the dependency.
 		Version() string
 
