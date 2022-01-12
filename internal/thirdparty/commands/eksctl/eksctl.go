@@ -11,7 +11,7 @@ import (
 )
 
 // CommandName is the name of this command.
-const CommandName thirdparty.CommandName = "eksctl"
+const CommandName thirdparty.CommandName = "eksctl-spot"
 
 func init() {
 	thirdparty.Register(CommandName, factory)

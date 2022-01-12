@@ -26,34 +26,32 @@ func NewManager(survey survey.Interface) Manager {
 }
 
 func (x *manager) Install(ctx context.Context, dep Dependency, options ...InstallOption) error {
-	log.Debugf("Ensuring required dependency %s-%s", dep.Name(), dep.Version())
+	log.Debugf("Ensuring required dependency %q", dep.Executable())
 
 	opts := initDefaultOptions()
 	for _, opt := range options {
 		opt(opts)
 	}
 
-	path := filepath.Join(opts.BinaryDir, dep.Executable())
-	_, err := os.Stat(path)
-	if err != nil && !os.IsNotExist(err) {
+	present, err := isPresent(opts.BinaryDir, dep)
+	if err != nil {
 		return err
 	}
 
-	present := err == nil
 	if !shouldInstallDep(opts.InstallPolicy, present) {
 		if present {
-			log.Debugf("Dependency %q already present on machine (%s)", dep.Name(), path)
+			log.Debugf("Dependency %q already present on machine", dep.Executable())
 			return nil
 		}
 		return fmt.Errorf("dep: dependency %q is not present with "+
-			"install policy of %q", dep.Name(), InstallNever)
+			"install policy of %q", dep.Executable(), InstallNever)
 	}
 
 	return x.installWithConfirm(ctx, dep, opts)
 }
 
 func (x *manager) InstallBulk(ctx context.Context, deps []Dependency, options ...InstallOption) error {
-	log.Debugf("Ensuring required dependencies...")
+	log.Debugf("Ensuring required dependencies")
 
 	opts := initDefaultOptions()
 	for _, opt := range options {
@@ -61,28 +59,46 @@ func (x *manager) InstallBulk(ctx context.Context, deps []Dependency, options ..
 	}
 
 	var missing []Dependency
-	var err error
 	for _, dep := range deps {
-		path := filepath.Join(opts.BinaryDir, dep.Executable())
-		_, err = os.Stat(path)
-		if err != nil && !os.IsNotExist(err) {
+		present, err := isPresent(opts.BinaryDir, dep)
+		if err != nil {
 			return err
 		}
 
-		present := err == nil
 		if !shouldInstallDep(opts.InstallPolicy, present) {
 			if present {
-				log.Debugf("Dependency %q already present on machine (%s)", dep.Name(), path)
+				log.Debugf("Dependency %q already present on machine", dep.Executable())
 				continue
 			}
 			return fmt.Errorf("dep: dependency %q is not present with "+
-				"install policy of %q", dep.Name(), InstallNever)
+				"install policy of %q", dep.Executable(), InstallNever)
 		}
 
 		missing = append(missing, dep)
 	}
 
 	return x.installWithSelect(ctx, missing, opts)
+}
+
+func (x *manager) DependencyPresent(dep Dependency, options ...InstallOption) (bool, error) {
+	opts := initDefaultOptions()
+	for _, opt := range options {
+		opt(opts)
+	}
+
+	return isPresent(opts.BinaryDir, dep)
+}
+
+func isPresent(binaryDir string, dep Dependency) (bool, error) {
+	path := filepath.Join(binaryDir, dep.Executable())
+	log.Debugf("Checking dependency existence %q", path)
+	_, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		return false, err
+	}
+
+	present := err == nil
+	return present, nil
 }
 
 // shouldInstallDep returns whether we should install a Dependency according to
@@ -117,7 +133,7 @@ func (x *manager) initPath(binaryDir string) error {
 	var err error
 
 	initPathOnce.Do(func() {
-		log.Debugf("Initializing PATH by adding %s", binaryDir)
+		log.Debugf("Initializing PATH (adding %q)", binaryDir)
 
 		path := os.Getenv("PATH")
 		dirs := filepath.SplitList(path)
@@ -137,7 +153,7 @@ func (x *manager) initPath(binaryDir string) error {
 func (x *manager) installWithConfirm(ctx context.Context, dep Dependency, opts *InstallOptions) error {
 	if !opts.Noninteractive {
 		if ok := x.confirm(dep); !ok {
-			log.Debugf("Aborting installation of dependency %s-%s", dep.Name(), dep.Version())
+			log.Debugf("Aborting installation of dependency %q", dep.Executable())
 			return nil
 		}
 	}
@@ -158,11 +174,11 @@ func (x *manager) installWithSelect(ctx context.Context, deps []Dependency, opts
 
 func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOptions) error {
 	if opts.DryRun {
-		log.Debugf("Would install %s-%s to %s", dep.Name(), dep.Version(), opts.BinaryDir)
+		log.Debugf("Would install %q to %q", dep.Executable(), opts.BinaryDir)
 		return nil
 	}
 
-	log.Debugf("Installing dependency %s-%s", dep.Name(), dep.Version())
+	log.Infof("Installing dependency %q", dep.Executable())
 
 	url, err := dep.URL()
 	if err != nil {
@@ -172,7 +188,7 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 	executable := filepath.Join(opts.BinaryDir, dep.Executable())
 	ext, archive := checkArchive(url.Path)
 
-	p := fmt.Sprintf("spotctl_*_%s-%s%s", dep.Name(), dep.Version(), ext)
+	p := fmt.Sprintf("spotctl-*-%s-%s%s", dep.Name(), dep.Version(), ext)
 	f, err := ioutil.TempFile(os.TempDir(), p)
 	if err != nil {
 		return err
@@ -183,14 +199,14 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 	}()
 	intermediate := f.Name()
 
-	log.Debugf("Downloading dependency to %s", intermediate)
+	log.Debugf("Downloading dependency %q to %q", dep.Executable(), intermediate)
 	if err = download(url, intermediate); err != nil {
 		return err
 	}
 
 	if archive {
 		d := strings.TrimSuffix(intermediate, ext)
-		log.Debugf("Unarchiving dependency to %s", d)
+		log.Debugf("Unarchiving dependency %q to %q", dep.Executable(), d)
 		if err = archiver.Unarchive(intermediate, d); err != nil {
 			return fmt.Errorf("dep: unable to unarchive file: %w", err)
 		}
@@ -200,33 +216,35 @@ func (x *manager) install(ctx context.Context, dep Dependency, opts *InstallOpti
 			return fmt.Errorf("dep: unable to describe file: %w", err)
 		}
 		if fi.Mode().IsDir() {
-			intermediate = filepath.Join(d, dep.Name())
+			intermediate = filepath.Join(d, dep.UpstreamBinaryName())
 		}
 	}
 
-	log.Debugf("Copying dependency from %s", intermediate)
+	log.Debugf("Copying dependency from %q to %q", intermediate, executable)
 	if err = copyFile(intermediate, executable); err != nil {
 		return fmt.Errorf("dep: unable to copy file: %w", err)
 	}
 
-	// Make it executable, symlink to command name
-	err = os.Chmod(executable, 0755)
-	if err != nil {
+	// Make it executable.
+	if err = os.Chmod(executable, 0755); err != nil {
 		return fmt.Errorf("dep: unable to set file as executable: %w", err)
 	}
+
+	// Create a symlink to command name.
 	command := filepath.Join(opts.BinaryDir, dep.Name())
-	_, err = os.Stat(command)
-	if err == nil {
-		os.Remove(command)
+	if _, err = os.Stat(command); err == nil {
+		_ = os.Remove(command)
 	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("dep: unable to stat %s: %w", command, err)
+		return fmt.Errorf("dep: unable to stat %q: %w", command, err)
 	}
-	return os.Symlink(executable, command)
+
+	log.Debugf("Creating symlink %q to %q", command, executable)
+	return os.Symlink(dep.Executable(), command)
 }
 
 func (x *manager) confirm(dep Dependency) bool {
 	input := &survey.Input{
-		Message: fmt.Sprintf("Install missing required dependency: %s, version %s", dep.Name(), dep.Version()),
+		Message: fmt.Sprintf("Install missing required dependency: %s (v%s)", dep.Name(), dep.Version()),
 		Help:    "Spot CLI would like to install missing required dependency",
 		Default: "true",
 	}
@@ -239,14 +257,15 @@ func (x *manager) selectMulti(deps []Dependency) []Dependency {
 
 	depOpts := make([]interface{}, len(deps))
 	for i, dep := range deps {
-		depOpts[i] = dep.Name()
+		depOpts[i] = fmt.Sprintf("%s (v%s)", dep.Name(), dep.Version())
 	}
 
 	input := &survey.Select{
-		Message:  "Install missing required dependencies (deselect to avoid auto installing)",
-		Help:     "Spot CLI would like to install missing required dependencies",
-		Options:  depOpts,
-		Defaults: depOpts,
+		Message:   "Install missing required dependencies (deselect to avoid auto installing)",
+		Help:      "Spot CLI would like to install missing required dependencies",
+		Options:   depOpts,
+		Defaults:  depOpts,
+		Transform: survey.TransformOnlyId,
 	}
 
 	depNames, err := x.survey.SelectMulti(input)

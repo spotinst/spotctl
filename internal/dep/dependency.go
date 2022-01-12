@@ -9,12 +9,20 @@ import (
 )
 
 type dependency struct {
-	name    string
-	version string
-	url     string
+	name               string
+	upstreamBinaryName string
+	version            string
+	url                string
 }
 
 func (x *dependency) Name() string { return x.name }
+
+func (x *dependency) UpstreamBinaryName() string {
+	if x.upstreamBinaryName != "" {
+		return x.upstreamBinaryName
+	}
+	return x.name
+}
 
 func (x *dependency) Version() string { return x.version }
 

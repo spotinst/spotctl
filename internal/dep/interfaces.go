@@ -17,12 +17,19 @@ type (
 
 		// InstallBulk installs a bulk of new dependencies.
 		InstallBulk(ctx context.Context, deps []Dependency, options ...InstallOption) error
+
+		// DependencyPresent determines if a dependency is present
+		DependencyPresent(dep Dependency, options ...InstallOption) (bool, error)
 	}
 
 	// Dependency represents an executable package.
 	Dependency interface {
 		// Name returns the name of the dependency.
 		Name() string
+
+		// UpstreamBinaryName is the name of the dependency binary that we download.
+		// Can be different from our dependency name.
+		UpstreamBinaryName() string
 
 		// Version returns the version of the dependency.
 		Version() string
