@@ -33,16 +33,14 @@ func (x *manager) Install(ctx context.Context, dep Dependency, options ...Instal
 		opt(opts)
 	}
 
-	path := filepath.Join(opts.BinaryDir, dep.Executable())
-	_, err := os.Stat(path)
-	if err != nil && !os.IsNotExist(err) {
+	present, err := isPresent(opts.BinaryDir, dep)
+	if err != nil {
 		return err
 	}
 
-	present := err == nil
 	if !shouldInstallDep(opts.InstallPolicy, present) {
 		if present {
-			log.Debugf("Dependency %q already present on machine (%s)", dep.Name(), path)
+			log.Debugf("Dependency %q already present on machine", dep.Name())
 			return nil
 		}
 		return fmt.Errorf("dep: dependency %q is not present with "+
@@ -61,18 +59,15 @@ func (x *manager) InstallBulk(ctx context.Context, deps []Dependency, options ..
 	}
 
 	var missing []Dependency
-	var err error
 	for _, dep := range deps {
-		path := filepath.Join(opts.BinaryDir, dep.Executable())
-		_, err = os.Stat(path)
-		if err != nil && !os.IsNotExist(err) {
+		present, err := isPresent(opts.BinaryDir, dep)
+		if err != nil {
 			return err
 		}
 
-		present := err == nil
 		if !shouldInstallDep(opts.InstallPolicy, present) {
 			if present {
-				log.Debugf("Dependency %q already present on machine (%s)", dep.Name(), path)
+				log.Debugf("Dependency %q already present on machine", dep.Name())
 				continue
 			}
 			return fmt.Errorf("dep: dependency %q is not present with "+
@@ -91,7 +86,12 @@ func (x *manager) DependencyPresent(dep Dependency, options ...InstallOption) (b
 		opt(opts)
 	}
 
-	path := filepath.Join(opts.BinaryDir, dep.Executable())
+	return isPresent(opts.BinaryDir, dep)
+}
+
+func isPresent(binaryDir string, dep Dependency) (bool, error) {
+	path := filepath.Join(binaryDir, dep.Executable())
+	log.Debugf("Checking dependency existence %q", path)
 	_, err := os.Stat(path)
 	if err != nil && !os.IsNotExist(err) {
 		return false, err
