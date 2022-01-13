@@ -233,7 +233,7 @@ func (x *Cmd) configureCredentialsAWS(ctx context.Context) error {
 		// Confirm.
 		{
 			input := &survey.Input{
-				Message: "Configure AWS credentials",
+				Message: fmt.Sprintf("Configure AWS credentials for profile %q?", x.opts.Profile),
 			}
 
 			configure, err := surv.Confirm(input)
