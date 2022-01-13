@@ -59,6 +59,7 @@ const (
 	FlagOFASClusterID      string = "cluster-id"
 	FlagOFASClusterName    string = "cluster-name"
 	FlagOFASKubeConfigPath string = "kubeconfig"
+	FlagOFASAWSProfile     string = "aws-profile"
 )
 
 func Log(cmd *cobra.Command) {

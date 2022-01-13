@@ -45,7 +45,7 @@ type CommonOptions struct {
 	// Profile configures the name of the credentials profile to use.
 	//
 	// Defaults to `default`.
-	Profile string
+	Profile string // TODO(thorsteinn) Rename this to SpotProfile
 
 	// PprofProfile and PprofOutput enables collecting of runtime profiling data
 	// for the command's process in the format expected by the pprof visualization
@@ -87,7 +87,7 @@ func (x *CommonOptions) initDefaults() {
 }
 
 func (x *CommonOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&x.Profile, "profile", "p", x.Profile, "name of credentials profile to use")
+	fs.StringVarP(&x.Profile, "profile", "p", x.Profile, "name of Spot credentials profile to use")
 	fs.StringVar(&x.PprofProfile, "pprof-profile", x.PprofProfile, "name of profile to capture (none|cpu|heap|goroutine|threadcreate|block|mutex)")
 	fs.StringVar(&x.PprofOutput, "pprof-output", x.PprofOutput, "name of the file to write the profile to")
 	fs.StringVar(&x.InstallPolicy, "install-policy", x.InstallPolicy, "policy for if/when to install a dependency")

@@ -41,6 +41,7 @@ type (
 		ClusterID         string
 		ClusterName       string
 		Region            string
+		AwsProfile        string
 		Tags              []string
 		KubernetesVersion string
 		KubeConfigPath    string
@@ -221,6 +222,7 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "ID of Ocean cluster that should be imported into Ocean for Apache Spark. Note that your machine must be configured to access the cluster.")
 	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "name of cluster that will be created (will be generated if empty)")
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
+	fs.StringVar(&x.AwsProfile, flags.FlagOFASAWSProfile, x.AwsProfile, "AWS profile to use")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources that will be created (eg: \"Owner=john@example.com,Team=DevOps\")")
 	fs.StringVar(&x.KubernetesVersion, "kubernetes-version", defaultK8sVersion, "kubernetes version of cluster that will be created")
 	fs.StringVar(&x.KubeConfigPath, flags.FlagOFASKubeConfigPath, kubernetes.GetDefaultKubeConfigPath(), "path to local kubeconfig")
@@ -235,6 +237,13 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 	}
 	if x.KubeConfigPath == "" {
 		return spotctlerrors.Required(flags.FlagOFASKubeConfigPath)
+	}
+	if x.ClusterID == "" {
+		// We will create a new cluster, need an AWS profile
+		if x.AwsProfile == "" {
+			return spotctlerrors.Required(flags.FlagOFASAWSProfile)
+		}
+		// TODO(thorsteinn) Validate that the AWS profile that is supplied is valid, and it is pointing to the same cloud account that the Spot profile is talking to
 	}
 	return x.CmdSparkCreateOptions.Validate()
 }
@@ -287,7 +296,7 @@ func (x *CmdSparkCreateCluster) doesControllerClusterIDExist(ctx context.Context
 
 func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	cloudProviderOpts := []cloud.ProviderOption{
-		cloud.WithProfile(x.opts.Profile),
+		cloud.WithProfile(x.opts.AwsProfile),
 		cloud.WithRegion(x.opts.Region),
 	}
 
@@ -301,13 +310,13 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		return fmt.Errorf("could not create eksctl command, %w", err)
 	}
 
-	stacks, err := eks.GetStacksForCluster(cloudProvider, x.opts.Profile, x.opts.Region, x.opts.ClusterName)
+	stacks, err := eks.GetStacksForCluster(cloudProvider, x.opts.AwsProfile, x.opts.Region, x.opts.ClusterName)
 	if err != nil {
 		return fmt.Errorf("could not get stacks for cluster, %w", err)
 	}
 
 	clusterAlreadyExists := false
-	if _, err := eks.GetEKSCluster(cloudProvider, x.opts.Profile, x.opts.Region, x.opts.ClusterName); err != nil {
+	if _, err := eks.GetEKSCluster(cloudProvider, x.opts.AwsProfile, x.opts.Region, x.opts.ClusterName); err != nil {
 		if !errors.As(err, &eks.ErrClusterNotFound{}) {
 			return fmt.Errorf("could not check for existing EKS cluster, %w", err)
 		}
@@ -477,6 +486,10 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
 		args = append(args, "--region", x.opts.Region)
 	}
 
+	if len(x.opts.AwsProfile) > 0 {
+		args = append(args, "--profile", x.opts.AwsProfile)
+	}
+
 	if len(x.opts.Tags) > 0 {
 		args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
 	}
@@ -511,6 +524,10 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 
 	if len(x.opts.Region) > 0 {
 		args = append(args, "--region", x.opts.Region)
+	}
+
+	if len(x.opts.AwsProfile) > 0 {
+		args = append(args, "--profile", x.opts.AwsProfile)
 	}
 
 	if len(x.opts.Tags) > 0 {
