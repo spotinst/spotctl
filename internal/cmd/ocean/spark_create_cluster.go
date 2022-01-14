@@ -240,10 +240,12 @@ func (x *CmdSparkCreateClusterOptions) Validate() error {
 	}
 	if x.ClusterID == "" {
 		// We will create a new cluster, need an AWS profile
+		// TODO(thorsteinn) Check what cloud provider the configured Spot account is configured for, and require a different flag for the other cloud providers
+		// TODO(thorsteinn) Validate that the AWS profile that is supplied is valid, and it is pointing to the same cloud account that the Spot profile is talking to
+		// TODO(thorsteinn) The creds get injected by a credentials provider way down in the go-SDK Do() method. Need to know the cloud provider here.
 		if x.AwsProfile == "" {
 			return spotctlerrors.Required(flags.FlagOFASAWSProfile)
 		}
-		// TODO(thorsteinn) Validate that the AWS profile that is supplied is valid, and it is pointing to the same cloud account that the Spot profile is talking to
 	}
 	return x.CmdSparkCreateOptions.Validate()
 }
