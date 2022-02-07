@@ -23,7 +23,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.108.0
+	github.com/spotinst/spotinst-sdk-go v1.109.0
 	github.com/stretchr/testify v1.7.0
 	github.com/theckman/yacspin v0.13.12
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
