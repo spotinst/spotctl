@@ -155,6 +155,7 @@ type AutoScaler struct {
 	ResourceLimits                   *AutoScalerResourceLimits `json:"resourceLimits,omitempty"`
 	Down                             *AutoScalerDown           `json:"down,omitempty"`
 	EnableAutomaticAndManualHeadroom *bool                     `json:"enableAutomaticAndManualHeadroom,omitempty"`
+	ExtendedResourceDefinitions      []string                  `json:"extendedResourceDefinitions,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1340,6 +1341,13 @@ func (o *AutoScaler) SetDown(v *AutoScalerDown) *AutoScaler {
 func (o *AutoScaler) SetEnableAutomaticAndManualHeadroom(v *bool) *AutoScaler {
 	if o.EnableAutomaticAndManualHeadroom = v; o.EnableAutomaticAndManualHeadroom == nil {
 		o.nullFields = append(o.nullFields, "EnableAutomaticAndManualHeadroom")
+	}
+	return o
+}
+
+func (o *AutoScaler) SetExtendedResourceDefinitions(v []string) *AutoScaler {
+	if o.ExtendedResourceDefinitions = v; o.ExtendedResourceDefinitions == nil {
+		o.nullFields = append(o.nullFields, "ExtendedResourceDefinitions")
 	}
 	return o
 }
