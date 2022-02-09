@@ -158,7 +158,8 @@ type LaunchSpecStrategy struct {
 }
 
 type LaunchSpecScheduling struct {
-	Tasks []*LaunchSpecTask `json:"tasks,omitempty"`
+	Tasks         []*LaunchSpecTask        `json:"tasks,omitempty"`
+	ShutdownHours *LaunchSpecShutdownHours `json:"shutdownHours,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -169,6 +170,14 @@ type LaunchSpecTask struct {
 	CronExpression *string     `json:"cronExpression,omitempty"`
 	TaskType       *string     `json:"taskType,omitempty"`
 	Config         *TaskConfig `json:"config,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecShutdownHours struct {
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+	TimeWindows []string `json:"timeWindows,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -913,6 +922,13 @@ func (o *LaunchSpecScheduling) SetTasks(v []*LaunchSpecTask) *LaunchSpecScheduli
 	return o
 }
 
+func (o *LaunchSpecScheduling) SetShutdownHours(v *LaunchSpecShutdownHours) *LaunchSpecScheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
 // endregion
 
 //region LaunchSpecTask
@@ -952,6 +968,28 @@ func (o *LaunchSpecTask) SetTaskConfig(v *TaskConfig) *LaunchSpecTask {
 }
 
 // endregion
+
+//region LaunchSpecShutdownHours
+
+func (o LaunchSpecShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecShutdownHours) SetIsEnabled(v *bool) *LaunchSpecShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+func (o *LaunchSpecShutdownHours) SetTimeWindows(v []string) *LaunchSpecShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
+	}
+	return o
+}
 
 //region TaskConfig
 
