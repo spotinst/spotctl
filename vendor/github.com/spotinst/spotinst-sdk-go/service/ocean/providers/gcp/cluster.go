@@ -46,7 +46,8 @@ type Cluster struct {
 }
 
 type Strategy struct {
-	DrainingTimeout *int `json:"drainingTimeout,omitempty"`
+	DrainingTimeout   *int    `json:"drainingTimeout,omitempty"`
+	ProvisioningModel *string `json:"provisioningModel,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -828,6 +829,13 @@ func (o Strategy) MarshalJSON() ([]byte, error) {
 func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
 	if o.DrainingTimeout = v; o.DrainingTimeout == nil {
 		o.nullFields = append(o.nullFields, "DrainingTimeout")
+	}
+	return o
+}
+
+func (o *Strategy) SetProvisioningModel(v *string) *Strategy {
+	if o.ProvisioningModel = v; o.ProvisioningModel == nil {
+		o.nullFields = append(o.nullFields, "ProvisioningModel")
 	}
 	return o
 }
