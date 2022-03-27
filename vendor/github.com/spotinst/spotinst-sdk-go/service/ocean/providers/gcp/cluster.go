@@ -46,7 +46,8 @@ type Cluster struct {
 }
 
 type Strategy struct {
-	DrainingTimeout *int `json:"drainingTimeout,omitempty"`
+	DrainingTimeout   *int    `json:"drainingTimeout,omitempty"`
+	ProvisioningModel *string `json:"provisioningModel,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -165,14 +166,23 @@ type InstanceTypes struct {
 }
 
 type LaunchSpecification struct {
-	Labels             []*Label    `json:"labels,omitempty"`
-	IPForwarding       *bool       `json:"ipForwarding,omitempty"`
-	Metadata           []*Metadata `json:"metadata,omitempty"`
-	RootVolumeSizeInGB *int        `json:"rootVolumeSizeInGb,omitempty"`
-	ServiceAccount     *string     `json:"serviceAccount,omitempty"`
-	SourceImage        *string     `json:"sourceImage,omitempty"`
-	Tags               []string    `json:"tags,omitempty"`
-	RootVolumeType     *string     `json:"rootVolumeType,omitempty"`
+	Labels                 []*Label                          `json:"labels,omitempty"`
+	IPForwarding           *bool                             `json:"ipForwarding,omitempty"`
+	Metadata               []*Metadata                       `json:"metadata,omitempty"`
+	RootVolumeSizeInGB     *int                              `json:"rootVolumeSizeInGb,omitempty"`
+	ServiceAccount         *string                           `json:"serviceAccount,omitempty"`
+	SourceImage            *string                           `json:"sourceImage,omitempty"`
+	Tags                   []string                          `json:"tags,omitempty"`
+	RootVolumeType         *string                           `json:"rootVolumeType,omitempty"`
+	ShieldedInstanceConfig *LaunchSpecShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type LaunchSpecShieldedInstanceConfig struct {
+	EnableSecureBoot          *bool `json:"enableSecureBoot,omitempty"`
+	EnableIntegrityMonitoring *bool `json:"enableIntegrityMonitoring,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -832,6 +842,13 @@ func (o *Strategy) SetDrainingTimeout(v *int) *Strategy {
 	return o
 }
 
+func (o *Strategy) SetProvisioningModel(v *string) *Strategy {
+	if o.ProvisioningModel = v; o.ProvisioningModel == nil {
+		o.nullFields = append(o.nullFields, "ProvisioningModel")
+	}
+	return o
+}
+
 // endregion
 
 // region Compute
@@ -963,6 +980,13 @@ func (o *LaunchSpecification) SetTags(v []string) *LaunchSpecification {
 func (o *LaunchSpecification) SetRootVolumeType(v *string) *LaunchSpecification {
 	if o.RootVolumeType = v; o.RootVolumeType == nil {
 		o.nullFields = append(o.nullFields, "RootVolumeType")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetShieldedInstanceConfig(v *LaunchSpecShieldedInstanceConfig) *LaunchSpecification {
+	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
+		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
 	}
 	return o
 }
@@ -1332,3 +1356,27 @@ func (o *RollSpec) SetInstanceNames(v []string) *RollSpec {
 }
 
 // endregion
+
+// region ShieldedInstanceConfig
+
+func (o LaunchSpecShieldedInstanceConfig) MarshalJSON() ([]byte, error) {
+	type noMethod LaunchSpecShieldedInstanceConfig
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *LaunchSpecShieldedInstanceConfig) SetEnableIntegrityMonitoring(v *bool) *LaunchSpecShieldedInstanceConfig {
+	if o.EnableIntegrityMonitoring = v; o.EnableIntegrityMonitoring == nil {
+		o.nullFields = append(o.nullFields, "EnableIntegrityMonitoring")
+	}
+	return o
+}
+
+func (o *LaunchSpecShieldedInstanceConfig) SetEnableSecureBoot(v *bool) *LaunchSpecShieldedInstanceConfig {
+	if o.EnableSecureBoot = v; o.EnableSecureBoot == nil {
+		o.nullFields = append(o.nullFields, "EnableSecureBoot")
+	}
+	return o
+}
+
+//endregion
