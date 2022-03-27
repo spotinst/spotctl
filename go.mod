@@ -3,8 +3,7 @@ module github.com/spotinst/spotctl
 go 1.16
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.2
-	github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874 // indirect
+	github.com/AlecAivazis/survey/v2 v2.3.4
 	github.com/aws/aws-sdk-go v1.43.26
 	github.com/dustin/go-humanize v1.0.0
 	github.com/ghodss/yaml v1.0.0
@@ -12,10 +11,8 @@ require (
 	github.com/go-logr/logr v1.2.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
-	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/kr/pty v1.1.5 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6

@@ -1,10 +1,8 @@
-# github.com/AlecAivazis/survey/v2 v2.3.2
+# github.com/AlecAivazis/survey/v2 v2.3.4
 ## explicit
 github.com/AlecAivazis/survey/v2
 github.com/AlecAivazis/survey/v2/core
 github.com/AlecAivazis/survey/v2/terminal
-# github.com/Netflix/go-expect v0.0.0-20180814212900-124a37274874
-## explicit
 # github.com/andybalholm/brotli v1.0.1
 github.com/andybalholm/brotli
 # github.com/aws/aws-sdk-go v1.43.26
@@ -118,8 +116,6 @@ github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-version v1.4.0
 ## explicit
 github.com/hashicorp/go-version
-# github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c
-## explicit
 # github.com/imdario/mergo v0.3.12
 ## explicit
 github.com/imdario/mergo
@@ -144,8 +140,6 @@ github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/klauspost/pgzip v1.2.5
 github.com/klauspost/pgzip
-# github.com/kr/pty v1.1.5
-## explicit
 # github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 ## explicit
 github.com/liggitt/tabwriter
