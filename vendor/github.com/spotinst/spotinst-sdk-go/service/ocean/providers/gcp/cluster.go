@@ -267,11 +267,12 @@ type DeleteClusterInput struct {
 type DeleteClusterOutput struct{}
 
 type RollSpec struct {
-	ClusterID           *string  `json:"clusterId,omitempty"`
-	Comment             *string  `json:"comment,omitempty"`
-	BatchSizePercentage *int     `json:"batchSizePercentage,omitempty"`
-	LaunchSpecIDs       []string `json:"launchSpecIds,omitempty"`
-	InstanceNames       []string `json:"instanceNames,omitempty"`
+	ClusterID                 *string  `json:"clusterId,omitempty"`
+	Comment                   *string  `json:"comment,omitempty"`
+	BatchSizePercentage       *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage *int     `json:"batchMinHealthyPercentage,omitempty"`
+	LaunchSpecIDs             []string `json:"launchSpecIds,omitempty"`
+	InstanceNames             []string `json:"instanceNames,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1337,6 +1338,13 @@ func (o *RollSpec) SetComment(v *string) *RollSpec {
 func (o *RollSpec) SetBatchSizePercentage(v *int) *RollSpec {
 	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *RollSpec) SetBatchMinHealthyPercentage(v *int) *RollSpec {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
 	}
 	return o
 }
