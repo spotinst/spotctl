@@ -46,8 +46,9 @@ type Cluster struct {
 }
 
 type Strategy struct {
-	DrainingTimeout   *int    `json:"drainingTimeout,omitempty"`
-	ProvisioningModel *string `json:"provisioningModel,omitempty"`
+	DrainingTimeout       *int    `json:"drainingTimeout,omitempty"`
+	ProvisioningModel     *string `json:"provisioningModel,omitempty"`
+	PreemptiblePercentage *int    `json:"preemptiblePercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -267,11 +268,12 @@ type DeleteClusterInput struct {
 type DeleteClusterOutput struct{}
 
 type RollSpec struct {
-	ClusterID           *string  `json:"clusterId,omitempty"`
-	Comment             *string  `json:"comment,omitempty"`
-	BatchSizePercentage *int     `json:"batchSizePercentage,omitempty"`
-	LaunchSpecIDs       []string `json:"launchSpecIds,omitempty"`
-	InstanceNames       []string `json:"instanceNames,omitempty"`
+	ClusterID                 *string  `json:"clusterId,omitempty"`
+	Comment                   *string  `json:"comment,omitempty"`
+	BatchSizePercentage       *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage *int     `json:"batchMinHealthyPercentage,omitempty"`
+	LaunchSpecIDs             []string `json:"launchSpecIds,omitempty"`
+	InstanceNames             []string `json:"instanceNames,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -849,6 +851,13 @@ func (o *Strategy) SetProvisioningModel(v *string) *Strategy {
 	return o
 }
 
+func (o *Strategy) SetPreemptiblePercentage(v *int) *Strategy {
+	if o.PreemptiblePercentage = v; o.PreemptiblePercentage == nil {
+		o.nullFields = append(o.nullFields, "PreemptiblePercentage")
+	}
+	return o
+}
+
 // endregion
 
 // region Compute
@@ -1337,6 +1346,13 @@ func (o *RollSpec) SetComment(v *string) *RollSpec {
 func (o *RollSpec) SetBatchSizePercentage(v *int) *RollSpec {
 	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *RollSpec) SetBatchMinHealthyPercentage(v *int) *RollSpec {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
 	}
 	return o
 }
