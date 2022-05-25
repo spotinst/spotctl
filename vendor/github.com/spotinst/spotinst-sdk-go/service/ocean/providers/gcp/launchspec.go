@@ -22,7 +22,6 @@ type LaunchSpec struct {
 	Taints                 []*Taint                 `json:"taints,omitempty"`
 	AutoScale              *AutoScale               `json:"autoScale,omitempty"`
 	RestrictScaleDown      *bool                    `json:"restrictScaleDown,omitempty"`
-	Tags                   []*Tag                   `json:"tags,omitempty"`
 	Strategy               *LaunchSpecStrategy      `json:"strategy,omitempty"`
 	RootVolumeSizeInGB     *int                     `json:"rootVolumeSizeInGb,omitempty"`
 	RootVolumeType         *string                  `json:"rootVolumeType,omitempty"`
@@ -471,13 +470,6 @@ func (o *LaunchSpec) SetRootVolumeType(v *string) *LaunchSpec {
 func (o *LaunchSpec) SetServiceAccount(v *string) *LaunchSpec {
 	if o.ServiceAccount = v; o.ServiceAccount == nil {
 		o.nullFields = append(o.nullFields, "ServiceAccount")
-	}
-	return o
-}
-
-func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
-	if o.Tags = v; o.Tags == nil {
-		o.nullFields = append(o.nullFields, "Tags")
 	}
 	return o
 }

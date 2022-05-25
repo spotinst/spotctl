@@ -23,6 +23,7 @@ type ECSCluster struct {
 	AutoScaler  *ECSAutoScaler `json:"autoScaler,omitempty"`
 	Strategy    *ECSStrategy   `json:"strategy,omitempty"`
 	Scheduling  *ECSScheduling `json:"scheduling,omitempty"`
+	Logging     *ECSLogging    `json:"logging,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -58,6 +59,27 @@ type ECSStrategy struct {
 type ECSScheduling struct {
 	Tasks         []*ECSTask        `json:"tasks,omitempty"`
 	ShutdownHours *ECSShutdownHours `json:"shutdownHours,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSLogging struct {
+	Export *ECSExport `json:"export,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSExport struct {
+	S3 *ECSS3 `json:"s3,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSS3 struct {
+	ID *string `json:"id,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -222,11 +244,12 @@ type ECSRollClusterOutput struct {
 }
 
 type ECSRoll struct {
-	ClusterID           *string  `json:"clusterId,omitempty"`
-	Comment             *string  `json:"comment,omitempty"`
-	BatchSizePercentage *int     `json:"batchSizePercentage,omitempty"`
-	LaunchSpecIDs       []string `json:"launchSpecIds,omitempty"`
-	InstanceIDs         []string `json:"instanceIds,omitempty"`
+	ClusterID                 *string  `json:"clusterId,omitempty"`
+	Comment                   *string  `json:"comment,omitempty"`
+	BatchSizePercentage       *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage *int     `json:"batchMinHealthyPercentage,omitempty"`
+	LaunchSpecIDs             []string `json:"launchSpecIds,omitempty"`
+	InstanceIDs               []string `json:"instanceIds,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -572,6 +595,64 @@ func (o *ECSCluster) SetAutoScaler(v *ECSAutoScaler) *ECSCluster {
 func (o *ECSCluster) SetScheduling(v *ECSScheduling) *ECSCluster {
 	if o.Scheduling = v; o.Scheduling == nil {
 		o.nullFields = append(o.nullFields, "Scheduling")
+	}
+	return o
+}
+
+func (o *ECSCluster) SetLogging(v *ECSLogging) *ECSCluster {
+	if o.Logging = v; o.Logging == nil {
+		o.nullFields = append(o.nullFields, "Logging")
+	}
+	return o
+}
+
+// endregion
+
+// region Logging
+
+func (o ECSLogging) MarshalJSON() ([]byte, error) {
+	type noMethod ECSLogging
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSLogging) SetExport(v *ECSExport) *ECSLogging {
+	if o.Export = v; o.Export == nil {
+		o.nullFields = append(o.nullFields, "Export")
+	}
+	return o
+}
+
+// endregion
+
+// region Export
+
+func (o ECSExport) MarshalJSON() ([]byte, error) {
+	type noMethod ECSExport
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSExport) SetS3(v *ECSS3) *ECSExport {
+	if o.S3 = v; o.S3 == nil {
+		o.nullFields = append(o.nullFields, "S3")
+	}
+	return o
+}
+
+// endregion
+
+// region S3
+
+func (o ECSS3) MarshalJSON() ([]byte, error) {
+	type noMethod ECSS3
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSS3) SetId(v *string) *ECSS3 {
+	if o.ID = v; o.ID == nil {
+		o.nullFields = append(o.nullFields, "ID")
 	}
 	return o
 }
@@ -1041,6 +1122,13 @@ func (o *ECSRoll) SetComment(v *string) *ECSRoll {
 func (o *ECSRoll) SetBatchSizePercentage(v *int) *ECSRoll {
 	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
 		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *ECSRoll) SetBatchMinHealthyPercentage(v *int) *ECSRoll {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
 	}
 	return o
 }
