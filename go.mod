@@ -25,9 +25,8 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.114.0
 	github.com/stretchr/testify v1.7.1
 	github.com/theckman/yacspin v0.13.12
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	k8s.io/api v0.23.5
-	k8s.io/apimachinery v0.23.5
-	k8s.io/client-go v0.23.5
+	k8s.io/api v0.24.1
+	k8s.io/apimachinery v0.24.1
+	k8s.io/client-go v0.24.1
 )
