@@ -22,7 +22,6 @@ type LaunchSpec struct {
 	Taints                 []*Taint                 `json:"taints,omitempty"`
 	AutoScale              *AutoScale               `json:"autoScale,omitempty"`
 	RestrictScaleDown      *bool                    `json:"restrictScaleDown,omitempty"`
-	Tags                   []*Tag                   `json:"tags,omitempty"`
 	Strategy               *LaunchSpecStrategy      `json:"strategy,omitempty"`
 	RootVolumeSizeInGB     *int                     `json:"rootVolumeSizeInGb,omitempty"`
 	RootVolumeType         *string                  `json:"rootVolumeType,omitempty"`
@@ -32,6 +31,7 @@ type LaunchSpec struct {
 	Storage                *Storage                 `json:"storage,omitempty"`
 	ResourceLimits         *ResourceLimits          `json:"resourceLimits,omitempty"`
 	LaunchSpecScheduling   *GKELaunchSpecScheduling `json:"scheduling,omitempty"`
+	LaunchSpecTags         []string                 `json:"tags,omitempty"`
 
 	// forceSendFields is a list of field names (e.g. "Keys") to
 	// unconditionally include in API requests. By default, fields with
@@ -475,13 +475,6 @@ func (o *LaunchSpec) SetServiceAccount(v *string) *LaunchSpec {
 	return o
 }
 
-func (o *LaunchSpec) SetTags(v []*Tag) *LaunchSpec {
-	if o.Tags = v; o.Tags == nil {
-		o.nullFields = append(o.nullFields, "Tags")
-	}
-	return o
-}
-
 func (o *LaunchSpec) SetShieldedInstanceConfig(v *ShieldedInstanceConfig) *LaunchSpec {
 	if o.ShieldedInstanceConfig = v; o.ShieldedInstanceConfig == nil {
 		o.nullFields = append(o.nullFields, "ShieldedInstanceConfig")
@@ -513,6 +506,13 @@ func (o *LaunchSpec) SetResourceLimits(v *ResourceLimits) *LaunchSpec {
 func (o *LaunchSpec) SetScheduling(v *GKELaunchSpecScheduling) *LaunchSpec {
 	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
 		o.nullFields = append(o.nullFields, "GKELaunchSpecScheduling")
+	}
+	return o
+}
+
+func (o *LaunchSpec) SetLaunchSpecTags(v []string) *LaunchSpec {
+	if o.LaunchSpecTags = v; o.LaunchSpecTags == nil {
+		o.nullFields = append(o.nullFields, "LaunchSpecTags")
 	}
 	return o
 }
