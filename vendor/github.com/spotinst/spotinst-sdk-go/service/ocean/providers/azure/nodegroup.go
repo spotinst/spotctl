@@ -22,6 +22,7 @@ type VirtualNodeGroup struct {
 	AutoScale           *VirtualNodeGroupAutoScale           `json:"autoScale,omitempty"`
 	ResourceLimits      *VirtualNodeGroupResourceLimits      `json:"resourceLimits,omitempty"`
 	LaunchSpecification *VirtualNodeGroupLaunchSpecification `json:"launchSpecification,omitempty"`
+	Zones               []string                             `json:"zones,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -57,8 +58,9 @@ type VirtualNodeGroupHeadroom struct {
 }
 
 type VirtualNodeGroupLaunchSpecification struct {
-	OSDisk *OSDisk `json:"osDisk,omitempty"`
-	Tags   []*Tag  `json:"tags,omitempty"`
+	OSDisk  *OSDisk `json:"osDisk,omitempty"`
+	Tags    []*Tag  `json:"tags,omitempty"`
+	MaxPods *int    `json:"maxPods,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -324,6 +326,13 @@ func (o *VirtualNodeGroup) SetAutoScale(v *VirtualNodeGroupAutoScale) *VirtualNo
 	return o
 }
 
+func (o *VirtualNodeGroup) SetZones(v []string) *VirtualNodeGroup {
+	if o.Zones = v; o.Zones == nil {
+		o.nullFields = append(o.nullFields, "Zones")
+	}
+	return o
+}
+
 // endregion
 
 // region VirtualNodeGroupAutoScale
@@ -423,6 +432,13 @@ func (o *VirtualNodeGroupLaunchSpecification) SetOSDisk(v *OSDisk) *VirtualNodeG
 func (o *VirtualNodeGroupLaunchSpecification) SetTags(v []*Tag) *VirtualNodeGroupLaunchSpecification {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *VirtualNodeGroupLaunchSpecification) SetMaxPods(v *int) *VirtualNodeGroupLaunchSpecification {
+	if o.MaxPods = v; o.MaxPods == nil {
+		o.nullFields = append(o.nullFields, "MaxPods")
 	}
 	return o
 }
