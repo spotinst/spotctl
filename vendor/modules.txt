@@ -5,7 +5,7 @@ github.com/AlecAivazis/survey/v2/core
 github.com/AlecAivazis/survey/v2/terminal
 # github.com/andybalholm/brotli v1.0.1
 github.com/andybalholm/brotli
-# github.com/aws/aws-sdk-go v1.43.26
+# github.com/aws/aws-sdk-go v1.44.74
 ## explicit
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn

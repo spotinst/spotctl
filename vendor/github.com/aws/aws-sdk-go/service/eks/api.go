@@ -29,14 +29,13 @@ const opAssociateEncryptionConfig = "AssociateEncryptionConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateEncryptionConfigRequest method.
+//	req, resp := client.AssociateEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the AssociateEncryptionConfigRequest method.
-//    req, resp := client.AssociateEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/AssociateEncryptionConfig
 func (c *EKS) AssociateEncryptionConfigRequest(input *AssociateEncryptionConfigInput) (req *request.Request, output *AssociateEncryptionConfigOutput) {
@@ -71,29 +70,30 @@ func (c *EKS) AssociateEncryptionConfigRequest(input *AssociateEncryptionConfigI
 // API operation AssociateEncryptionConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/AssociateEncryptionConfig
 func (c *EKS) AssociateEncryptionConfig(input *AssociateEncryptionConfigInput) (*AssociateEncryptionConfigOutput, error) {
@@ -133,14 +133,13 @@ const opAssociateIdentityProviderConfig = "AssociateIdentityProviderConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateIdentityProviderConfigRequest method.
+//	req, resp := client.AssociateIdentityProviderConfigRequest(params)
 //
-//    // Example sending a request using the AssociateIdentityProviderConfigRequest method.
-//    req, resp := client.AssociateIdentityProviderConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/AssociateIdentityProviderConfig
 func (c *EKS) AssociateIdentityProviderConfigRequest(input *AssociateIdentityProviderConfigInput) (req *request.Request, output *AssociateIdentityProviderConfigOutput) {
@@ -179,29 +178,30 @@ func (c *EKS) AssociateIdentityProviderConfigRequest(input *AssociateIdentityPro
 // API operation AssociateIdentityProviderConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/AssociateIdentityProviderConfig
 func (c *EKS) AssociateIdentityProviderConfig(input *AssociateIdentityProviderConfigInput) (*AssociateIdentityProviderConfigOutput, error) {
@@ -241,14 +241,13 @@ const opCreateAddon = "CreateAddon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAddonRequest method.
+//	req, resp := client.CreateAddonRequest(params)
 //
-//    // Example sending a request using the CreateAddonRequest method.
-//    req, resp := client.CreateAddonRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateAddon
 func (c *EKS) CreateAddonRequest(input *CreateAddonInput) (req *request.Request, output *CreateAddonOutput) {
@@ -287,29 +286,30 @@ func (c *EKS) CreateAddonRequest(input *CreateAddonInput) (req *request.Request,
 // API operation CreateAddon for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateAddon
 func (c *EKS) CreateAddon(input *CreateAddonInput) (*CreateAddonOutput, error) {
@@ -349,14 +349,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateCluster
 func (c *EKS) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -411,32 +410,33 @@ func (c *EKS) CreateClusterRequest(input *CreateClusterInput) (req *request.Requ
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceLimitExceededException
-//   You have encountered a service limit on the specified resource.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * UnsupportedAvailabilityZoneException
-//   At least one of your specified cluster subnets is in an Availability Zone
-//   that does not support Amazon EKS. The exception output specifies the supported
-//   Availability Zones for your account, from which you can choose subnets for
-//   your cluster.
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+//   - UnsupportedAvailabilityZoneException
+//     At least one of your specified cluster subnets is in an Availability Zone
+//     that does not support Amazon EKS. The exception output specifies the supported
+//     Availability Zones for your account, from which you can choose subnets for
+//     your cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateCluster
 func (c *EKS) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -476,14 +476,13 @@ const opCreateFargateProfile = "CreateFargateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFargateProfileRequest method.
+//	req, resp := client.CreateFargateProfileRequest(params)
 //
-//    // Example sending a request using the CreateFargateProfileRequest method.
-//    req, resp := client.CreateFargateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateFargateProfile
 func (c *EKS) CreateFargateProfileRequest(input *CreateFargateProfileInput) (req *request.Request, output *CreateFargateProfileOutput) {
@@ -545,30 +544,31 @@ func (c *EKS) CreateFargateProfileRequest(input *CreateFargateProfileInput) (req
 // API operation CreateFargateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceLimitExceededException
-//   You have encountered a service limit on the specified resource.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * UnsupportedAvailabilityZoneException
-//   At least one of your specified cluster subnets is in an Availability Zone
-//   that does not support Amazon EKS. The exception output specifies the supported
-//   Availability Zones for your account, from which you can choose subnets for
-//   your cluster.
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
+//
+//   - UnsupportedAvailabilityZoneException
+//     At least one of your specified cluster subnets is in an Availability Zone
+//     that does not support Amazon EKS. The exception output specifies the supported
+//     Availability Zones for your account, from which you can choose subnets for
+//     your cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateFargateProfile
 func (c *EKS) CreateFargateProfile(input *CreateFargateProfileInput) (*CreateFargateProfileOutput, error) {
@@ -608,14 +608,13 @@ const opCreateNodegroup = "CreateNodegroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNodegroupRequest method.
+//	req, resp := client.CreateNodegroupRequest(params)
 //
-//    // Example sending a request using the CreateNodegroupRequest method.
-//    req, resp := client.CreateNodegroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateNodegroup
 func (c *EKS) CreateNodegroupRequest(input *CreateNodegroupInput) (req *request.Request, output *CreateNodegroupOutput) {
@@ -657,30 +656,31 @@ func (c *EKS) CreateNodegroupRequest(input *CreateNodegroupInput) (req *request.
 // API operation CreateNodegroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceLimitExceededException
-//   You have encountered a service limit on the specified resource.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateNodegroup
 func (c *EKS) CreateNodegroup(input *CreateNodegroupInput) (*CreateNodegroupOutput, error) {
@@ -720,14 +720,13 @@ const opDeleteAddon = "DeleteAddon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAddonRequest method.
+//	req, resp := client.DeleteAddonRequest(params)
 //
-//    // Example sending a request using the DeleteAddonRequest method.
-//    req, resp := client.DeleteAddonRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteAddon
 func (c *EKS) DeleteAddonRequest(input *DeleteAddonInput) (req *request.Request, output *DeleteAddonOutput) {
@@ -761,26 +760,27 @@ func (c *EKS) DeleteAddonRequest(input *DeleteAddonInput) (req *request.Request,
 // API operation DeleteAddon for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteAddon
 func (c *EKS) DeleteAddon(input *DeleteAddonInput) (*DeleteAddonOutput, error) {
@@ -820,14 +820,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteCluster
 func (c *EKS) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -869,24 +868,25 @@ func (c *EKS) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Requ
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteCluster
 func (c *EKS) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -926,14 +926,13 @@ const opDeleteFargateProfile = "DeleteFargateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFargateProfileRequest method.
+//	req, resp := client.DeleteFargateProfileRequest(params)
 //
-//    // Example sending a request using the DeleteFargateProfileRequest method.
-//    req, resp := client.DeleteFargateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteFargateProfile
 func (c *EKS) DeleteFargateProfileRequest(input *DeleteFargateProfileInput) (req *request.Request, output *DeleteFargateProfileOutput) {
@@ -974,22 +973,23 @@ func (c *EKS) DeleteFargateProfileRequest(input *DeleteFargateProfileInput) (req
 // API operation DeleteFargateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteFargateProfile
 func (c *EKS) DeleteFargateProfile(input *DeleteFargateProfileInput) (*DeleteFargateProfileOutput, error) {
@@ -1029,14 +1029,13 @@ const opDeleteNodegroup = "DeleteNodegroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNodegroupRequest method.
+//	req, resp := client.DeleteNodegroupRequest(params)
 //
-//    // Example sending a request using the DeleteNodegroupRequest method.
-//    req, resp := client.DeleteNodegroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteNodegroup
 func (c *EKS) DeleteNodegroupRequest(input *DeleteNodegroupInput) (req *request.Request, output *DeleteNodegroupOutput) {
@@ -1067,28 +1066,29 @@ func (c *EKS) DeleteNodegroupRequest(input *DeleteNodegroupInput) (req *request.
 // API operation DeleteNodegroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteNodegroup
 func (c *EKS) DeleteNodegroup(input *DeleteNodegroupInput) (*DeleteNodegroupOutput, error) {
@@ -1128,14 +1128,13 @@ const opDeregisterCluster = "DeregisterCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterClusterRequest method.
+//	req, resp := client.DeregisterClusterRequest(params)
 //
-//    // Example sending a request using the DeregisterClusterRequest method.
-//    req, resp := client.DeregisterClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeregisterCluster
 func (c *EKS) DeregisterClusterRequest(input *DeregisterClusterInput) (req *request.Request, output *DeregisterClusterOutput) {
@@ -1167,31 +1166,32 @@ func (c *EKS) DeregisterClusterRequest(input *DeregisterClusterInput) (req *requ
 // API operation DeregisterCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeregisterCluster
 func (c *EKS) DeregisterCluster(input *DeregisterClusterInput) (*DeregisterClusterOutput, error) {
@@ -1231,14 +1231,13 @@ const opDescribeAddon = "DescribeAddon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAddonRequest method.
+//	req, resp := client.DescribeAddonRequest(params)
 //
-//    // Example sending a request using the DescribeAddonRequest method.
-//    req, resp := client.DescribeAddonRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddon
 func (c *EKS) DescribeAddonRequest(input *DescribeAddonInput) (req *request.Request, output *DescribeAddonOutput) {
@@ -1269,26 +1268,27 @@ func (c *EKS) DescribeAddonRequest(input *DescribeAddonInput) (req *request.Requ
 // API operation DescribeAddon for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddon
 func (c *EKS) DescribeAddon(input *DescribeAddonInput) (*DescribeAddonOutput, error) {
@@ -1328,14 +1328,13 @@ const opDescribeAddonVersions = "DescribeAddonVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAddonVersionsRequest method.
+//	req, resp := client.DescribeAddonVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeAddonVersionsRequest method.
-//    req, resp := client.DescribeAddonVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddonVersions
 func (c *EKS) DescribeAddonVersionsRequest(input *DescribeAddonVersionsInput) (req *request.Request, output *DescribeAddonVersionsOutput) {
@@ -1372,17 +1371,18 @@ func (c *EKS) DescribeAddonVersionsRequest(input *DescribeAddonVersionsInput) (r
 // API operation DescribeAddonVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddonVersions
 func (c *EKS) DescribeAddonVersions(input *DescribeAddonVersionsInput) (*DescribeAddonVersionsOutput, error) {
@@ -1414,15 +1414,14 @@ func (c *EKS) DescribeAddonVersionsWithContext(ctx aws.Context, input *DescribeA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAddonVersions operation.
-//    pageNum := 0
-//    err := client.DescribeAddonVersionsPages(params,
-//        func(page *eks.DescribeAddonVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAddonVersions operation.
+//	pageNum := 0
+//	err := client.DescribeAddonVersionsPages(params,
+//	    func(page *eks.DescribeAddonVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) DescribeAddonVersionsPages(input *DescribeAddonVersionsInput, fn func(*DescribeAddonVersionsOutput, bool) bool) error {
 	return c.DescribeAddonVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1474,14 +1473,13 @@ const opDescribeCluster = "DescribeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterRequest method.
+//	req, resp := client.DescribeClusterRequest(params)
 //
-//    // Example sending a request using the DescribeClusterRequest method.
-//    req, resp := client.DescribeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeCluster
 func (c *EKS) DescribeClusterRequest(input *DescribeClusterInput) (req *request.Request, output *DescribeClusterOutput) {
@@ -1520,21 +1518,22 @@ func (c *EKS) DescribeClusterRequest(input *DescribeClusterInput) (req *request.
 // API operation DescribeCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeCluster
 func (c *EKS) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutput, error) {
@@ -1574,14 +1573,13 @@ const opDescribeFargateProfile = "DescribeFargateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFargateProfileRequest method.
+//	req, resp := client.DescribeFargateProfileRequest(params)
 //
-//    // Example sending a request using the DescribeFargateProfileRequest method.
-//    req, resp := client.DescribeFargateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeFargateProfile
 func (c *EKS) DescribeFargateProfileRequest(input *DescribeFargateProfileInput) (req *request.Request, output *DescribeFargateProfileOutput) {
@@ -1612,22 +1610,23 @@ func (c *EKS) DescribeFargateProfileRequest(input *DescribeFargateProfileInput) 
 // API operation DescribeFargateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeFargateProfile
 func (c *EKS) DescribeFargateProfile(input *DescribeFargateProfileInput) (*DescribeFargateProfileOutput, error) {
@@ -1667,14 +1666,13 @@ const opDescribeIdentityProviderConfig = "DescribeIdentityProviderConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdentityProviderConfigRequest method.
+//	req, resp := client.DescribeIdentityProviderConfigRequest(params)
 //
-//    // Example sending a request using the DescribeIdentityProviderConfigRequest method.
-//    req, resp := client.DescribeIdentityProviderConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeIdentityProviderConfig
 func (c *EKS) DescribeIdentityProviderConfigRequest(input *DescribeIdentityProviderConfigInput) (req *request.Request, output *DescribeIdentityProviderConfigOutput) {
@@ -1705,25 +1703,26 @@ func (c *EKS) DescribeIdentityProviderConfigRequest(input *DescribeIdentityProvi
 // API operation DescribeIdentityProviderConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeIdentityProviderConfig
 func (c *EKS) DescribeIdentityProviderConfig(input *DescribeIdentityProviderConfigInput) (*DescribeIdentityProviderConfigOutput, error) {
@@ -1763,14 +1762,13 @@ const opDescribeNodegroup = "DescribeNodegroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNodegroupRequest method.
+//	req, resp := client.DescribeNodegroupRequest(params)
 //
-//    // Example sending a request using the DescribeNodegroupRequest method.
-//    req, resp := client.DescribeNodegroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeNodegroup
 func (c *EKS) DescribeNodegroupRequest(input *DescribeNodegroupInput) (req *request.Request, output *DescribeNodegroupOutput) {
@@ -1801,25 +1799,26 @@ func (c *EKS) DescribeNodegroupRequest(input *DescribeNodegroupInput) (req *requ
 // API operation DescribeNodegroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeNodegroup
 func (c *EKS) DescribeNodegroup(input *DescribeNodegroupInput) (*DescribeNodegroupOutput, error) {
@@ -1859,14 +1858,13 @@ const opDescribeUpdate = "DescribeUpdate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUpdateRequest method.
+//	req, resp := client.DescribeUpdateRequest(params)
 //
-//    // Example sending a request using the DescribeUpdateRequest method.
-//    req, resp := client.DescribeUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeUpdate
 func (c *EKS) DescribeUpdateRequest(input *DescribeUpdateInput) (req *request.Request, output *DescribeUpdateOutput) {
@@ -1888,7 +1886,7 @@ func (c *EKS) DescribeUpdateRequest(input *DescribeUpdateInput) (req *request.Re
 // DescribeUpdate API operation for Amazon Elastic Kubernetes Service.
 //
 // Returns descriptive information about an update against your Amazon EKS cluster
-// or associated managed node group.
+// or associated managed node group or Amazon EKS add-on.
 //
 // When the status of the update is Succeeded, the update is complete. If an
 // update fails, the status is Failed, and an error detail explains the reason
@@ -1902,22 +1900,23 @@ func (c *EKS) DescribeUpdateRequest(input *DescribeUpdateInput) (req *request.Re
 // API operation DescribeUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeUpdate
 func (c *EKS) DescribeUpdate(input *DescribeUpdateInput) (*DescribeUpdateOutput, error) {
@@ -1957,14 +1956,13 @@ const opDisassociateIdentityProviderConfig = "DisassociateIdentityProviderConfig
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateIdentityProviderConfigRequest method.
+//	req, resp := client.DisassociateIdentityProviderConfigRequest(params)
 //
-//    // Example sending a request using the DisassociateIdentityProviderConfigRequest method.
-//    req, resp := client.DisassociateIdentityProviderConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DisassociateIdentityProviderConfig
 func (c *EKS) DisassociateIdentityProviderConfigRequest(input *DisassociateIdentityProviderConfigInput) (req *request.Request, output *DisassociateIdentityProviderConfigOutput) {
@@ -1998,29 +1996,30 @@ func (c *EKS) DisassociateIdentityProviderConfigRequest(input *DisassociateIdent
 // API operation DisassociateIdentityProviderConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DisassociateIdentityProviderConfig
 func (c *EKS) DisassociateIdentityProviderConfig(input *DisassociateIdentityProviderConfigInput) (*DisassociateIdentityProviderConfigOutput, error) {
@@ -2060,14 +2059,13 @@ const opListAddons = "ListAddons"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAddonsRequest method.
+//	req, resp := client.ListAddonsRequest(params)
 //
-//    // Example sending a request using the ListAddonsRequest method.
-//    req, resp := client.ListAddonsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListAddons
 func (c *EKS) ListAddonsRequest(input *ListAddonsInput) (req *request.Request, output *ListAddonsOutput) {
@@ -2104,26 +2102,27 @@ func (c *EKS) ListAddonsRequest(input *ListAddonsInput) (req *request.Request, o
 // API operation ListAddons for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListAddons
 func (c *EKS) ListAddons(input *ListAddonsInput) (*ListAddonsOutput, error) {
@@ -2155,15 +2154,14 @@ func (c *EKS) ListAddonsWithContext(ctx aws.Context, input *ListAddonsInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAddons operation.
-//    pageNum := 0
-//    err := client.ListAddonsPages(params,
-//        func(page *eks.ListAddonsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAddons operation.
+//	pageNum := 0
+//	err := client.ListAddonsPages(params,
+//	    func(page *eks.ListAddonsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListAddonsPages(input *ListAddonsInput, fn func(*ListAddonsOutput, bool) bool) error {
 	return c.ListAddonsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2215,14 +2213,13 @@ const opListClusters = "ListClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersRequest method.
+//	req, resp := client.ListClustersRequest(params)
 //
-//    // Example sending a request using the ListClustersRequest method.
-//    req, resp := client.ListClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListClusters
 func (c *EKS) ListClustersRequest(input *ListClustersInput) (req *request.Request, output *ListClustersOutput) {
@@ -2260,20 +2257,21 @@ func (c *EKS) ListClustersRequest(input *ListClustersInput) (req *request.Reques
 // API operation ListClusters for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListClusters
 func (c *EKS) ListClusters(input *ListClustersInput) (*ListClustersOutput, error) {
@@ -2305,15 +2303,14 @@ func (c *EKS) ListClustersWithContext(ctx aws.Context, input *ListClustersInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusters operation.
-//    pageNum := 0
-//    err := client.ListClustersPages(params,
-//        func(page *eks.ListClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusters operation.
+//	pageNum := 0
+//	err := client.ListClustersPages(params,
+//	    func(page *eks.ListClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListClustersPages(input *ListClustersInput, fn func(*ListClustersOutput, bool) bool) error {
 	return c.ListClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2365,14 +2362,13 @@ const opListFargateProfiles = "ListFargateProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFargateProfilesRequest method.
+//	req, resp := client.ListFargateProfilesRequest(params)
 //
-//    // Example sending a request using the ListFargateProfilesRequest method.
-//    req, resp := client.ListFargateProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListFargateProfiles
 func (c *EKS) ListFargateProfilesRequest(input *ListFargateProfilesInput) (req *request.Request, output *ListFargateProfilesOutput) {
@@ -2410,22 +2406,23 @@ func (c *EKS) ListFargateProfilesRequest(input *ListFargateProfilesInput) (req *
 // API operation ListFargateProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListFargateProfiles
 func (c *EKS) ListFargateProfiles(input *ListFargateProfilesInput) (*ListFargateProfilesOutput, error) {
@@ -2457,15 +2454,14 @@ func (c *EKS) ListFargateProfilesWithContext(ctx aws.Context, input *ListFargate
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFargateProfiles operation.
-//    pageNum := 0
-//    err := client.ListFargateProfilesPages(params,
-//        func(page *eks.ListFargateProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFargateProfiles operation.
+//	pageNum := 0
+//	err := client.ListFargateProfilesPages(params,
+//	    func(page *eks.ListFargateProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListFargateProfilesPages(input *ListFargateProfilesInput, fn func(*ListFargateProfilesOutput, bool) bool) error {
 	return c.ListFargateProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2517,14 +2513,13 @@ const opListIdentityProviderConfigs = "ListIdentityProviderConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIdentityProviderConfigsRequest method.
+//	req, resp := client.ListIdentityProviderConfigsRequest(params)
 //
-//    // Example sending a request using the ListIdentityProviderConfigsRequest method.
-//    req, resp := client.ListIdentityProviderConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListIdentityProviderConfigs
 func (c *EKS) ListIdentityProviderConfigsRequest(input *ListIdentityProviderConfigsInput) (req *request.Request, output *ListIdentityProviderConfigsOutput) {
@@ -2561,25 +2556,26 @@ func (c *EKS) ListIdentityProviderConfigsRequest(input *ListIdentityProviderConf
 // API operation ListIdentityProviderConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListIdentityProviderConfigs
 func (c *EKS) ListIdentityProviderConfigs(input *ListIdentityProviderConfigsInput) (*ListIdentityProviderConfigsOutput, error) {
@@ -2611,15 +2607,14 @@ func (c *EKS) ListIdentityProviderConfigsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIdentityProviderConfigs operation.
-//    pageNum := 0
-//    err := client.ListIdentityProviderConfigsPages(params,
-//        func(page *eks.ListIdentityProviderConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIdentityProviderConfigs operation.
+//	pageNum := 0
+//	err := client.ListIdentityProviderConfigsPages(params,
+//	    func(page *eks.ListIdentityProviderConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListIdentityProviderConfigsPages(input *ListIdentityProviderConfigsInput, fn func(*ListIdentityProviderConfigsOutput, bool) bool) error {
 	return c.ListIdentityProviderConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2671,14 +2666,13 @@ const opListNodegroups = "ListNodegroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNodegroupsRequest method.
+//	req, resp := client.ListNodegroupsRequest(params)
 //
-//    // Example sending a request using the ListNodegroupsRequest method.
-//    req, resp := client.ListNodegroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListNodegroups
 func (c *EKS) ListNodegroupsRequest(input *ListNodegroupsInput) (req *request.Request, output *ListNodegroupsOutput) {
@@ -2717,25 +2711,26 @@ func (c *EKS) ListNodegroupsRequest(input *ListNodegroupsInput) (req *request.Re
 // API operation ListNodegroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListNodegroups
 func (c *EKS) ListNodegroups(input *ListNodegroupsInput) (*ListNodegroupsOutput, error) {
@@ -2767,15 +2762,14 @@ func (c *EKS) ListNodegroupsWithContext(ctx aws.Context, input *ListNodegroupsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNodegroups operation.
-//    pageNum := 0
-//    err := client.ListNodegroupsPages(params,
-//        func(page *eks.ListNodegroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNodegroups operation.
+//	pageNum := 0
+//	err := client.ListNodegroupsPages(params,
+//	    func(page *eks.ListNodegroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListNodegroupsPages(input *ListNodegroupsInput, fn func(*ListNodegroupsOutput, bool) bool) error {
 	return c.ListNodegroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2827,14 +2821,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListTagsForResource
 func (c *EKS) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2865,13 +2858,14 @@ func (c *EKS) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   This exception is thrown if the request contains a semantic error. The precise
-//   meaning will depend on the API, and will be documented in the error message.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - BadRequestException
+//     This exception is thrown if the request contains a semantic error. The precise
+//     meaning will depend on the API, and will be documented in the error message.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListTagsForResource
 func (c *EKS) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2911,14 +2905,13 @@ const opListUpdates = "ListUpdates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUpdatesRequest method.
+//	req, resp := client.ListUpdatesRequest(params)
 //
-//    // Example sending a request using the ListUpdatesRequest method.
-//    req, resp := client.ListUpdatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListUpdates
 func (c *EKS) ListUpdatesRequest(input *ListUpdatesInput) (req *request.Request, output *ListUpdatesOutput) {
@@ -2956,22 +2949,23 @@ func (c *EKS) ListUpdatesRequest(input *ListUpdatesInput) (req *request.Request,
 // API operation ListUpdates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListUpdates
 func (c *EKS) ListUpdates(input *ListUpdatesInput) (*ListUpdatesOutput, error) {
@@ -3003,15 +2997,14 @@ func (c *EKS) ListUpdatesWithContext(ctx aws.Context, input *ListUpdatesInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUpdates operation.
-//    pageNum := 0
-//    err := client.ListUpdatesPages(params,
-//        func(page *eks.ListUpdatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUpdates operation.
+//	pageNum := 0
+//	err := client.ListUpdatesPages(params,
+//	    func(page *eks.ListUpdatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EKS) ListUpdatesPages(input *ListUpdatesInput, fn func(*ListUpdatesOutput, bool) bool) error {
 	return c.ListUpdatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3063,14 +3056,13 @@ const opRegisterCluster = "RegisterCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterClusterRequest method.
+//	req, resp := client.RegisterClusterRequest(params)
 //
-//    // Example sending a request using the RegisterClusterRequest method.
-//    req, resp := client.RegisterClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/RegisterCluster
 func (c *EKS) RegisterClusterRequest(input *RegisterClusterInput) (req *request.Request, output *RegisterClusterOutput) {
@@ -3116,37 +3108,38 @@ func (c *EKS) RegisterClusterRequest(input *RegisterClusterInput) (req *request.
 // API operation RegisterCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceLimitExceededException
-//   You have encountered a service limit on the specified resource.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ServiceUnavailableException
-//   The service is unavailable. Back off and retry the operation.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourcePropagationDelayException
-//   Required resources (such as Service Linked Roles) were created and are still
-//   propagating. Retry later.
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - ResourcePropagationDelayException
+//     Required resources (such as service-linked roles) were created and are still
+//     propagating. Retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/RegisterCluster
 func (c *EKS) RegisterCluster(input *RegisterClusterInput) (*RegisterClusterOutput, error) {
@@ -3186,14 +3179,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/TagResource
 func (c *EKS) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3231,13 +3223,14 @@ func (c *EKS) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   This exception is thrown if the request contains a semantic error. The precise
-//   meaning will depend on the API, and will be documented in the error message.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - BadRequestException
+//     This exception is thrown if the request contains a semantic error. The precise
+//     meaning will depend on the API, and will be documented in the error message.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/TagResource
 func (c *EKS) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3277,14 +3270,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UntagResource
 func (c *EKS) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3316,13 +3308,14 @@ func (c *EKS) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   This exception is thrown if the request contains a semantic error. The precise
-//   meaning will depend on the API, and will be documented in the error message.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - BadRequestException
+//     This exception is thrown if the request contains a semantic error. The precise
+//     meaning will depend on the API, and will be documented in the error message.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UntagResource
 func (c *EKS) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3362,14 +3355,13 @@ const opUpdateAddon = "UpdateAddon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAddonRequest method.
+//	req, resp := client.UpdateAddonRequest(params)
 //
-//    // Example sending a request using the UpdateAddonRequest method.
-//    req, resp := client.UpdateAddonRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateAddon
 func (c *EKS) UpdateAddonRequest(input *UpdateAddonInput) (req *request.Request, output *UpdateAddonOutput) {
@@ -3400,29 +3392,30 @@ func (c *EKS) UpdateAddonRequest(input *UpdateAddonInput) (req *request.Request,
 // API operation UpdateAddon for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateAddon
 func (c *EKS) UpdateAddon(input *UpdateAddonInput) (*UpdateAddonOutput, error) {
@@ -3462,14 +3455,13 @@ const opUpdateClusterConfig = "UpdateClusterConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterConfigRequest method.
+//	req, resp := client.UpdateClusterConfigRequest(params)
 //
-//    // Example sending a request using the UpdateClusterConfigRequest method.
-//    req, resp := client.UpdateClusterConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateClusterConfig
 func (c *EKS) UpdateClusterConfigRequest(input *UpdateClusterConfigInput) (req *request.Request, output *UpdateClusterConfigOutput) {
@@ -3526,29 +3518,30 @@ func (c *EKS) UpdateClusterConfigRequest(input *UpdateClusterConfigInput) (req *
 // API operation UpdateClusterConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateClusterConfig
 func (c *EKS) UpdateClusterConfig(input *UpdateClusterConfigInput) (*UpdateClusterConfigOutput, error) {
@@ -3588,14 +3581,13 @@ const opUpdateClusterVersion = "UpdateClusterVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterVersionRequest method.
+//	req, resp := client.UpdateClusterVersionRequest(params)
 //
-//    // Example sending a request using the UpdateClusterVersionRequest method.
-//    req, resp := client.UpdateClusterVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateClusterVersion
 func (c *EKS) UpdateClusterVersionRequest(input *UpdateClusterVersionInput) (req *request.Request, output *UpdateClusterVersionOutput) {
@@ -3638,29 +3630,30 @@ func (c *EKS) UpdateClusterVersionRequest(input *UpdateClusterVersionInput) (req
 // API operation UpdateClusterVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateClusterVersion
 func (c *EKS) UpdateClusterVersion(input *UpdateClusterVersionInput) (*UpdateClusterVersionOutput, error) {
@@ -3700,14 +3693,13 @@ const opUpdateNodegroupConfig = "UpdateNodegroupConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNodegroupConfigRequest method.
+//	req, resp := client.UpdateNodegroupConfigRequest(params)
 //
-//    // Example sending a request using the UpdateNodegroupConfigRequest method.
-//    req, resp := client.UpdateNodegroupConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateNodegroupConfig
 func (c *EKS) UpdateNodegroupConfigRequest(input *UpdateNodegroupConfigInput) (req *request.Request, output *UpdateNodegroupConfigOutput) {
@@ -3742,29 +3734,30 @@ func (c *EKS) UpdateNodegroupConfigRequest(input *UpdateNodegroupConfigInput) (r
 // API operation UpdateNodegroupConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateNodegroupConfig
 func (c *EKS) UpdateNodegroupConfig(input *UpdateNodegroupConfigInput) (*UpdateNodegroupConfigOutput, error) {
@@ -3804,14 +3797,13 @@ const opUpdateNodegroupVersion = "UpdateNodegroupVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNodegroupVersionRequest method.
+//	req, resp := client.UpdateNodegroupVersionRequest(params)
 //
-//    // Example sending a request using the UpdateNodegroupVersionRequest method.
-//    req, resp := client.UpdateNodegroupVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateNodegroupVersion
 func (c *EKS) UpdateNodegroupVersionRequest(input *UpdateNodegroupVersionInput) (req *request.Request, output *UpdateNodegroupVersionOutput) {
@@ -3866,29 +3858,30 @@ func (c *EKS) UpdateNodegroupVersionRequest(input *UpdateNodegroupVersionInput) 
 // API operation UpdateNodegroupVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
 //
-//   * ClientException
-//   These errors are usually caused by a client action. Actions can include using
-//   an action or resource on behalf of a user that doesn't have permissions to
-//   use the action or resource or specifying an identifier that is not valid.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
 //
-//   * ServerException
-//   These errors are usually caused by a server-side issue.
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of a user that doesn't have permissions to
+//     use the action or resource or specifying an identifier that is not valid.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found. You can view your available clusters
-//   with ListClusters. You can view your available managed node groups with ListNodegroups.
-//   Amazon EKS clusters and node groups are Region-specific.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidRequestException
-//   The request is invalid given the state of the cluster. Check the state of
-//   the cluster and the associated operations.
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateNodegroupVersion
 func (c *EKS) UpdateNodegroupVersion(input *UpdateNodegroupVersionInput) (*UpdateNodegroupVersionOutput, error) {
@@ -5661,7 +5654,7 @@ type CreateNodegroupInput struct {
 	// through an IAM instance profile and associated policies. Before you can launch
 	// nodes and register them into a cluster, you must create an IAM role for those
 	// nodes to use when they are launched. For more information, see Amazon EKS
-	// node IAM role (https://docs.aws.amazon.com/eks/latest/userguide/worker_node_IAM_role.html)
+	// node IAM role (https://docs.aws.amazon.com/eks/latest/userguide/create-node-role.html)
 	// in the Amazon EKS User Guide . If you specify launchTemplate, then don't
 	// specify IamInstanceProfile (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_IamInstanceProfile.html)
 	// in your launch template, or the node group deployment will fail. For more
@@ -5715,7 +5708,8 @@ type CreateNodegroupInput struct {
 	// with the node group, such as the Amazon EC2 instances or subnets.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// The Kubernetes taints to be applied to the nodes in the node group.
+	// The Kubernetes taints to be applied to the nodes in the node group. For more
+	// information, see Node taints on managed node groups (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 	Taints []*Taint `locationName:"taints" type:"list"`
 
 	// The node group update configuration.
@@ -7002,6 +6996,7 @@ type DescribeUpdateInput struct {
 
 	// The name of the add-on. The name must match one of the names returned by
 	// ListAddons (https://docs.aws.amazon.com/eks/latest/APIReference/API_ListAddons.html).
+	// This parameter is required if the update is an add-on update.
 	AddonName *string `location:"querystring" locationName:"addonName" type:"string"`
 
 	// The name of the Amazon EKS cluster associated with the update.
@@ -7009,7 +7004,8 @@ type DescribeUpdateInput struct {
 	// Name is a required field
 	Name *string `location:"uri" locationName:"name" type:"string" required:"true"`
 
-	// The name of the Amazon EKS node group associated with the update.
+	// The name of the Amazon EKS node group associated with the update. This parameter
+	// is required if the update is a node group update.
 	NodegroupName *string `location:"querystring" locationName:"nodegroupName" type:"string"`
 
 	// The ID of the update to describe.
@@ -7527,7 +7523,8 @@ type IdentityProviderConfig struct {
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 
-	// The type of the identity provider configuration.
+	// The type of the identity provider configuration. The only type available
+	// is oidc.
 	//
 	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true"`
@@ -7877,20 +7874,20 @@ func (s *Issue) SetResourceIds(v []*string) *Issue {
 type KubernetesNetworkConfigRequest struct {
 	_ struct{} `type:"structure"`
 
-	// Specify which IP version is used to assign Kubernetes Pod and Service IP
-	// addresses. If you don't specify a value, ipv4 is used by default. You can
-	// only specify an IP family when you create a cluster and can't change this
-	// value once the cluster is created. If you specify ipv6, the VPC and subnets
-	// that you specify for cluster creation must have both IPv4 and IPv6 CIDR blocks
-	// assigned to them.
+	// Specify which IP family is used to assign Kubernetes pod and service IP addresses.
+	// If you don't specify a value, ipv4 is used by default. You can only specify
+	// an IP family when you create a cluster and can't change this value once the
+	// cluster is created. If you specify ipv6, the VPC and subnets that you specify
+	// for cluster creation must have both IPv4 and IPv6 CIDR blocks assigned to
+	// them. You can't specify ipv6 for clusters in China Regions.
 	//
-	// You can only specify ipv6 for 1.21 and later clusters that use version 1.10.0
+	// You can only specify ipv6 for 1.21 and later clusters that use version 1.10.1
 	// or later of the Amazon VPC CNI add-on. If you specify ipv6, then ensure that
-	// your VPC meets the requirements and that you're familiar with the considerations
-	// listed in Assigning IPv6 addresses to Pods and Services (https://docs.aws.amazon.com/eks/latest/userguide/cni-ipv6.html)
-	// in the Amazon EKS User Guide. If you specify ipv6, Kubernetes assigns Service
-	// and Pod addresses from the unique local address range (fc00::/7). You can't
-	// specify a custom IPv6 CIDR block.
+	// your VPC meets the requirements listed in the considerations listed in Assigning
+	// IPv6 addresses to pods and services (https://docs.aws.amazon.com/eks/latest/userguide/cni-ipv6.html)
+	// in the Amazon EKS User Guide. Kubernetes assigns services IPv6 addresses
+	// from the unique local address range (fc00::/7). You can't specify a custom
+	// IPv6 CIDR block. Pod addresses are assigned from the subnet's IPv6 CIDR.
 	IpFamily *string `locationName:"ipFamily" type:"string" enum:"IpFamily"`
 
 	// Don't specify a value if you select ipv6 for ipFamily. The CIDR block to
@@ -7948,13 +7945,13 @@ func (s *KubernetesNetworkConfigRequest) SetServiceIpv4Cidr(v string) *Kubernete
 type KubernetesNetworkConfigResponse struct {
 	_ struct{} `type:"structure"`
 
-	// The IP family used to assign Kubernetes Pod and Service IP addresses. The
+	// The IP family used to assign Kubernetes pod and service IP addresses. The
 	// IP family is always ipv4, unless you have a 1.21 or later cluster running
-	// version 1.10.0 or later of the Amazon VPC CNI add-on and specified ipv6 when
+	// version 1.10.1 or later of the Amazon VPC CNI add-on and specified ipv6 when
 	// you created the cluster.
 	IpFamily *string `locationName:"ipFamily" type:"string" enum:"IpFamily"`
 
-	// The CIDR block that Kubernetes Pod and Service IP addresses are assigned
+	// The CIDR block that Kubernetes pod and service IP addresses are assigned
 	// from. Kubernetes assigns addresses from an IPv4 CIDR block assigned to a
 	// subnet that the node is in. If you didn't specify a CIDR block when you created
 	// the cluster, then Kubernetes assigns addresses from either the 10.100.0.0/16
@@ -7962,11 +7959,12 @@ type KubernetesNetworkConfigResponse struct {
 	// when the cluster was created and it can't be changed.
 	ServiceIpv4Cidr *string `locationName:"serviceIpv4Cidr" type:"string"`
 
-	// The CIDR block that Kubernetes Pod and Service IP addresses are assigned
-	// from if you created a 1.21 or later cluster with version 1.10.0 or later
+	// The CIDR block that Kubernetes pod and service IP addresses are assigned
+	// from if you created a 1.21 or later cluster with version 1.10.1 or later
 	// of the Amazon VPC CNI add-on and specified ipv6 for ipFamily when you created
-	// the cluster. Kubernetes assigns addresses from the unique local address range
-	// (fc00::/7).
+	// the cluster. Kubernetes assigns service addresses from the unique local address
+	// range (fc00::/7) because you can't specify a custom IPv6 CIDR block when
+	// you create the cluster.
 	ServiceIpv6Cidr *string `locationName:"serviceIpv6Cidr" type:"string"`
 }
 
@@ -9076,7 +9074,8 @@ type Nodegroup struct {
 	// The Kubernetes taints to be applied to the nodes in the node group when they
 	// are created. Effect is one of No_Schedule, Prefer_No_Schedule, or No_Execute.
 	// Kubernetes taints can be used together with tolerations to control how workloads
-	// are scheduled to your nodes.
+	// are scheduled to your nodes. For more information, see Node taints on managed
+	// node groups (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 	Taints []*Taint `locationName:"taints" type:"list"`
 
 	// The node group update configuration.
@@ -10278,7 +10277,7 @@ func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// Required resources (such as Service Linked Roles) were created and are still
+// Required resources (such as service-linked roles) were created and are still
 // propagating. Retry later.
 type ResourcePropagationDelayException struct {
 	_            struct{}                  `type:"structure"`
@@ -10568,7 +10567,8 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
-// A property that allows a node to repel a set of pods.
+// A property that allows a node to repel a set of pods. For more information,
+// see Node taints on managed node groups (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 type Taint struct {
 	_ struct{} `type:"structure"`
 
@@ -11311,7 +11311,8 @@ type UpdateNodegroupConfigInput struct {
 	ScalingConfig *NodegroupScalingConfig `locationName:"scalingConfig" type:"structure"`
 
 	// The Kubernetes taints to be applied to the nodes in the node group after
-	// the update.
+	// the update. For more information, see Node taints on managed node groups
+	// (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 	Taints *UpdateTaintsPayload `locationName:"taints" type:"structure"`
 
 	// The node group update configuration.
@@ -11651,7 +11652,8 @@ func (s *UpdateParam) SetValue(v string) *UpdateParam {
 	return s
 }
 
-// An object representing the details of an update to a taints payload.
+// An object representing the details of an update to a taints payload. For
+// more information, see Node taints on managed node groups (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 type UpdateTaintsPayload struct {
 	_ struct{} `type:"structure"`
 
@@ -11948,6 +11950,12 @@ const (
 
 	// AMITypesBottlerocketX8664 is a AMITypes enum value
 	AMITypesBottlerocketX8664 = "BOTTLEROCKET_x86_64"
+
+	// AMITypesBottlerocketArm64Nvidia is a AMITypes enum value
+	AMITypesBottlerocketArm64Nvidia = "BOTTLEROCKET_ARM_64_NVIDIA"
+
+	// AMITypesBottlerocketX8664Nvidia is a AMITypes enum value
+	AMITypesBottlerocketX8664Nvidia = "BOTTLEROCKET_x86_64_NVIDIA"
 )
 
 // AMITypes_Values returns all elements of the AMITypes enum
@@ -11959,6 +11967,8 @@ func AMITypes_Values() []string {
 		AMITypesCustom,
 		AMITypesBottlerocketArm64,
 		AMITypesBottlerocketX8664,
+		AMITypesBottlerocketArm64Nvidia,
+		AMITypesBottlerocketX8664Nvidia,
 	}
 }
 
