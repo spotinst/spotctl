@@ -39,6 +39,7 @@ func newCmdEditCluster(opts *CmdEditOptions) *CmdEditCluster {
 func (x *CmdEditCluster) initSubCommands() {
 	commands := []func(*CmdEditClusterOptions) *cobra.Command{
 		NewCmdEditClusterKubernetes,
+		NewCmdEditClusterECS,
 	}
 
 	for _, cmd := range commands {

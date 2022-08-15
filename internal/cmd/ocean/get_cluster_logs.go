@@ -94,7 +94,9 @@ func (x *CmdGetClusterLogs) run(ctx context.Context) error {
 	today := strconv.FormatInt(time.Now().Sub(time.Unix(0, 0)).Milliseconds(), 10)
 	lastWeek := strconv.FormatInt(time.Now().Sub(time.Unix(0, 0)).Milliseconds()-604800000, 10)
 
-	fmt.Println(lastWeek, today)
+	t := time.Now().Unix()
+	timeT := time.Unix(t, 0)
+	fmt.Printf("From 1 week ago until: %s\n", timeT)
 
 	// Get log events.
 
