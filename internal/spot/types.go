@@ -157,6 +157,20 @@ type (
 		SpecIDs             []string
 		InstanceIDs         []string
 	}
+
+	// OceanSparkCluster represents an Ocean Spark cluster.
+	OceanSparkCluster struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		State string `json:"state" table:"3,state"`
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
 )
 
 // typeOf returns obj type's name using reflection.

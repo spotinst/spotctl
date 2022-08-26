@@ -31,6 +31,9 @@ type (
 		// Ocean returns an instance of Ocean interface by cloud provider and
 		// orchestrator names.
 		Ocean(provider CloudProviderName, orchestrator OrchestratorName) (OceanInterface, error)
+
+		// OceanSpark returns an instance of Ocean Spark interface
+		OceanSpark() (OceanSparkInterface, error)
 	}
 
 	// OceanInterface defines the interface of the Spot Ocean API.
@@ -106,6 +109,15 @@ type (
 	// concrete implementation should obey.
 	OceanRolloutBuilder interface {
 		Build() (*OceanRollout, error)
+	}
+
+	// OceanSparkInterface defines the interface of the Spot Ocean for Apache Spark API.
+	OceanSparkInterface interface {
+		// ListClusters returns a list of Ocean Spark clusters.
+		ListClusters(ctx context.Context, controllerClusterID string, state string) ([]*OceanSparkCluster, error)
+
+		// GetCluster returns an Ocean Spark cluster spec by ID.
+		GetCluster(ctx context.Context, clusterID string) (*OceanSparkCluster, error)
 	}
 
 	// CloudProviderName represents the name of a cloud provider.
