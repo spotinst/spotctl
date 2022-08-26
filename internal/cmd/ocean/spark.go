@@ -59,6 +59,7 @@ func (x *CmdSpark) initSubCommands() {
 	commands := []func(*CmdSparkOptions) *cobra.Command{
 		NewCmdSparkCreate,
 		NewCmdSparkGet,
+		NewCmdSparkDescribe,
 	}
 
 	for _, cmd := range commands {

@@ -38,6 +38,7 @@ func newCmdSparkGetCluster(opts *CmdSparkGetOptions) *CmdSparkGetCluster {
 		Short:         "Display one or many Ocean for Apache Spark clusters",
 		SilenceErrors: true,
 		SilenceUsage:  true,
+		Aliases:       []string{"cl"},
 		RunE: func(*cobra.Command, []string) error {
 			return cmd.Run(context.Background())
 		},
