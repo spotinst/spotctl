@@ -44,8 +44,9 @@ func (x *oceanSpark) ListClusters(ctx context.Context, controllerClusterID strin
 				CreatedAt: spotinst.TimeValue(cluster.CreatedAt),
 				UpdatedAt: spotinst.TimeValue(cluster.UpdatedAt),
 			},
-			State: spotinst.StringValue(cluster.State),
-			Obj:   cluster,
+			OceanClusterID: spotinst.StringValue(cluster.OceanClusterID),
+			State:          spotinst.StringValue(cluster.State),
+			Obj:            cluster,
 		}
 	}
 

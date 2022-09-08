@@ -166,7 +166,8 @@ type (
 		// Object's metadata.
 		ObjectMeta
 
-		State string `json:"state" table:"3,state"`
+		OceanClusterID string `json:"oceanClusterId" table:"3,oceanId"`
+		State          string `json:"state" table:"4,state"`
 
 		// Obj holds the raw object
 		Obj interface{} `json:"-"`
