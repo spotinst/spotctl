@@ -22,8 +22,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.114.0
-	github.com/stretchr/testify v1.7.1
+	github.com/spotinst/spotinst-sdk-go v1.129.0
+	github.com/stretchr/testify v1.7.2
 	github.com/theckman/yacspin v0.13.12
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
