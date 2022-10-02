@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -15,7 +12,6 @@ import (
 	"github.com/spf13/pflag"
 	oceanaws "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/theckman/yacspin"
-	"k8s.io/client-go/rest"
 
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
@@ -180,11 +176,6 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	log.Infof("Verified cluster %s", x.opts.ClusterName)
-
-	log.Infof("Updating Ocean controller")
-	if err := updateOceanController(ctx, kubeConfig); err != nil {
-		return fmt.Errorf("could not apply ocean update, %w", err)
-	}
 
 	log.Infof("Creating namespace %s", spotSystemNamespace)
 	if err := kubernetes.EnsureNamespace(ctx, client, spotSystemNamespace); err != nil {
@@ -531,43 +522,6 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	}
 
 	return args
-}
-
-func updateOceanController(ctx context.Context, config *rest.Config) error {
-	const oceanControllerURL = "https://s3.amazonaws.com/spotinst-public/integrations/kubernetes/cluster-controller/spotinst-kubernetes-cluster-controller-ga.yaml"
-
-	res, err := http.Get(oceanControllerURL)
-	if err != nil {
-		return fmt.Errorf("error fetching ocean manifests, %w", err)
-	}
-
-	data, err := ioutil.ReadAll(res.Body)
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			log.Warnf("Could not close response body, err: %s", err.Error())
-		}
-	}()
-	if err != nil {
-		return fmt.Errorf("error reading ocean manifests, %w", err)
-	}
-
-	delim := regexp.MustCompile("(?m)^---$")
-	objects := delim.Split(string(data), -1)
-
-	whitespace := regexp.MustCompile("^[[:space:]]*$")
-
-	for _, o := range objects {
-		if whitespace.Match([]byte(o)) {
-			log.Debugf("Whitespace match: %s", o)
-			continue
-		}
-		err := kubernetes.DoServerSideApply(ctx, config, o)
-		if err != nil {
-			return fmt.Errorf("error applying object from manifests <<%s>>, %w", o, err)
-		}
-	}
-
-	return nil
 }
 
 // startSpinnerWithMessage starts a new spinner logger with the given message.
