@@ -118,6 +118,12 @@ type (
 
 		// GetCluster returns an Ocean Spark cluster spec by ID.
 		GetCluster(ctx context.Context, clusterID string) (*OceanSparkCluster, error)
+
+		// CreateCluster creates an Ocean Spark cluster on top of the given Ocean cluster.
+		CreateCluster(ctx context.Context, oceanClusterID string) (*OceanSparkCluster, error)
+
+		// DeleteCluster deletes the given Ocean Spark cluster.
+		DeleteCluster(ctx context.Context, clusterID string) error
 	}
 
 	// CloudProviderName represents the name of a cloud provider.

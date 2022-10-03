@@ -34,7 +34,7 @@ type (
 
 	CmdSparkCreateClusterOptions struct {
 		*CmdSparkCreateOptions
-		ClusterID         string
+		OceanClusterID    string
 		ClusterName       string
 		Region            string
 		Tags              []string
@@ -124,8 +124,8 @@ func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
 }
 
 func (x *CmdSparkCreateCluster) shouldCreateNewCluster() bool {
-	// If we have a cluster ID we will do an import, otherwise we create a new cluster
-	return x.opts.ClusterID == ""
+	// If we have an Ocean cluster ID we will do an import, otherwise we create a new cluster
+	return x.opts.OceanClusterID == ""
 }
 
 func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
@@ -149,12 +149,33 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		if err := x.createEKSCluster(ctx); err != nil {
 			return fmt.Errorf("could not create EKS cluster, %w", err)
 		}
-	} else {
-		log.Infof("Will deploy Ocean for Apache Spark on cluster %s", x.opts.ClusterID)
 
-		controllerClusterID, err := x.getControllerClusterIDForClusterID(ctx, x.opts.ClusterID)
+		createdCluster, err := x.getOceanClusterByControllerClusterID(ctx, x.opts.ClusterName)
 		if err != nil {
-			return fmt.Errorf("could not get controllerClusterID for cluster %s, %w", x.opts.ClusterID, err)
+			return fmt.Errorf("could not get ocean cluster by controller cluster ID, %w", err)
+		}
+
+		log.Infof("Successfully created Ocean cluster %s (%s)", createdCluster.ID, createdCluster.Name)
+		x.opts.OceanClusterID = createdCluster.ID
+	} else {
+		log.Infof("Will deploy Ocean for Apache Spark on Ocean cluster %s", x.opts.OceanClusterID)
+
+		controllerClusterID, err := x.getControllerClusterIDForOceanClusterID(ctx, x.opts.OceanClusterID)
+		if err != nil {
+			return fmt.Errorf("could not get controllerClusterID for cluster %s, %w", x.opts.OceanClusterID, err)
+		}
+
+		existingOceanSparkCluster, err := x.getOceanSparkClusterByControllerClusterID(ctx, controllerClusterID)
+		if err != nil {
+			if err != errClusterNotFound {
+				return fmt.Errorf("could not check if Ocean Spark cluster already exists, %w", err)
+			}
+		} else {
+			if existingOceanSparkCluster != nil {
+				return fmt.Errorf("ocean spark cluster %s (%s) already exists on ocean cluster %s", existingOceanSparkCluster.ID, existingOceanSparkCluster.Name, x.opts.OceanClusterID)
+			} else {
+				return fmt.Errorf("ocean spark cluster already exists")
+			}
 		}
 
 		// Note that controllerClusterID == cluster name in Ocean for Apache Spark
@@ -187,14 +208,19 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 
-	spinner := startSpinnerWithMessage("Installing Ocean for Apache Spark")
-	if err := ofas.Deploy(ctx, client, spotSystemNamespace); err != nil {
-		stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installation failure", true)
-		return fmt.Errorf("could not deploy, %w", err)
-	}
-	stopSpinnerWithMessage(spinner, "Ocean for Apache Spark installed", false)
+	log.Infof("Creating Ocean Spark cluster")
 
-	log.Infof("Cluster %s successfully created", x.opts.ClusterName)
+	oceanSparkClient, err := x.getOceanSparkClient()
+	if err != nil {
+		return fmt.Errorf("could not create Ocean Spark client, %w", err)
+	}
+
+	createdCluster, err := oceanSparkClient.CreateCluster(ctx, x.opts.OceanClusterID)
+	if err != nil {
+		return fmt.Errorf("could not create Ocean Spark cluster, %w", err)
+	}
+
+	log.Infof("Successfully created Ocean Spark cluster %s (%s)", createdCluster.ID, createdCluster.Name)
 
 	return nil
 }
@@ -209,7 +235,7 @@ func (x *CmdSparkCreateClusterOptions) initDefaults(opts *CmdSparkCreateOptions)
 }
 
 func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "ID of Ocean cluster that should be imported into Ocean for Apache Spark. Note that your machine must be configured to access the cluster.")
+	fs.StringVar(&x.OceanClusterID, flags.FlagOFASOceanClusterID, x.OceanClusterID, "ID of Ocean cluster that should be imported into Ocean for Apache Spark. Note that your machine must be configured to access the cluster.")
 	fs.StringVar(&x.ClusterName, flags.FlagOFASClusterName, x.ClusterName, "name of cluster that will be created (will be generated if empty)")
 	fs.StringVar(&x.Region, flags.FlagOFASClusterRegion, os.Getenv("AWS_REGION"), "region in which your cluster (control plane and nodes) will be created")
 	fs.StringSliceVar(&x.Tags, "tags", x.Tags, "list of K/V pairs used to tag all cloud resources that will be created (eg: \"Owner=john@example.com,Team=DevOps\")")
@@ -218,10 +244,10 @@ func (x *CmdSparkCreateClusterOptions) initFlags(fs *pflag.FlagSet) {
 }
 
 func (x *CmdSparkCreateClusterOptions) Validate() error {
-	if x.ClusterID != "" && x.ClusterName != "" {
-		return spotctlerrors.RequiredXor(flags.FlagOFASClusterID, flags.FlagOFASClusterName)
+	if x.OceanClusterID != "" && x.ClusterName != "" {
+		return spotctlerrors.RequiredXor(flags.FlagOFASOceanClusterID, flags.FlagOFASClusterName)
 	}
-	if x.ClusterID == "" && x.Region == "" {
+	if x.OceanClusterID == "" && x.Region == "" {
 		return spotctlerrors.Required(flags.FlagOFASClusterRegion)
 	}
 	if x.KubeConfigPath == "" {
@@ -370,6 +396,15 @@ func (x *CmdSparkCreateCluster) getSpotClient() (spot.Client, error) {
 	return x.opts.Clientset.NewSpotClient(spotClientOpts...)
 }
 
+func (x *CmdSparkCreateCluster) getOceanSparkClient() (spot.OceanSparkInterface, error) {
+	spotClient, err := x.getSpotClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not get spot client, %w", err)
+	}
+
+	return spotClient.Services().OceanSpark()
+}
+
 func (x *CmdSparkCreateCluster) getOceanClient() (spot.OceanInterface, error) {
 	spotClient, err := x.getSpotClient()
 	if err != nil {
@@ -388,7 +423,7 @@ func (x *CmdSparkCreateCluster) getOceanClusterByID(ctx context.Context, id stri
 	return oceanClient.GetCluster(ctx, id)
 }
 
-func (x *CmdSparkCreateCluster) getControllerClusterIDForClusterID(ctx context.Context, clusterID string) (string, error) {
+func (x *CmdSparkCreateCluster) getControllerClusterIDForOceanClusterID(ctx context.Context, clusterID string) (string, error) {
 	oceanCluster, err := x.getOceanClusterByID(ctx, clusterID)
 	if err != nil {
 		return "", fmt.Errorf("could not get ocean cluster, %w", err)
@@ -404,6 +439,27 @@ func (x *CmdSparkCreateCluster) getControllerClusterIDForClusterID(ctx context.C
 	}
 
 	return *awsOceanCluster.ControllerClusterID, nil
+}
+
+func (x *CmdSparkCreateCluster) getOceanSparkClusterByControllerClusterID(ctx context.Context, controllerClusterID string) (*spot.OceanSparkCluster, error) {
+	oceanSparkClient, err := x.getOceanSparkClient()
+	if err != nil {
+		return nil, fmt.Errorf("could not get ocean spark client, %w", err)
+	}
+
+	clusters, err := oceanSparkClient.ListClusters(ctx, controllerClusterID, "")
+	if err != nil {
+		return nil, fmt.Errorf("could not list ocean spark clusters, %w", err)
+	}
+
+	switch len(clusters) {
+	case 0:
+		return nil, errClusterNotFound
+	case 1:
+		return clusters[0], nil
+	default:
+		return nil, fmt.Errorf("found %d ocean spark clusters with controllerClusterID %q, expected at most 1", len(clusters), controllerClusterID)
+	}
 }
 
 // getOceanClusterByControllerClusterID finds Ocean cluster with the given controllerClusterID.

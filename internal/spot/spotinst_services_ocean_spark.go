@@ -67,7 +67,7 @@ func (x *oceanSpark) GetCluster(ctx context.Context, clusterID string) (*OceanSp
 
 	cluster := &OceanSparkCluster{
 		TypeMeta: TypeMeta{
-			Kind: typeOf(OceanCluster{}),
+			Kind: typeOf(OceanSparkCluster{}),
 		},
 		ObjectMeta: ObjectMeta{
 			ID:        spotinst.StringValue(output.Cluster.ID),
@@ -79,4 +79,49 @@ func (x *oceanSpark) GetCluster(ctx context.Context, clusterID string) (*OceanSp
 	}
 
 	return cluster, nil
+}
+
+func (x *oceanSpark) CreateCluster(ctx context.Context, oceanClusterID string) (*OceanSparkCluster, error) {
+	log.Debugf("Creating Ocean Spark cluster on Ocean cluster: %s", oceanClusterID)
+
+	input := &spark.CreateClusterInput{
+		Cluster: &spark.CreateClusterRequest{
+			OceanClusterID: spotinst.String(oceanClusterID),
+		},
+	}
+
+	output, err := x.svc.CreateCluster(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	cluster := &OceanSparkCluster{
+		TypeMeta: TypeMeta{
+			Kind: typeOf(OceanSparkCluster{}),
+		},
+		ObjectMeta: ObjectMeta{
+			ID:        spotinst.StringValue(output.Cluster.ID),
+			Name:      spotinst.StringValue(output.Cluster.ControllerClusterID),
+			CreatedAt: spotinst.TimeValue(output.Cluster.CreatedAt),
+			UpdatedAt: spotinst.TimeValue(output.Cluster.UpdatedAt),
+		},
+		Obj: output.Cluster,
+	}
+
+	return cluster, nil
+}
+
+func (x *oceanSpark) DeleteCluster(ctx context.Context, clusterID string) error {
+	log.Debugf("Deleting Ocean Spark cluster: %s", clusterID)
+
+	input := &spark.DeleteClusterInput{
+		ClusterID: spotinst.String(clusterID),
+	}
+
+	_, err := x.svc.DeleteCluster(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
