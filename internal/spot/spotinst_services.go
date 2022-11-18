@@ -2,9 +2,9 @@ package spot
 
 import (
 	"fmt"
-	"github.com/spotinst/spotinst-sdk-go/service/ocean/spark"
 
 	"github.com/spotinst/spotinst-sdk-go/service/ocean"
+	"github.com/spotinst/spotinst-sdk-go/service/ocean/spark"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
 )
 

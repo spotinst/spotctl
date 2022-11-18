@@ -61,5 +61,5 @@ func (s *OceanSparkClustersSorter) Swap(i, j int) {
 }
 
 func (s *OceanSparkClustersSorter) Less(i, j int) bool {
-	return s.Clusters[i].UpdatedAt.After(s.Clusters[j].UpdatedAt)
+	return s.Clusters[i].Name < s.Clusters[j].Name
 }
