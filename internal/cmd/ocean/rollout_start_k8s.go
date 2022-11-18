@@ -133,6 +133,7 @@ func (x *CmdRolloutStartKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.BoolVar(&x.DisableAutoScaling, flags.FlagOceanRolloutDisableAutoScaling, x.DisableAutoScaling, "")
 		fs.StringSliceVar(&x.SpecIDs, flags.FlagOceanRolloutSpecIDs, x.SpecIDs, "")
 		fs.StringSliceVar(&x.InstanceIDs, flags.FlagOceanRolloutInstanceIDs, x.InstanceIDs, "")
+		fs.BoolVar(&x.RespectPDB, flags.FlagOceanRolloutRespectPDB, x.RespectPDB, "")
 	}
 }
 

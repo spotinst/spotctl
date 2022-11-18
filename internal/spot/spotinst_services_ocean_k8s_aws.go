@@ -720,5 +720,9 @@ func (x *oceanKubernetesAWSRolloutBuilder) buildRollout() *aws.RollSpec {
 		spec.SetStatus(spotinst.String(x.opts.Status))
 	}
 
+	if x.fs.Changed(flags.FlagOceanRolloutRespectPDB) {
+		spec.SetRespectPDB(spotinst.Bool(x.opts.RespectPDB))
+	}
+
 	return spec
 }

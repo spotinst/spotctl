@@ -156,6 +156,7 @@ type (
 		DisableAutoScaling  bool
 		SpecIDs             []string
 		InstanceIDs         []string
+		RespectPDB          bool
 	}
 
 	// OceanSparkCluster represents an Ocean Spark cluster.
