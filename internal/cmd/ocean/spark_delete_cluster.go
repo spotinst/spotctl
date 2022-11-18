@@ -88,8 +88,6 @@ func (x *CmdSparkDeleteCluster) run(ctx context.Context) error {
 		spot.WithDryRun(x.opts.DryRun),
 	}
 
-	// TODO Confirmation prompt
-
 	spotClient, err := x.opts.Clientset.NewSpotClient(spotClientOpts...)
 	if err != nil {
 		return err

@@ -8,11 +8,21 @@ import (
 	"runtime"
 )
 
+const (
+	osTypeDarwin = "darwin"
+	archARM64    = "arm64"
+	archAMD64    = "amd64"
+)
+
 type dependency struct {
 	name               string
 	upstreamBinaryName string
 	version            string
 	url                string
+
+	// rosettaArchOverride determines if we should override ARM with AMD on darwin machines, and rely on execution via Rosetta.
+	// Useful as a temporary fix until dependencies have been built for M1 Macs (ARM).
+	rosettaArchOverride bool
 }
 
 func (x *dependency) Name() string { return x.name }
@@ -32,10 +42,17 @@ func (x *dependency) URL() (*url.URL, error) {
 		return nil, err
 	}
 
+	osType := runtime.GOOS
+	arch := runtime.GOARCH
+
+	if x.rosettaArchOverride && osType == osTypeDarwin && arch == archARM64 {
+		arch = archAMD64
+	}
+
 	variables := map[string]string{
 		"version":   x.version,
-		"os":        runtime.GOOS,
-		"arch":      runtime.GOARCH,
+		"os":        osType,
+		"arch":      arch,
 		"extension": x.Extension(),
 	}
 

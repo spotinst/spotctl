@@ -24,9 +24,11 @@ var (
 	DependencyEksctlSpot Dependency = &dependency{
 		name:               "eksctl-spot",
 		upstreamBinaryName: "eksctl",
-		version:            "0.77.0-6cfea8af",
+		version:            "0.108.0-cfe0db21",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
+		// TODO Remove this override when the binary has been released for ARM (M1 macs)
+		rosettaArchOverride: true,
 	}
 )
 
