@@ -553,7 +553,7 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
 	if len(x.opts.ClusterName) > 0 {
 		args = append(args,
 			"--cluster", x.opts.ClusterName,
-			"--name", fmt.Sprintf("ocean-%s", uuid.NewV4().Short()))
+			"--name", fmt.Sprintf("ocean-spark-bootstrap-%s", uuid.NewV4().Short()))
 	}
 
 	if len(x.opts.Region) > 0 {
