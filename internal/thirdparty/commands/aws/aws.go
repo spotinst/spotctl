@@ -48,7 +48,7 @@ func (x *Command) Run(ctx context.Context, args ...string) error {
 }
 
 func (x *Command) RunWithStdin(_ context.Context, _ io.Reader, _ ...string) error {
-	panic("not implemented")
+	return thirdparty.ErrNotImplemented
 }
 
 func (x *Command) runVersion(ctx context.Context, args ...string) error {
