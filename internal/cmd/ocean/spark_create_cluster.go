@@ -1,11 +1,13 @@
 package ocean
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -46,6 +48,24 @@ type (
 const (
 	defaultK8sVersion   = "1.21"
 	spotSystemNamespace = "spot-system"
+
+	clusterConfigTemplate = `apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: {{.ClusterName}}
+  region: {{.Region}}
+  version: "{{.KubernetesVersion}}"
+  tags:
+    {{.ClusterTags}}
+# Enable Ocean integration and use all defaults.
+spotOcean: {}
+nodeGroups:
+- name: {{.NodeGroupName}}
+  # Enable Ocean integration and use all defaults.
+  spotOcean: {}
+  tags:
+    {{.NodeGroupTags}}
+`
 )
 
 var (
@@ -332,56 +352,80 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		clusterAlreadyExists = true
 	}
 
+	configFile, err := x.buildEksctlClusterConfig()
+	if err != nil {
+		return fmt.Errorf("could not build cluster config, %w", err)
+	}
+	log.Debugf("Cluster config file:\n%s", configFile)
+
 	// TODO Allow creation of resources if previous stacks failed
 
 	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
 	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already
 	shouldCreateCluster := len(clusterStacks) == 0 && !clusterAlreadyExists
 	if !shouldCreateCluster {
-		if len(clusterStacks) > 0 {
-			log.Infof("Found cluster stacks, will not create cluster:\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
-		} else if clusterAlreadyExists {
+		if clusterAlreadyExists {
 			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)
+		} else if len(clusterStacks) > 0 {
+			log.Infof("Found cloudformation stacks, will not create cluster. To re-run the creation process please delete the stacks or choose another cluster name.\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
 		} else {
 			log.Infof("Will not create EKS cluster")
 		}
 	}
 
 	if shouldCreateCluster {
-		spinner := startSpinnerWithMessage(fmt.Sprintf("Creating EKS cluster %s", x.opts.ClusterName))
-		createClusterArgs := x.buildEksctlCreateClusterArgs()
-		if err := cmdEksctl.Run(ctx, createClusterArgs...); err != nil {
-			stopSpinnerWithMessage(spinner, "Could not create EKS cluster", true)
-			log.Infof("To see more log output, run spotctl with the --verbose flag")
-			return fmt.Errorf("could not create EKS cluster, %w", err)
+		var spinner *yacspin.Spinner
+		if x.opts.Verbose {
+			// No spinner in verbose mode
+			log.Infof(fmt.Sprintf("Creating EKS Ocean cluster %s", x.opts.ClusterName))
+		} else {
+			spinner = startSpinnerWithMessage(fmt.Sprintf("Creating EKS Ocean cluster %s", x.opts.ClusterName))
 		}
-		stopSpinnerWithMessage(spinner, "EKS cluster created", false)
+
+		createClusterArgs := x.buildEksctlCreateClusterArgs()
+		if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createClusterArgs...); err != nil {
+			stopSpinnerWithMessage(spinner, "Could not create EKS Ocean cluster", true)
+			if !x.opts.Verbose {
+				log.Infof("To see more log output, run spotctl with the --verbose flag")
+			}
+			return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
+		}
+		stopSpinnerWithMessage(spinner, "EKS Ocean cluster created", false)
+		return nil
 	}
 
+	// The eksctl cluster creation process will create two cloudformation stacks, the cluster stack and the nodegroup stack.
+	// We can end up in a case where the cluster is created, but the nodegroup creation fails.
+	// We allow the nodegroup creation to be re-tried, without having to re-create the control plane.
+
 	nodegroupStacks := eks.FilterStacks(stacks, eks.IsNodegroupStack)
-	createdClusterStacks := eks.FilterStacks(clusterStacks, eks.IsStackCreated)
-	// Only create nodegroup if we don't have any nodegroup stacks, and if we just created the cluster or if it was created previously (via eksctl (cloudformation stacks))
-	// Note that we cannot add a nodegroup using eksctl unless the cluster was created by (and therefore managed by) eksctl.
-	// To check if a cluster is managed by eksctl, eksctl lists cloudformation stacks and checks for the "alpha.eksctl.io/cluster-name" tag
-	// Therefore, if we have no cluster stacks at all, we know it was not created by eksctl
-	shouldCreateNodegroup := len(nodegroupStacks) == 0 && (shouldCreateCluster || len(createdClusterStacks) > 0)
+	shouldCreateNodegroup := len(nodegroupStacks) == 0 && clusterAlreadyExists
 	if !shouldCreateNodegroup {
 		if len(nodegroupStacks) > 0 {
-			log.Infof("Found nodegroup stacks, will not create nodegroup:\n%s", strings.Join(eks.StacksToStrings(nodegroupStacks), "\n"))
+			log.Infof("Found cloudformation stacks, will not create Ocean nodegroup. To re-run the creation process please delete the stacks.\n%s", strings.Join(eks.StacksToStrings(nodegroupStacks), "\n"))
 		} else {
-			log.Infof("Will not create nodegroup")
+			log.Infof("Will not create Ocean nodegroup")
 		}
 	}
 
 	if shouldCreateNodegroup {
-		spinner := startSpinnerWithMessage("Creating Ocean node group")
-		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
-		if err := cmdEksctl.Run(ctx, createNodeGroupArgs...); err != nil {
-			stopSpinnerWithMessage(spinner, "Could not create node group", true)
-			log.Infof("To see more log output, run spotctl with the --verbose flag")
-			return fmt.Errorf("could not create node group, %w", err)
+		var spinner *yacspin.Spinner
+		if x.opts.Verbose {
+			// No spinner in verbose mode
+			log.Infof("Creating Ocean node group")
+		} else {
+			spinner = startSpinnerWithMessage("Creating Ocean node group")
 		}
-		stopSpinnerWithMessage(spinner, "Spot Ocean node group created", false)
+
+		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
+		if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createNodeGroupArgs...); err != nil {
+			stopSpinnerWithMessage(spinner, "Could not create Ocean node group", true)
+			if !x.opts.Verbose {
+				log.Infof("To see more log output, run spotctl with the --verbose flag")
+			}
+			return fmt.Errorf("could not create Ocean node group, %w", err)
+		}
+		stopSpinnerWithMessage(spinner, "Ocean node group created", false)
 	}
 
 	return nil
@@ -507,77 +551,88 @@ func (x *CmdSparkCreateCluster) getOceanClusterByControllerClusterID(ctx context
 }
 
 func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
-	log.Debugf("Building up command arguments (create cluster)")
+	log.Debugf("Building command arguments (create cluster)")
+
+	verbosity := "1"
+	if x.opts.Verbose {
+		verbosity = "4"
+	}
 
 	args := []string{
 		"create", "cluster",
 		"--timeout", "60m",
 		"--color", "false",
-		"--without-nodegroup",
-	}
-
-	if len(x.opts.ClusterName) > 0 {
-		args = append(args, "--name", x.opts.ClusterName)
-	}
-
-	if len(x.opts.Region) > 0 {
-		args = append(args, "--region", x.opts.Region)
-	}
-
-	if len(x.opts.Tags) > 0 {
-		args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
-	}
-
-	if len(x.opts.KubernetesVersion) > 0 {
-		args = append(args, "--version", x.opts.KubernetesVersion)
-	}
-
-	if x.opts.Verbose {
-		args = append(args, "--verbose", "4")
-	} else {
-		args = append(args, "--verbose", "1")
+		"--verbose", verbosity,
+		"-f", "-", // File is fed in via stdin
 	}
 
 	return args
 }
 
 func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
-	log.Debugf("Building up command arguments (create nodegroup)")
+	log.Debugf("Building command arguments (create nodegroup)")
+
+	verbosity := "1"
+	if x.opts.Verbose {
+		verbosity = "4"
+	}
 
 	args := []string{
 		"create", "nodegroup",
 		"--timeout", "60m",
 		"--color", "false",
-	}
-
-	if len(x.opts.ClusterName) > 0 {
-		args = append(args,
-			"--cluster", x.opts.ClusterName,
-			"--name", fmt.Sprintf("ocean-spark-bootstrap-%s", uuid.NewV4().Short()))
-	}
-
-	if len(x.opts.Region) > 0 {
-		args = append(args, "--region", x.opts.Region)
-	}
-
-	if len(x.opts.Tags) > 0 {
-		args = append(args, "--tags", strings.Join(x.opts.Tags, ","))
-	}
-
-	if len(x.opts.KubernetesVersion) > 0 {
-		args = append(args, "--version", x.opts.KubernetesVersion)
-	}
-
-	args = append(args, "--managed=false") // Not EKS managed
-	args = append(args, "--spot-ocean")
-
-	if x.opts.Verbose {
-		args = append(args, "--verbose", "4")
-	} else {
-		args = append(args, "--verbose", "1")
+		"--verbose", verbosity,
+		"-f", "-", // File is fed in via stdin
 	}
 
 	return args
+}
+
+func (x *CmdSparkCreateCluster) buildEksctlClusterConfig() (string, error) {
+	tags, err := x.expandTags()
+	if err != nil {
+		return "", fmt.Errorf("could not expand tags, %w", err)
+	}
+
+	values := map[string]string{
+		"ClusterName":       x.opts.ClusterName,
+		"Region":            x.opts.Region,
+		"KubernetesVersion": x.opts.KubernetesVersion,
+		"NodeGroupName":     fmt.Sprintf("ocean-spark-bootstrap-%s", uuid.NewV4().Short()),
+		"ClusterTags":       tags,
+		"NodeGroupTags":     tags,
+	}
+
+	configTemplate, err := template.New("clusterConfig").Parse(clusterConfigTemplate)
+	if err != nil {
+		return "", fmt.Errorf("could not parse cluster config template, %w", err)
+	}
+
+	manifest := new(bytes.Buffer)
+	err = configTemplate.Execute(manifest, values)
+	if err != nil {
+		return "", fmt.Errorf("could not execute cluster config template, %w", err)
+	}
+
+	return manifest.String(), nil
+}
+
+func (x *CmdSparkCreateCluster) expandTags() (string, error) {
+	if len(x.opts.Tags) == 0 {
+		return "{}", nil
+	}
+
+	formattedTags := make([]string, len(x.opts.Tags))
+	for i, tag := range x.opts.Tags {
+		split := strings.Split(tag, "=")
+		if len(split) != 2 {
+			return "", fmt.Errorf("invalid tag %q, should be of the form key=value", tag)
+		}
+		formattedTags[i] = fmt.Sprintf("%s: %s", split[0], split[1])
+	}
+
+	// Spaces are hacky, need to align whitespace
+	return strings.Join(formattedTags, "\n    "), nil
 }
 
 // startSpinnerWithMessage starts a new spinner logger with the given message.

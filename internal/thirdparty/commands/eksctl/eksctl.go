@@ -3,6 +3,7 @@ package eksctl
 import (
 	"bytes"
 	"context"
+	"io"
 	"strings"
 
 	"github.com/spotinst/spotctl/internal/child"
@@ -30,15 +31,19 @@ func (x *Command) Name() thirdparty.CommandName {
 }
 
 func (x *Command) Run(ctx context.Context, args ...string) error {
+	return x.RunWithStdin(ctx, nil, args...)
+}
+
+func (x *Command) RunWithStdin(ctx context.Context, stdin io.Reader, args ...string) error {
 	log.Debugf("Executing command: %s %s", CommandName, strings.Join(args, " "))
 
-	steps := []func(ctx context.Context, args ...string) error{
+	steps := []func(ctx context.Context, stdin io.Reader, args ...string) error{
 		x.runVersion,
 		x.run,
 	}
 
 	for _, step := range steps {
-		if err := step(ctx, args...); err != nil {
+		if err := step(ctx, stdin, args...); err != nil {
 			return err
 		}
 	}
@@ -46,7 +51,7 @@ func (x *Command) Run(ctx context.Context, args ...string) error {
 	return nil
 }
 
-func (x *Command) runVersion(ctx context.Context, args ...string) error {
+func (x *Command) runVersion(ctx context.Context, _ io.Reader, _ ...string) error {
 	var buf bytes.Buffer
 
 	cmdOptions := []child.CommandOption{
@@ -63,10 +68,15 @@ func (x *Command) runVersion(ctx context.Context, args ...string) error {
 	return nil
 }
 
-func (x *Command) run(ctx context.Context, args ...string) error {
+func (x *Command) run(ctx context.Context, stdin io.Reader, args ...string) error {
+	stdinReader := x.opts.In
+	if stdin != nil {
+		stdinReader = stdin
+	}
+
 	cmdOptions := []child.CommandOption{
 		child.WithArgs(args...),
-		child.WithStdio(x.opts.In, x.opts.Out, x.opts.Err),
+		child.WithStdio(stdinReader, x.opts.Out, x.opts.Err),
 		child.WithPath(x.opts.Path),
 	}
 
