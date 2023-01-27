@@ -8,12 +8,10 @@ import (
 	"os"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	oceanaws "github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
-	"github.com/theckman/yacspin"
 
 	"github.com/spotinst/spotctl/internal/cloud"
 	"github.com/spotinst/spotctl/internal/dep"
@@ -375,23 +373,15 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		}
 		log.Debugf("Cluster config file:\n%s", configFile)
 
-		var spinner *yacspin.Spinner
-		if x.opts.Verbose {
-			// No spinner in verbose mode
-			log.Infof(fmt.Sprintf("Creating EKS Ocean cluster %s", x.opts.ClusterName))
-		} else {
-			spinner = startSpinnerWithMessage(fmt.Sprintf("Creating EKS Ocean cluster %s", x.opts.ClusterName))
-		}
-
 		createClusterArgs := x.buildEksctlCreateClusterArgs()
+		log.Infof("Creating EKS Ocean cluster %s", x.opts.ClusterName)
 		if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createClusterArgs...); err != nil {
-			stopSpinnerWithMessage(spinner, "Could not create EKS Ocean cluster", true)
 			if !x.opts.Verbose {
 				log.Infof("To see more log output, run spotctl with the --verbose flag")
 			}
 			return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
 		}
-		stopSpinnerWithMessage(spinner, "EKS Ocean cluster created", false)
+		log.Infof("EKS Ocean cluster %s created successfully", x.opts.ClusterName)
 	}
 
 	return nil
@@ -519,9 +509,9 @@ func (x *CmdSparkCreateCluster) getOceanClusterByControllerClusterID(ctx context
 func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
 	log.Debugf("Building command arguments (create cluster)")
 
-	verbosity := "1"
+	verbosity := "3" // Default level
 	if x.opts.Verbose {
-		verbosity = "4"
+		verbosity = "4" // Debug level
 	}
 
 	args := []string{
@@ -580,58 +570,4 @@ func (x *CmdSparkCreateCluster) expandTags() (string, error) {
 
 	// Spaces are hacky, need to align whitespace
 	return strings.Join(formattedTags, "\n    "), nil
-}
-
-// startSpinnerWithMessage starts a new spinner logger with the given message.
-// Best effort. On error, logs the message using the default logger and returns nil.
-func startSpinnerWithMessage(message string) *yacspin.Spinner {
-	cfg := yacspin.Config{
-		Frequency:         250 * time.Millisecond,
-		CharSet:           yacspin.CharSets[33],
-		Suffix:            " ",
-		SuffixAutoColon:   false,
-		Message:           message,
-		StopCharacter:     "✓",
-		StopColors:        []string{"green"},
-		StopFailCharacter: "x",
-		StopFailColors:    []string{"red"},
-	}
-
-	spinner, err := yacspin.New(cfg)
-	if err != nil {
-		log.Warnf("Could not create spinner, err: %s", err.Error())
-		log.Infof("%s", message)
-		return nil
-	}
-
-	err = spinner.Start()
-	if err != nil {
-		log.Warnf("Could not start spinner, err: %s", err.Error())
-		log.Infof("%s", message)
-		return nil
-	}
-
-	return spinner
-}
-
-// stopSpinnerWithMessage stops the given spinner, setting the message as the stop message
-// or the stop failure message. Fail determines if the spinner should succeed or fail.
-// Best effort. On error, log the message using the default logger.
-func stopSpinnerWithMessage(spinner *yacspin.Spinner, message string, fail bool) {
-	if spinner != nil {
-		var stopError error
-		if fail {
-			spinner.StopFailMessage(message)
-			stopError = spinner.StopFail()
-		} else {
-			spinner.StopMessage(message)
-			stopError = spinner.Stop()
-		}
-		if stopError != nil {
-			log.Warnf("Could not stop spinner, err: %s", stopError.Error())
-			log.Infof(message)
-		}
-	} else {
-		log.Infof(message)
-	}
 }

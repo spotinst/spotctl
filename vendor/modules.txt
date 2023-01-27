@@ -73,8 +73,6 @@ github.com/dsnet/compress/internal/prefix
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/fatih/color v1.13.0
-github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit
 # github.com/ghodss/yaml v1.0.0
@@ -99,6 +97,7 @@ github.com/golang/protobuf/ptypes/timestamp
 ## explicit
 github.com/golang/snappy
 # github.com/google/go-cmp v0.5.6
+## explicit
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -147,11 +146,10 @@ github.com/klauspost/pgzip
 ## explicit
 github.com/liggitt/tabwriter
 # github.com/mattn/go-colorable v0.1.12
+## explicit
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.14
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.13
-github.com/mattn/go-runewidth
 # github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
 github.com/mgutz/ansi
 # github.com/mholt/archiver/v3 v3.5.1
@@ -171,8 +169,6 @@ github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/rivo/uniseg v0.2.0
-github.com/rivo/uniseg
 # github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
 ## explicit
 github.com/riywo/loginshell
@@ -207,9 +203,6 @@ github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
 # github.com/stretchr/testify v1.7.2
 ## explicit
 github.com/stretchr/testify/assert
-# github.com/theckman/yacspin v0.13.12
-## explicit
-github.com/theckman/yacspin
 # github.com/ulikunitz/xz v0.5.9
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
