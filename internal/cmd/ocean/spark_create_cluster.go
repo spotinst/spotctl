@@ -361,12 +361,15 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	// TODO Allow creation of resources if previous stacks failed
 
 	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
+	createInProgressClusterStacks := eks.FilterStacks(stacks, eks.IsStackCreateInProgress)
 	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already.
 	// The cluster stacks tell us if it has been created via cloudformation (including eksctl), and the status of the stacks.
 	// The clusterAlreadyExists check catches if a cluster with the same name was created by some other means.
 	shouldCreateCluster := len(clusterStacks) == 0 && !clusterAlreadyExists
 	if !shouldCreateCluster {
-		if len(clusterStacks) > 0 {
+		if len(createInProgressClusterStacks) > 0 {
+			log.Infof("Found cloudformation stacks in progress, will not create cluster.\n%s", strings.Join(eks.StacksToStrings(createInProgressClusterStacks), "\n"))
+		} else if len(clusterStacks) > 0 {
 			log.Infof("Found cloudformation stacks, will not create cluster. To re-run the creation process please delete the stacks or choose another cluster name.\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
 		} else if clusterAlreadyExists {
 			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)

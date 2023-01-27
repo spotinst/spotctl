@@ -56,6 +56,10 @@ func IsStackCreated(stack *Stack) bool {
 	return isStackOfStatus(stack, cloudformation.StackStatusCreateComplete)
 }
 
+func IsStackCreateInProgress(stack *Stack) bool {
+	return isStackOfStatus(stack, cloudformation.StackStatusCreateInProgress)
+}
+
 func IsStackDeleted(stack *Stack) bool {
 	return isStackOfStatus(stack, cloudformation.StackStatusDeleteComplete)
 }
