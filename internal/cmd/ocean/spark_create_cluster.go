@@ -364,25 +364,24 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		} else {
 			log.Infof("Will not create EKS cluster")
 		}
+		return nil
 	}
 
-	if shouldCreateCluster {
-		configFile, err := x.buildEksctlClusterConfig()
-		if err != nil {
-			return fmt.Errorf("could not build cluster config, %w", err)
-		}
-		log.Debugf("Cluster config file:\n%s", configFile)
-
-		createClusterArgs := x.buildEksctlCreateClusterArgs()
-		log.Infof("Creating EKS Ocean cluster %s", x.opts.ClusterName)
-		if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createClusterArgs...); err != nil {
-			if !x.opts.Verbose {
-				log.Infof("To see more log output, run spotctl with the --verbose flag")
-			}
-			return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
-		}
-		log.Infof("EKS Ocean cluster %s created successfully", x.opts.ClusterName)
+	configFile, err := x.buildEksctlClusterConfig()
+	if err != nil {
+		return fmt.Errorf("could not build cluster config, %w", err)
 	}
+	log.Debugf("Cluster config file:\n%s", configFile)
+
+	createClusterArgs := x.buildEksctlCreateClusterArgs()
+	log.Infof("Creating EKS Ocean cluster %s", x.opts.ClusterName)
+	if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createClusterArgs...); err != nil {
+		if !x.opts.Verbose {
+			log.Infof("To see more log output, run spotctl with the --verbose flag")
+		}
+		return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
+	}
+	log.Infof("EKS Ocean cluster %s created successfully", x.opts.ClusterName)
 
 	return nil
 }
