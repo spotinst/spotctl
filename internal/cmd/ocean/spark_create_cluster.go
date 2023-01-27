@@ -126,7 +126,7 @@ func (x *CmdSparkCreateCluster) Run(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdSparkCreateCluster) survey(ctx context.Context) error {
+func (x *CmdSparkCreateCluster) survey(_ context.Context) error {
 	if x.opts.Noninteractive {
 		return nil
 	}
@@ -134,12 +134,12 @@ func (x *CmdSparkCreateCluster) survey(ctx context.Context) error {
 	return nil
 }
 
-func (x *CmdSparkCreateCluster) log(ctx context.Context) error {
+func (x *CmdSparkCreateCluster) log(_ context.Context) error {
 	flags.Log(x.cmd)
 	return nil
 }
 
-func (x *CmdSparkCreateCluster) validate(ctx context.Context) error {
+func (x *CmdSparkCreateCluster) validate(_ context.Context) error {
 	return x.opts.Validate()
 }
 
@@ -361,13 +361,15 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	// TODO Allow creation of resources if previous stacks failed
 
 	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
-	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already
+	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already.
+	// The cluster stacks tell us if it has been created via cloudformation (including eksctl), and the status of the stacks.
+	// The clusterAlreadyExists check catches if a cluster with the same name was created by some other means.
 	shouldCreateCluster := len(clusterStacks) == 0 && !clusterAlreadyExists
 	if !shouldCreateCluster {
-		if clusterAlreadyExists {
-			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)
-		} else if len(clusterStacks) > 0 {
+		if len(clusterStacks) > 0 {
 			log.Infof("Found cloudformation stacks, will not create cluster. To re-run the creation process please delete the stacks or choose another cluster name.\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
+		} else if clusterAlreadyExists {
+			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)
 		} else {
 			log.Infof("Will not create EKS cluster")
 		}
@@ -391,15 +393,18 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 			return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
 		}
 		stopSpinnerWithMessage(spinner, "EKS Ocean cluster created", false)
+		// Cluster and nodegroup created successfully
 		return nil
 	}
 
 	// The eksctl cluster creation process will create two cloudformation stacks, the cluster stack and the nodegroup stack.
-	// We can end up in a case where the cluster is created, but the nodegroup creation fails.
+	// We can end up in a state where the cluster (control plane) was created, but the nodegroup creation fails.
 	// We allow the nodegroup creation to be re-tried, without having to re-create the control plane.
 
 	nodegroupStacks := eks.FilterStacks(stacks, eks.IsNodegroupStack)
-	shouldCreateNodegroup := len(nodegroupStacks) == 0 && clusterAlreadyExists
+	createdClusterStacks := eks.FilterStacks(clusterStacks, eks.IsStackCreated)
+	// We create the nodegroup if no nodegroup stacks exist yet, and the cluster stack has completed successfully
+	shouldCreateNodegroup := len(nodegroupStacks) == 0 && len(createdClusterStacks) > 0
 	if !shouldCreateNodegroup {
 		if len(nodegroupStacks) > 0 {
 			log.Infof("Found cloudformation stacks, will not create Ocean nodegroup. To re-run the creation process please delete the stacks.\n%s", strings.Join(eks.StacksToStrings(nodegroupStacks), "\n"))
