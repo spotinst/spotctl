@@ -352,25 +352,15 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 		clusterAlreadyExists = true
 	}
 
-	configFile, err := x.buildEksctlClusterConfig()
-	if err != nil {
-		return fmt.Errorf("could not build cluster config, %w", err)
-	}
-	log.Debugf("Cluster config file:\n%s", configFile)
-
 	// TODO Allow creation of resources if previous stacks failed
 
-	clusterStacks := eks.FilterStacks(stacks, eks.IsClusterStack)
-	createInProgressClusterStacks := eks.FilterStacks(stacks, eks.IsStackCreateInProgress)
-	// Only create cluster if we don't have any cluster stacks, and it doesn't exist already.
-	// The cluster stacks tell us if it has been created via cloudformation (including eksctl), and the status of the stacks.
+	// Only create cluster if we don't have any existing cloudformation stacks, and it doesn't exist already.
+	// The cluster stacks tell us if it has been created via cloudformation (including eksctl), and the status of the stacks (useful for troubleshooting).
 	// The clusterAlreadyExists check catches if a cluster with the same name was created by some other means.
-	shouldCreateCluster := len(clusterStacks) == 0 && !clusterAlreadyExists
+	shouldCreateCluster := len(stacks) == 0 && !clusterAlreadyExists
 	if !shouldCreateCluster {
-		if len(createInProgressClusterStacks) > 0 {
-			log.Infof("Found cloudformation stacks in progress, will not create cluster.\n%s", strings.Join(eks.StacksToStrings(createInProgressClusterStacks), "\n"))
-		} else if len(clusterStacks) > 0 {
-			log.Infof("Found cloudformation stacks, will not create cluster. To re-run the creation process please delete the stacks or choose another cluster name.\n%s", strings.Join(eks.StacksToStrings(clusterStacks), "\n"))
+		if len(stacks) > 0 {
+			log.Infof("Found cloudformation stacks, will not create cluster. To re-run the creation process please delete the stacks or choose another cluster name.\n%s", strings.Join(eks.StacksToStrings(stacks), "\n"))
 		} else if clusterAlreadyExists {
 			log.Infof("EKS cluster %s already exists, will not create cluster", x.opts.ClusterName)
 		} else {
@@ -379,6 +369,12 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 	}
 
 	if shouldCreateCluster {
+		configFile, err := x.buildEksctlClusterConfig()
+		if err != nil {
+			return fmt.Errorf("could not build cluster config, %w", err)
+		}
+		log.Debugf("Cluster config file:\n%s", configFile)
+
 		var spinner *yacspin.Spinner
 		if x.opts.Verbose {
 			// No spinner in verbose mode
@@ -396,44 +392,6 @@ func (x *CmdSparkCreateCluster) createEKSCluster(ctx context.Context) error {
 			return fmt.Errorf("could not create EKS Ocean cluster, %w", err)
 		}
 		stopSpinnerWithMessage(spinner, "EKS Ocean cluster created", false)
-		// Cluster and nodegroup created successfully
-		return nil
-	}
-
-	// The eksctl cluster creation process will create two cloudformation stacks, the cluster stack and the nodegroup stack.
-	// We can end up in a state where the cluster (control plane) was created, but the nodegroup creation fails.
-	// We allow the nodegroup creation to be re-tried, without having to re-create the control plane.
-
-	nodegroupStacks := eks.FilterStacks(stacks, eks.IsNodegroupStack)
-	createdClusterStacks := eks.FilterStacks(clusterStacks, eks.IsStackCreated)
-	// We create the nodegroup if no nodegroup stacks exist yet, and the cluster stack has completed successfully
-	shouldCreateNodegroup := len(nodegroupStacks) == 0 && len(createdClusterStacks) > 0
-	if !shouldCreateNodegroup {
-		if len(nodegroupStacks) > 0 {
-			log.Infof("Found cloudformation stacks, will not create Ocean nodegroup. To re-run the creation process please delete the stacks.\n%s", strings.Join(eks.StacksToStrings(nodegroupStacks), "\n"))
-		} else {
-			log.Infof("Will not create Ocean nodegroup")
-		}
-	}
-
-	if shouldCreateNodegroup {
-		var spinner *yacspin.Spinner
-		if x.opts.Verbose {
-			// No spinner in verbose mode
-			log.Infof("Creating Ocean node group")
-		} else {
-			spinner = startSpinnerWithMessage("Creating Ocean node group")
-		}
-
-		createNodeGroupArgs := x.buildEksctlCreateNodeGroupArgs()
-		if err := cmdEksctl.RunWithStdin(ctx, strings.NewReader(configFile), createNodeGroupArgs...); err != nil {
-			stopSpinnerWithMessage(spinner, "Could not create Ocean node group", true)
-			if !x.opts.Verbose {
-				log.Infof("To see more log output, run spotctl with the --verbose flag")
-			}
-			return fmt.Errorf("could not create Ocean node group, %w", err)
-		}
-		stopSpinnerWithMessage(spinner, "Ocean node group created", false)
 	}
 
 	return nil
@@ -568,25 +526,6 @@ func (x *CmdSparkCreateCluster) buildEksctlCreateClusterArgs() []string {
 
 	args := []string{
 		"create", "cluster",
-		"--timeout", "60m",
-		"--color", "false",
-		"--verbose", verbosity,
-		"-f", "-", // File is fed in via stdin
-	}
-
-	return args
-}
-
-func (x *CmdSparkCreateCluster) buildEksctlCreateNodeGroupArgs() []string {
-	log.Debugf("Building command arguments (create nodegroup)")
-
-	verbosity := "1"
-	if x.opts.Verbose {
-		verbosity = "4"
-	}
-
-	args := []string{
-		"create", "nodegroup",
 		"--timeout", "60m",
 		"--color", "false",
 		"--verbose", verbosity,
