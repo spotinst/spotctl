@@ -24,7 +24,7 @@ var (
 	DependencyEksctlSpot Dependency = &dependency{
 		name:               "eksctl-spot",
 		upstreamBinaryName: "eksctl",
-		version:            "0.77.0-6cfea8af",
+		version:            "0.124.0",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}

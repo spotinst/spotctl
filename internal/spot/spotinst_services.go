@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spotinst/spotinst-sdk-go/service/ocean"
+	"github.com/spotinst/spotinst-sdk-go/service/ocean/spark"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
 )
 
@@ -44,4 +45,9 @@ func (x *apiServices) oceanGCP(orchestrator OrchestratorName) (OceanInterface, e
 	default:
 		return nil, fmt.Errorf("spot: unsupported orchestrator: %s", orchestrator)
 	}
+}
+
+func (x *apiServices) OceanSpark() (OceanSparkInterface, error) {
+	svc := spark.New(x.session)
+	return &oceanSpark{svc: svc}, nil
 }

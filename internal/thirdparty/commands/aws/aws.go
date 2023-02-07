@@ -3,6 +3,7 @@ package aws
 import (
 	"bytes"
 	"context"
+	"io"
 	"strings"
 
 	"github.com/spotinst/spotctl/internal/child"
@@ -44,6 +45,10 @@ func (x *Command) Run(ctx context.Context, args ...string) error {
 	}
 
 	return nil
+}
+
+func (x *Command) RunWithStdin(_ context.Context, _ io.Reader, _ ...string) error {
+	return thirdparty.ErrNotImplemented
 }
 
 func (x *Command) runVersion(ctx context.Context, args ...string) error {

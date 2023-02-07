@@ -47,3 +47,19 @@ func (s *OceanRolloutsSorter) Swap(i, j int) {
 func (s *OceanRolloutsSorter) Less(i, j int) bool {
 	return s.Rollouts[i].UpdatedAt.After(s.Rollouts[j].UpdatedAt)
 }
+
+type OceanSparkClustersSorter struct {
+	Clusters []*OceanSparkCluster
+}
+
+func (s *OceanSparkClustersSorter) Len() int {
+	return len(s.Clusters)
+}
+
+func (s *OceanSparkClustersSorter) Swap(i, j int) {
+	s.Clusters[i], s.Clusters[j] = s.Clusters[j], s.Clusters[i]
+}
+
+func (s *OceanSparkClustersSorter) Less(i, j int) bool {
+	return s.Clusters[i].Name < s.Clusters[j].Name
+}

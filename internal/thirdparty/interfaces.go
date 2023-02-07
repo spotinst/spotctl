@@ -3,6 +3,7 @@ package thirdparty
 import (
 	"context"
 	"errors"
+	"io"
 )
 
 // ErrNotImplemented is the error returned if a method is not implemented.
@@ -20,6 +21,10 @@ type (
 		// Run invokes the command with optional arguments. An error is
 		// returned if the command fails, nil otherwise.
 		Run(ctx context.Context, args ...string) error
+
+		// RunWithStdin invokes the command with stdin override and optional arguments. An error is
+		// returned if the command fails, nil otherwise.
+		RunWithStdin(ctx context.Context, stdin io.Reader, args ...string) error
 	}
 
 	// Factory is a function that returns a command interface. An error is

@@ -58,6 +58,9 @@ func (x *CmdSpark) preRun(ctx context.Context) error {
 func (x *CmdSpark) initSubCommands() {
 	commands := []func(*CmdSparkOptions) *cobra.Command{
 		NewCmdSparkCreate,
+		NewCmdSparkGet,
+		NewCmdSparkDescribe,
+		NewCmdSparkDelete,
 	}
 
 	for _, cmd := range commands {

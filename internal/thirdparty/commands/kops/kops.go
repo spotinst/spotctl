@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -46,6 +47,10 @@ func (x *Command) Run(ctx context.Context, args ...string) error {
 	}
 
 	return nil
+}
+
+func (x *Command) RunWithStdin(_ context.Context, _ io.Reader, _ ...string) error {
+	return thirdparty.ErrNotImplemented
 }
 
 func (x *Command) runVersion(ctx context.Context, args ...string) error {

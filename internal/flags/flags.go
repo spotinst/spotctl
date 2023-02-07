@@ -58,8 +58,11 @@ const (
 	// Ocean for Apache Spark.
 	FlagOFASClusterRegion  string = "region"
 	FlagOFASClusterID      string = "cluster-id"
+	FlagOFASOceanClusterID string = "ocean-cluster-id"
 	FlagOFASClusterName    string = "cluster-name"
 	FlagOFASKubeConfigPath string = "kubeconfig"
+	FlagOFASName           string = "name"
+	FlagOFASState          string = "state"
 )
 
 func Log(cmd *cobra.Command) {

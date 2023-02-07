@@ -158,6 +158,21 @@ type (
 		InstanceIDs         []string
 		RespectPDB          bool
 	}
+
+	// OceanSparkCluster represents an Ocean Spark cluster.
+	OceanSparkCluster struct {
+		// Type's metadata.
+		TypeMeta
+
+		// Object's metadata.
+		ObjectMeta
+
+		OceanClusterID string `json:"oceanClusterId" table:"3,oceanId"`
+		State          string `json:"state" table:"4,state"`
+
+		// Obj holds the raw object
+		Obj interface{} `json:"-"`
+	}
 )
 
 // typeOf returns obj type's name using reflection.
