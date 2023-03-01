@@ -44,7 +44,7 @@ type (
 )
 
 const (
-	defaultK8sVersion   = "1.21"
+	defaultK8sVersion   = "1.24"
 	spotSystemNamespace = "spot-system"
 
 	clusterConfigTemplate = `apiVersion: eksctl.io/v1alpha5
