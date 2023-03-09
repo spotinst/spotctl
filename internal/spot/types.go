@@ -91,7 +91,7 @@ type (
 		UtilizeReservedInstances bool
 		FallbackToOnDemand       bool
 		DrainingTimeout          int
-
+		ClusterOrientation       string
 		// Capacity.
 		MinSize    int
 		MaxSize    int
