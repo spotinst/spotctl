@@ -54,7 +54,7 @@ const (
 	FlagOceanRolloutSpecIDs             string = "spec-ids"
 	FlagOceanRolloutInstanceIDs         string = "instance-ids"
 	FlagOceanRolloutRespectPDB          string = "respect-pdb"
-	FlagOceanClusterOrientation         string = "cluster-orientation"
+	FlagOceanAvailabilityVsCost         string = "availability-vs-cost"
 
 	// Ocean for Apache Spark.
 	FlagOFASClusterRegion  string = "region"
