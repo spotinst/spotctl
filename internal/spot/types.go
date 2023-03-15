@@ -91,7 +91,7 @@ type (
 		UtilizeReservedInstances bool
 		FallbackToOnDemand       bool
 		DrainingTimeout          int
-
+		AvailabilityVsCost       string
 		// Capacity.
 		MinSize    int
 		MaxSize    int

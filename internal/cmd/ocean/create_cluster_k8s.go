@@ -132,6 +132,7 @@ func (x *CmdCreateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.IntVar(&x.DrainingTimeout, flags.FlagOceanDrainingTimeout, x.DrainingTimeout, "")
 		fs.BoolVar(&x.UtilizeReservedInstances, flags.FlagOceanUtilizeReserveInstances, x.UtilizeReservedInstances, "")
 		fs.BoolVar(&x.FallbackToOnDemand, flags.FlagOceanFallbackOnDemand, x.FallbackToOnDemand, "")
+		fs.StringVar(&x.AvailabilityVsCost, flags.FlagOceanAvailabilityVsCost, x.AvailabilityVsCost, "")
 	}
 
 	// Capacity.

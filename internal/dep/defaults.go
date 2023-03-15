@@ -14,7 +14,7 @@ var (
 	// See: https://github.com/kubernetes/kops.
 	DependencyKops Dependency = &dependency{
 		name:    "kops",
-		version: "1.19.1",
+		version: "1.24.1",
 		url: "https://github.com/kubernetes/kops/releases/download/" +
 			"v{{.version}}/kops-{{.os}}-{{.arch}}",
 	}
@@ -24,7 +24,7 @@ var (
 	DependencyEksctlSpot Dependency = &dependency{
 		name:               "eksctl-spot",
 		upstreamBinaryName: "eksctl",
-		version:            "0.124.0",
+		version:            "0.127.0",
 		url: "https://github.com/spotinst/weaveworks-eksctl/releases/download" +
 			"/v{{.version}}/eksctl_{{.os}}_{{.arch}}.tar.gz",
 	}
