@@ -30,6 +30,7 @@ type Config struct {
 	Webhook       *WebhookConfig       `json:"webhook,omitempty"`
 	Compute       *ComputeConfig       `json:"compute,omitempty"`
 	LogCollection *LogCollectionConfig `json:"logCollection,omitempty"`
+	Spark         *SparkConfig         `json:"spark,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -58,9 +59,55 @@ type WebhookConfig struct {
 	nullFields      []string
 }
 
+type SparkConfig struct {
+	AppNamespaces []*string `json:"appNamespaces,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
 type IngressConfig struct {
+	// Deprecated: Use LoadBalancer.ServiceAnnotations instead.
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
-	DeployIngress      *bool             `json:"deployIngress,omitempty"`
+	// Deprecated: Has no effect.
+	DeployIngress *bool `json:"deployIngress,omitempty"`
+
+	Controller     *IngressConfigController     `json:"controller,omitempty"`
+	CustomEndpoint *IngressConfigCustomEndpoint `json:"customEndpoint,omitempty"`
+	LoadBalancer   *IngressConfigLoadBalancer   `json:"loadBalancer,omitempty"`
+	PrivateLink    *IngressConfigPrivateLink    `json:"privateLink,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type IngressConfigController struct {
+	Managed *bool `json:"managed,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type IngressConfigCustomEndpoint struct {
+	Enabled *bool   `json:"enabled,omitempty"`
+	Address *string `json:"address,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type IngressConfigLoadBalancer struct {
+	Managed            *bool             `json:"managed,omitempty"`
+	TargetGroupARN     *string           `json:"targetGroupArn,omitempty"`
+	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type IngressConfigPrivateLink struct {
+	Enabled            *bool   `json:"enabled,omitempty"`
+	VPCEndpointService *string `json:"vpcEndpointService,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -108,7 +155,8 @@ type UpdateClusterRequest struct {
 type UpdateClusterOutput struct{}
 
 type DeleteClusterInput struct {
-	ClusterID *string `json:"clusterId,omitempty"`
+	ForceDelete *bool   `json:"-"`
+	ClusterID   *string `json:"clusterId,omitempty"`
 }
 
 type DeleteClusterOutput struct{}
@@ -166,6 +214,13 @@ func (c *Config) SetLogCollection(v *LogCollectionConfig) *Config {
 	return c
 }
 
+func (c *Config) SetSpark(v *SparkConfig) *Config {
+	if c.Spark = v; c.Spark == nil {
+		c.nullFields = append(c.nullFields, "Spark")
+	}
+	return c
+}
+
 // endregion
 
 // region Ingress
@@ -189,6 +244,130 @@ func (i *IngressConfig) SetDeployIngress(v *bool) *IngressConfig {
 	}
 	return i
 }
+
+func (i *IngressConfig) SetController(c *IngressConfigController) *IngressConfig {
+	if i.Controller = c; i.Controller == nil {
+		i.nullFields = append(i.nullFields, "Controller")
+	}
+	return i
+}
+
+func (i *IngressConfig) SetLoadBalancer(lb *IngressConfigLoadBalancer) *IngressConfig {
+	if i.LoadBalancer = lb; i.LoadBalancer == nil {
+		i.nullFields = append(i.nullFields, "LoadBalancer")
+	}
+	return i
+}
+
+func (i *IngressConfig) SetCustomEndpoint(ce *IngressConfigCustomEndpoint) *IngressConfig {
+	if i.CustomEndpoint = ce; i.CustomEndpoint == nil {
+		i.nullFields = append(i.nullFields, "CustomEndpoint")
+	}
+	return i
+}
+
+func (i *IngressConfig) SetPrivateLink(pl *IngressConfigPrivateLink) *IngressConfig {
+	if i.PrivateLink = pl; i.PrivateLink == nil {
+		i.nullFields = append(i.nullFields, "PrivateLink")
+	}
+	return i
+}
+
+// region Ingress controller
+
+func (c IngressConfigController) MarshalJSON() ([]byte, error) {
+	type noMethod IngressConfigController
+	raw := noMethod(c)
+	return jsonutil.MarshalJSON(raw, c.forceSendFields, c.nullFields)
+}
+
+func (c *IngressConfigController) SetManaged(v *bool) *IngressConfigController {
+	if c.Managed = v; c.Managed == nil {
+		c.nullFields = append(c.nullFields, "Managed")
+	}
+	return c
+}
+
+// endregion
+
+// region Ingress load balancer
+
+func (lb IngressConfigLoadBalancer) MarshalJSON() ([]byte, error) {
+	type noMethod IngressConfigLoadBalancer
+	raw := noMethod(lb)
+	return jsonutil.MarshalJSON(raw, lb.forceSendFields, lb.nullFields)
+}
+
+func (lb *IngressConfigLoadBalancer) SetManaged(v *bool) *IngressConfigLoadBalancer {
+	if lb.Managed = v; lb.Managed == nil {
+		lb.nullFields = append(lb.nullFields, "Managed")
+	}
+	return lb
+}
+
+func (lb *IngressConfigLoadBalancer) SetTargetGroupARN(v *string) *IngressConfigLoadBalancer {
+	if lb.TargetGroupARN = v; lb.TargetGroupARN == nil {
+		lb.nullFields = append(lb.nullFields, "TargetGroupARN")
+	}
+	return lb
+}
+
+func (lb *IngressConfigLoadBalancer) SetServiceAnnotations(v map[string]string) *IngressConfigLoadBalancer {
+	if lb.ServiceAnnotations = v; lb.ServiceAnnotations == nil {
+		lb.nullFields = append(lb.nullFields, "ServiceAnnotations")
+	}
+	return lb
+}
+
+// endregion
+
+// region Ingress custom endpoint
+
+func (ce IngressConfigCustomEndpoint) MarshalJSON() ([]byte, error) {
+	type noMethod IngressConfigCustomEndpoint
+	raw := noMethod(ce)
+	return jsonutil.MarshalJSON(raw, ce.forceSendFields, ce.nullFields)
+}
+
+func (ce *IngressConfigCustomEndpoint) SetEnabled(v *bool) *IngressConfigCustomEndpoint {
+	if ce.Enabled = v; ce.Enabled == nil {
+		ce.nullFields = append(ce.nullFields, "Enabled")
+	}
+	return ce
+}
+
+func (ce *IngressConfigCustomEndpoint) SetAddress(v *string) *IngressConfigCustomEndpoint {
+	if ce.Address = v; ce.Address == nil {
+		ce.nullFields = append(ce.nullFields, "Address")
+	}
+	return ce
+}
+
+// endregion
+
+// region Ingress private link
+
+func (pl IngressConfigPrivateLink) MarshalJSON() ([]byte, error) {
+	type noMethod IngressConfigPrivateLink
+	raw := noMethod(pl)
+	return jsonutil.MarshalJSON(raw, pl.forceSendFields, pl.nullFields)
+}
+
+func (pl *IngressConfigPrivateLink) SetEnabled(v *bool) *IngressConfigPrivateLink {
+	if pl.Enabled = v; pl.Enabled == nil {
+		pl.nullFields = append(pl.nullFields, "Enabled")
+	}
+	return pl
+}
+
+func (pl *IngressConfigPrivateLink) SetVPCEndpointService(v *string) *IngressConfigPrivateLink {
+	if pl.VPCEndpointService = v; pl.VPCEndpointService == nil {
+		pl.nullFields = append(pl.nullFields, "VPCEndpointService")
+	}
+	return pl
+}
+
+// endregion
 
 // endregion
 
@@ -253,6 +432,23 @@ func (l *LogCollectionConfig) SetCollectDriverLogs(v *bool) *LogCollectionConfig
 		l.nullFields = append(l.nullFields, "CollectDriverLogs")
 	}
 	return l
+}
+
+// endregion
+
+// region Spark
+
+func (s SparkConfig) MarshalJSON() ([]byte, error) {
+	type noMethod SparkConfig
+	raw := noMethod(s)
+	return jsonutil.MarshalJSON(raw, s.forceSendFields, s.nullFields)
+}
+
+func (s *SparkConfig) SetAppNamespaces(v []*string) *SparkConfig {
+	if s.AppNamespaces = v; s.AppNamespaces == nil {
+		s.nullFields = append(s.nullFields, "AppNamespaces")
+	}
+	return s
 }
 
 // endregion
