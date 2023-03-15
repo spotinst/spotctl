@@ -14,21 +14,24 @@ import (
 )
 
 type ECSLaunchSpec struct {
-	ID                   *string                  `json:"id,omitempty"`
-	Name                 *string                  `json:"name,omitempty"`
-	OceanID              *string                  `json:"oceanId,omitempty"`
-	ImageID              *string                  `json:"imageId,omitempty"`
-	UserData             *string                  `json:"userData,omitempty"`
-	SecurityGroupIDs     []string                 `json:"securityGroupIds,omitempty"`
-	AutoScale            *ECSAutoScale            `json:"autoScale,omitempty"`
-	IAMInstanceProfile   *ECSIAMInstanceProfile   `json:"iamInstanceProfile,omitempty"`
-	Attributes           []*ECSAttribute          `json:"attributes,omitempty"`
-	BlockDeviceMappings  []*ECSBlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
-	Tags                 []*Tag                   `json:"tags,omitempty"`
-	InstanceTypes        []string                 `json:"instanceTypes,omitempty"`
-	RestrictScaleDown    *bool                    `json:"restrictScaleDown,omitempty"`
-	SubnetIDs            []string                 `json:"subnetIds,omitempty"`
-	LaunchSpecScheduling *ECSLaunchSpecScheduling `json:"scheduling,omitempty"`
+	ID                      *string                               `json:"id,omitempty"`
+	Name                    *string                               `json:"name,omitempty"`
+	OceanID                 *string                               `json:"oceanId,omitempty"`
+	ImageID                 *string                               `json:"imageId,omitempty"`
+	UserData                *string                               `json:"userData,omitempty"`
+	SecurityGroupIDs        []string                              `json:"securityGroupIds,omitempty"`
+	AutoScale               *ECSAutoScale                         `json:"autoScale,omitempty"`
+	IAMInstanceProfile      *ECSIAMInstanceProfile                `json:"iamInstanceProfile,omitempty"`
+	Attributes              []*ECSAttribute                       `json:"attributes,omitempty"`
+	BlockDeviceMappings     []*ECSBlockDeviceMapping              `json:"blockDeviceMappings,omitempty"`
+	Tags                    []*Tag                                `json:"tags,omitempty"`
+	InstanceTypes           []string                              `json:"instanceTypes,omitempty"`
+	PreferredSpotTypes      []string                              `json:"preferredSpotTypes,omitempty"`
+	Strategy                *ECSLaunchSpecStrategy                `json:"strategy,omitempty"`
+	RestrictScaleDown       *bool                                 `json:"restrictScaleDown,omitempty"`
+	SubnetIDs               []string                              `json:"subnetIds,omitempty"`
+	LaunchSpecScheduling    *ECSLaunchSpecScheduling              `json:"scheduling,omitempty"`
+	InstanceMetadataOptions *ECSLaunchspecInstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -50,6 +53,44 @@ type ECSLaunchSpec struct {
 	// This may be used to include null fields in Patch requests.
 	nullFields []string
 }
+
+// region InstanceMetadataOptions
+
+type ECSLaunchspecInstanceMetadataOptions struct {
+	HTTPTokens              *string `json:"httpTokens,omitempty"`
+	HTTPPutResponseHopLimit *int    `json:"httpPutResponseHopLimit,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+func (o *ECSLaunchspecInstanceMetadataOptions) SetHTTPTokens(v *string) *ECSLaunchspecInstanceMetadataOptions {
+	if o.HTTPTokens = v; o.HTTPTokens == nil {
+		o.nullFields = append(o.nullFields, "HTTPTokens")
+	}
+	return o
+}
+
+func (o *ECSLaunchspecInstanceMetadataOptions) SetHTTPPutResponseHopLimit(v *int) *ECSLaunchspecInstanceMetadataOptions {
+	if o.HTTPPutResponseHopLimit = v; o.HTTPPutResponseHopLimit == nil {
+		o.nullFields = append(o.nullFields, "HTTPPutResponseHopLimit")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetECSLaunchspecInstanceMetadataOptions(v *ECSLaunchspecInstanceMetadataOptions) *ECSLaunchSpec {
+	if o.InstanceMetadataOptions = v; o.InstanceMetadataOptions == nil {
+		o.nullFields = append(o.nullFields, "InstanceMetadataOptions")
+	}
+	return o
+}
+func (o ECSLaunchspecInstanceMetadataOptions) MarshalJSON() ([]byte, error) {
+	type noMethod ECSLaunchspecInstanceMetadataOptions
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+// endregion
 
 type ECSAttribute struct {
 	Key   *string `json:"key,omitempty"`
@@ -104,6 +145,13 @@ type ECSDynamicVolumeSize struct {
 	BaseSize            *int    `json:"baseSize,omitempty"`
 	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
 	Resource            *string `json:"resource,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ECSLaunchSpecStrategy struct {
+	SpotPercentage *int `json:"spotPercentage,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -433,6 +481,13 @@ func (o *ECSLaunchSpec) SetInstanceTypes(v []string) *ECSLaunchSpec {
 	return o
 }
 
+func (o *ECSLaunchSpec) SetPreferredSpotTypes(v []string) *ECSLaunchSpec {
+	if o.PreferredSpotTypes = v; o.PreferredSpotTypes == nil {
+		o.nullFields = append(o.nullFields, "PreferredSpotTypes")
+	}
+	return o
+}
+
 func (o *ECSLaunchSpec) SetRestrictScaleDown(v *bool) *ECSLaunchSpec {
 	if o.RestrictScaleDown = v; o.RestrictScaleDown == nil {
 		o.nullFields = append(o.nullFields, "RestrictScaleDown")
@@ -450,6 +505,13 @@ func (o *ECSLaunchSpec) SetSubnetIDs(v []string) *ECSLaunchSpec {
 func (o *ECSLaunchSpec) SetScheduling(v *ECSLaunchSpecScheduling) *ECSLaunchSpec {
 	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
 		o.nullFields = append(o.nullFields, "ECSLaunchSpecScheduling")
+	}
+	return o
+}
+
+func (o *ECSLaunchSpec) SetStrategy(v *ECSLaunchSpecStrategy) *ECSLaunchSpec {
+	if o.Strategy = v; o.Strategy == nil {
+		o.nullFields = append(o.nullFields, "ECSLaunchSpecStrategy")
 	}
 	return o
 }
@@ -664,6 +726,23 @@ func (o *ECSDynamicVolumeSize) SetResource(v *string) *ECSDynamicVolumeSize {
 func (o *ECSDynamicVolumeSize) SetSizePerResourceUnit(v *int) *ECSDynamicVolumeSize {
 	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
 		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
+	}
+	return o
+}
+
+// endregion
+
+// region LaunchSpecStrategy
+
+func (o ECSLaunchSpecStrategy) MarshalJSON() ([]byte, error) {
+	type noMethod ECSLaunchSpecStrategy
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSLaunchSpecStrategy) SetSpotPercentage(v *int) *ECSLaunchSpecStrategy {
+	if o.SpotPercentage = v; o.SpotPercentage == nil {
+		o.nullFields = append(o.nullFields, "SpotPercentage")
 	}
 	return o
 }
