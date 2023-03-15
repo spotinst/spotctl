@@ -128,7 +128,8 @@ func (x *Command) Wait(ctx context.Context) error {
 }
 
 // CombinedOutput runs the command and returns its combined standard output and
-// 	standard error.
+//
+//	standard error.
 func (x *Command) CombinedOutput(ctx context.Context) ([]byte, error) {
 	var buf bytes.Buffer
 
