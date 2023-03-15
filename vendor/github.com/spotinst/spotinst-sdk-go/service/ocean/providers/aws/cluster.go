@@ -48,15 +48,40 @@ type Cluster struct {
 }
 
 type Strategy struct {
-	SpotPercentage           *float64 `json:"spotPercentage,omitempty"`
-	UtilizeReservedInstances *bool    `json:"utilizeReservedInstances,omitempty"`
-	FallbackToOnDemand       *bool    `json:"fallbackToOd,omitempty"`
-	DrainingTimeout          *int     `json:"drainingTimeout,omitempty"`
-	GracePeriod              *int     `json:"gracePeriod,omitempty"`
-	UtilizeCommitments       *bool    `json:"utilizeCommitments,omitempty"`
+	SpotPercentage           *float64            `json:"spotPercentage,omitempty"`
+	UtilizeReservedInstances *bool               `json:"utilizeReservedInstances,omitempty"`
+	FallbackToOnDemand       *bool               `json:"fallbackToOd,omitempty"`
+	DrainingTimeout          *int                `json:"drainingTimeout,omitempty"`
+	GracePeriod              *int                `json:"gracePeriod,omitempty"`
+	UtilizeCommitments       *bool               `json:"utilizeCommitments,omitempty"`
+	ClusterOrientation       *ClusterOrientation `json:"clusterOrientation,omitempty"`
+	SpreadNodesBy            *string             `json:"spreadNodesBy,omitempty"`
+	forceSendFields          []string
+	nullFields               []string
+}
+type ClusterOrientation struct {
+	AvailabilityVsCost *string `json:"availabilityVsCost,omitempty"`
+	forceSendFields    []string
+	nullFields         []string
+}
 
-	forceSendFields []string
-	nullFields      []string
+func (o *ClusterOrientation) SetAvailabilityVsCost(v *string) *ClusterOrientation {
+	if o.AvailabilityVsCost = v; o.AvailabilityVsCost == nil {
+		o.nullFields = append(o.nullFields, "AvailabilityVsCost")
+	}
+	return o
+}
+
+func (o *Strategy) SetClusterOrientation(v *ClusterOrientation) *Strategy {
+	if o.ClusterOrientation = v; o.ClusterOrientation == nil {
+		o.nullFields = append(o.nullFields, "ClusterOrientation")
+	}
+	return o
+}
+func (o ClusterOrientation) MarshalJSON() ([]byte, error) {
+	type noMethod ClusterOrientation
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
 type Capacity struct {
@@ -105,6 +130,32 @@ type Task struct {
 type InstanceTypes struct {
 	Whitelist []string `json:"whitelist,omitempty"`
 	Blacklist []string `json:"blacklist,omitempty"`
+	Filters   *Filters `json:"filters,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Filters struct {
+	Architectures         []string `json:"architectures,omitempty"`
+	Categories            []string `json:"categories,omitempty"`
+	DiskTypes             []string `json:"diskTypes,omitempty"`
+	ExcludeFamilies       []string `json:"excludeFamilies,omitempty"`
+	ExcludeMetal          *bool    `json:"excludeMetal,omitempty"`
+	Hypervisor            []string `json:"hypervisor,omitempty"`
+	IncludeFamilies       []string `json:"includeFamilies,omitempty"`
+	IsEnaSupported        *bool    `json:"isEnaSupported,omitempty"`
+	MaxGpu                *int     `json:"maxGpu,omitempty"`
+	MaxMemoryGiB          *float64 `json:"maxMemoryGiB,omitempty"`
+	MaxNetworkPerformance *int     `json:"maxNetworkPerformance,omitempty"`
+	MaxVcpu               *int     `json:"maxVcpu,omitempty"`
+	MinEnis               *int     `json:"minEnis,omitempty"`
+	MinGpu                *int     `json:"minGpu,omitempty"`
+	MinMemoryGiB          *float64 `json:"minMemoryGiB,omitempty"`
+	MinNetworkPerformance *int     `json:"minNetworkPerformance,omitempty"`
+	MinVcpu               *int     `json:"minVcpu,omitempty"`
+	RootDeviceTypes       []string `json:"rootDeviceTypes,omitempty"`
+	VirtualizationTypes   []string `json:"virtualizationTypes,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -112,6 +163,7 @@ type InstanceTypes struct {
 
 type LaunchSpecification struct {
 	AssociatePublicIPAddress *bool                    `json:"associatePublicIpAddress,omitempty"`
+	AssociateIPv6Address     *bool                    `json:"associateIpv6Address,omitempty"`
 	SecurityGroupIDs         []string                 `json:"securityGroupIds,omitempty"`
 	ImageID                  *string                  `json:"imageId,omitempty"`
 	KeyPair                  *string                  `json:"keyPair,omitempty"`
@@ -124,6 +176,7 @@ type LaunchSpecification struct {
 	EBSOptimized             *bool                    `json:"ebsOptimized,omitempty"`
 	UseAsTemplateOnly        *bool                    `json:"useAsTemplateOnly,omitempty"`
 	InstanceMetadataOptions  *InstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
+	LaunchSpecScheduling     *LaunchSpecScheduling    `json:"scheduling,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1154,6 +1207,13 @@ func (o *Strategy) SetUtilizeCommitments(v *bool) *Strategy {
 	return o
 }
 
+func (o *Strategy) SetSpreadNodesBy(v *string) *Strategy {
+	if o.SpreadNodesBy = v; o.SpreadNodesBy == nil {
+		o.nullFields = append(o.nullFields, "SpreadNodesBy")
+	}
+	return o
+}
+
 // endregion
 
 // region Capacity
@@ -1319,6 +1379,13 @@ func (o *InstanceTypes) SetBlacklist(v []string) *InstanceTypes {
 	return o
 }
 
+func (o *InstanceTypes) SetFilters(v *Filters) *InstanceTypes {
+	if o.Filters = v; o.Filters == nil {
+		o.nullFields = append(o.nullFields, "Filters")
+	}
+	return o
+}
+
 // endregion
 
 // region LaunchSpecification
@@ -1332,6 +1399,13 @@ func (o LaunchSpecification) MarshalJSON() ([]byte, error) {
 func (o *LaunchSpecification) SetAssociatePublicIPAddress(v *bool) *LaunchSpecification {
 	if o.AssociatePublicIPAddress = v; o.AssociatePublicIPAddress == nil {
 		o.nullFields = append(o.nullFields, "AssociatePublicIPAddress")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetAssociateIPv6Address(v *bool) *LaunchSpecification {
+	if o.AssociateIPv6Address = v; o.AssociateIPv6Address == nil {
+		o.nullFields = append(o.nullFields, "AssociateIPv6Address")
 	}
 	return o
 }
@@ -1815,3 +1889,144 @@ func (o *S3) SetId(v *string) *S3 {
 }
 
 // endregion
+
+// region Filters
+
+func (o Filters) MarshalJSON() ([]byte, error) {
+	type noMethod Filters
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Filters) SetArchitectures(v []string) *Filters {
+	if o.Architectures = v; o.Architectures == nil {
+		o.nullFields = append(o.nullFields, "Architectures")
+	}
+	return o
+}
+
+func (o *Filters) SetCategories(v []string) *Filters {
+	if o.Categories = v; o.Categories == nil {
+		o.nullFields = append(o.nullFields, "Categories")
+	}
+	return o
+}
+
+func (o *Filters) SetDiskTypes(v []string) *Filters {
+	if o.DiskTypes = v; o.DiskTypes == nil {
+		o.nullFields = append(o.nullFields, "DiskTypes")
+	}
+	return o
+}
+
+func (o *Filters) SetExcludeFamilies(v []string) *Filters {
+	if o.ExcludeFamilies = v; o.ExcludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "ExcludeFamilies")
+	}
+	return o
+}
+
+func (o *Filters) SetExcludeMetal(v *bool) *Filters {
+	if o.ExcludeMetal = v; o.ExcludeMetal == nil {
+		o.nullFields = append(o.nullFields, "ExcludeMetal")
+	}
+	return o
+}
+
+func (o *Filters) SetHypervisor(v []string) *Filters {
+	if o.Hypervisor = v; o.Hypervisor == nil {
+		o.nullFields = append(o.nullFields, "Hypervisor")
+	}
+	return o
+}
+
+func (o *Filters) SetIncludeFamilies(v []string) *Filters {
+	if o.IncludeFamilies = v; o.IncludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "IncludeFamilies")
+	}
+	return o
+}
+
+func (o *Filters) SetIsEnaSupported(v *bool) *Filters {
+	if o.IsEnaSupported = v; o.IsEnaSupported == nil {
+		o.nullFields = append(o.nullFields, "IsEnaSupported")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxGpu(v *int) *Filters {
+	if o.MaxGpu = v; o.MaxGpu == nil {
+		o.nullFields = append(o.nullFields, "MaxGpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxMemoryGiB(v *float64) *Filters {
+	if o.MaxMemoryGiB = v; o.MaxMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MaxMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxNetworkPerformance(v *int) *Filters {
+	if o.MaxNetworkPerformance = v; o.MaxNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MaxNetworkPerformance")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxVcpu(v *int) *Filters {
+	if o.MaxVcpu = v; o.MaxVcpu == nil {
+		o.nullFields = append(o.nullFields, "MaxVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMinEnis(v *int) *Filters {
+	if o.MinEnis = v; o.MinEnis == nil {
+		o.nullFields = append(o.nullFields, "MinEnis")
+	}
+	return o
+}
+
+func (o *Filters) SetMinGpu(v *int) *Filters {
+	if o.MinGpu = v; o.MinGpu == nil {
+		o.nullFields = append(o.nullFields, "MinGpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMinMemoryGiB(v *float64) *Filters {
+	if o.MinMemoryGiB = v; o.MinMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MinMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetMinNetworkPerformance(v *int) *Filters {
+	if o.MinNetworkPerformance = v; o.MinNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MinNetworkPerformance")
+	}
+	return o
+}
+
+func (o *Filters) SetMinVcpu(v *int) *Filters {
+	if o.MinVcpu = v; o.MinVcpu == nil {
+		o.nullFields = append(o.nullFields, "MinVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetRootDeviceTypes(v []string) *Filters {
+	if o.RootDeviceTypes = v; o.RootDeviceTypes == nil {
+		o.nullFields = append(o.nullFields, "RootDeviceTypes")
+	}
+	return o
+}
+
+func (o *Filters) SetVirtualizationTypes(v []string) *Filters {
+	if o.VirtualizationTypes = v; o.VirtualizationTypes == nil {
+		o.nullFields = append(o.nullFields, "VirtualizationTypes")
+	}
+	return o
+}

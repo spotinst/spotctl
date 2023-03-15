@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/client"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates"
-	"io/ioutil"
-	"net/http"
 )
 
-//region Cluster
+// region Cluster
 func (s *ServiceOp) ListClusters(ctx context.Context, input *ListClustersInput) (*ListClustersOutput, error) {
 	r := client.NewRequest(http.MethodGet, "/ocean/spark/cluster")
 
@@ -84,6 +86,10 @@ func (s *ServiceOp) DeleteCluster(ctx context.Context, input *DeleteClusterInput
 	}
 
 	r := client.NewRequest(http.MethodDelete, path)
+
+	if input.ForceDelete != nil {
+		r.Params.Set("forceDelete", strconv.FormatBool(spotinst.BoolValue(input.ForceDelete)))
+	}
 
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
@@ -178,7 +184,39 @@ func clusterFromJSON(in []byte) (*Cluster, error) {
 
 //endregion
 
-//region Virtual Node Group
+// region Virtual Node Group
+func (s *ServiceOp) ListVirtualNodeGroups(ctx context.Context, input *ListVngsInput) (*ListVngsOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input is nil")
+	}
+
+	path, err := uritemplates.Expand("/ocean/spark/cluster/{clusterId}/virtualNodeGroup", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	vngs, err := vngsFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ListVngsOutput)
+	if len(vngs) > 0 {
+		output.VirtualNodeGroups = vngs
+	}
+
+	return output, nil
+}
+
 func (s *ServiceOp) DetachVirtualNodeGroup(ctx context.Context, input *DetachVngInput) (*DetachVngOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input is nil")
