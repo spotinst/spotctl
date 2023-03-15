@@ -184,7 +184,7 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
-# github.com/spotinst/spotinst-sdk-go v1.128.0
+# github.com/spotinst/spotinst-sdk-go v1.334.0
 ## explicit
 github.com/spotinst/spotinst-sdk-go/service/ocean
 github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws
@@ -200,7 +200,7 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/stretchr/testify v1.7.2
+# github.com/stretchr/testify v1.8.1
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/ulikunitz/xz v0.5.9
@@ -279,7 +279,8 @@ google.golang.org/protobuf/types/known/timestamppb
 ## explicit
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
-# gopkg.in/ini.v1 v1.66.6
+# gopkg.in/ini.v1 v1.67.0
+## explicit
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
