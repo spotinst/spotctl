@@ -454,9 +454,9 @@ func (x *oceanKubernetesAWSClusterBuilder) buildStrategy() *aws.Strategy {
 	}
 
 	if x.fs.Changed(flags.FlagOceanAvailabilityVsCost) {
-		test := aws.ClusterOrientation{}
-		test.SetAvailabilityVsCost(spotinst.String(x.opts.AvailabilityVsCost))
-		strategy.SetClusterOrientation(&test)
+		clusterOrientation := aws.ClusterOrientation{}
+		clusterOrientation.SetAvailabilityVsCost(spotinst.String(x.opts.AvailabilityVsCost))
+		strategy.SetClusterOrientation(&clusterOrientation)
 	}
 
 	return strategy
