@@ -3,8 +3,6 @@ package ofas
 import (
 	"context"
 	"fmt"
-	"time"
-
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -13,26 +11,37 @@ import (
 )
 
 const (
-	spotConfigMapNamespace        = metav1.NamespaceSystem
 	spotConfigMapName             = "spotinst-kubernetes-cluster-controller-config"
 	clusterIdentifierConfigMapKey = "spotinst.cluster-identifier"
-
-	pollInterval = 5 * time.Second
-	pollTimeout  = 5 * time.Minute
 )
 
 func ValidateClusterContext(ctx context.Context, client kubernetes.Interface, clusterIdentifier string) error {
-	cm, err := client.CoreV1().ConfigMaps(spotConfigMapNamespace).Get(ctx, spotConfigMapName, metav1.GetOptions{})
+	fieldSelectorForName := fmt.Sprintf("metadata.name=%s", spotConfigMapName)
+	cm, err := client.CoreV1().ConfigMaps("").List(ctx, metav1.ListOptions{
+		FieldSelector: fieldSelectorForName,
+	})
 	if err != nil {
 		return fmt.Errorf("could not get ocean configuration, %w", err)
 	}
 
-	id := cm.Data[clusterIdentifierConfigMapKey]
-	if id != clusterIdentifier {
-		return fmt.Errorf("current cluster identifier is %q, expected %q", id, clusterIdentifier)
+	switch len(cm.Items) {
+	case 0:
+		return fmt.Errorf("config map %q not found", spotConfigMapName)
+	case 1:
+		id := cm.Items[0].Data[clusterIdentifierConfigMapKey]
+		if id != clusterIdentifier {
+			return fmt.Errorf("current cluster identifier is %q, expected %q", id, clusterIdentifier)
+		}
+		return nil
+	default:
+		for i := range cm.Items {
+			id := cm.Items[i].Data[clusterIdentifierConfigMapKey]
+			if id == clusterIdentifier {
+				return nil
+			}
+		}
+		return fmt.Errorf("current cluster identifier is %q, expected %q", cm.Items[0].Data[clusterIdentifierConfigMapKey], clusterIdentifier)
 	}
-
-	return nil
 }
 
 func CreateDeployerRBAC(ctx context.Context, client kubernetes.Interface, namespace string) error {
