@@ -46,6 +46,7 @@ type (
 const (
 	defaultK8sVersion   = "1.24"
 	spotSystemNamespace = "spot-system"
+	kubeSystemNamespace = "kube-system"
 
 	clusterConfigTemplate = `apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
@@ -222,7 +223,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	log.Infof("Creating deployer RBAC")
-	if err := ofas.CreateDeployerRBAC(ctx, client, spotSystemNamespace); err != nil {
+	if err := ofas.CreateDeployerRBAC(ctx, client, kubeSystemNamespace); err != nil {
 		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 
