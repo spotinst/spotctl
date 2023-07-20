@@ -458,6 +458,9 @@ func (x *oceanKubernetesAWSClusterBuilder) buildStrategy() *aws.Strategy {
 		clusterOrientation.SetAvailabilityVsCost(spotinst.String(x.opts.AvailabilityVsCost))
 		strategy.SetClusterOrientation(&clusterOrientation)
 	}
+	if x.fs.Changed(flags.FlagOceanSpreadNodesBy) {
+		strategy.SetSpreadNodesBy(spotinst.String(x.opts.SpreadNodesBy))
+	}
 
 	return strategy
 }

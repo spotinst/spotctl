@@ -92,6 +92,7 @@ type (
 		FallbackToOnDemand       bool
 		DrainingTimeout          int
 		AvailabilityVsCost       string
+		SpreadNodesBy            string
 		// Capacity.
 		MinSize    int
 		MaxSize    int
