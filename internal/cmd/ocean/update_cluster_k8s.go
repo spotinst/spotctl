@@ -134,6 +134,7 @@ func (x *CmdUpdateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.BoolVar(&x.UtilizeReservedInstances, flags.FlagOceanUtilizeReserveInstances, x.UtilizeReservedInstances, "")
 		fs.BoolVar(&x.FallbackToOnDemand, flags.FlagOceanFallbackOnDemand, x.FallbackToOnDemand, "")
 		fs.StringVar(&x.AvailabilityVsCost, flags.FlagOceanAvailabilityVsCost, x.AvailabilityVsCost, "")
+		fs.StringVar(&x.SpreadNodesBy, flags.FlagOceanSpreadNodesBy, x.SpreadNodesBy, "")
 	}
 
 	// Capacity.

@@ -14,7 +14,7 @@ var (
 	// See: https://github.com/kubernetes/kops.
 	DependencyKops Dependency = &dependency{
 		name:    "kops",
-		version: "1.24.1",
+		version: "1.27.0",
 		url: "https://github.com/kubernetes/kops/releases/download/" +
 			"v{{.version}}/kops-{{.os}}-{{.arch}}",
 	}
