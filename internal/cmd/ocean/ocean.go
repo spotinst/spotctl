@@ -77,6 +77,7 @@ func (x *Cmd) initSubCommands() {
 		NewCmdDelete,
 		NewCmdRollout,
 		NewCmdSpark,
+		NewCmdSparkConnect,
 	}
 
 	for _, cmd := range commands {
