@@ -65,6 +65,7 @@ const (
 	FlagOFASKubeConfigPath string = "kubeconfig"
 	FlagOFASName           string = "name"
 	FlagOFASState          string = "state"
+	FlagOFASAppID          string = "app-id"
 )
 
 func Log(cmd *cobra.Command) {

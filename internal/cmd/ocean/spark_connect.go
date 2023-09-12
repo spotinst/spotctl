@@ -2,13 +2,24 @@ package ocean
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
-	"github.com/spotinst/spotctl/internal/kubernetes"
 	"github.com/spotinst/spotctl/internal/log"
+	"golang.org/x/sync/errgroup"
+	"io"
+	"net"
+	"net/http"
+	"os"
 )
+
+type SocketServer struct {
+	conn *websocket.Conn
+}
 
 type (
 	CmdSparkConnect struct {
@@ -18,12 +29,8 @@ type (
 
 	CmdSparkConnectOptions struct {
 		*CmdSparkOptions
-		OceanClusterID    string
-		ClusterName       string
-		Region            string
-		Tags              []string
-		KubernetesVersion string
-		KubeConfigPath    string
+		ClusterID string
+		AppID     string
 	}
 )
 
@@ -100,6 +107,11 @@ func (x *CmdSparkConnect) validate(_ context.Context) error {
 
 func (x *CmdSparkConnect) run(ctx context.Context) error {
 	log.Infof("Spark connect will now run")
+	_, err := x.NewWebSocketServer()
+	if err != nil {
+		log.Errorf("could not connect to websocket server %w", err)
+		return err
+	}
 
 	return nil
 }
@@ -114,17 +126,140 @@ func (x *CmdSparkConnectOptions) initDefaults(opts *CmdSparkOptions) {
 }
 
 func (x *CmdSparkConnectOptions) initFlags(fs *pflag.FlagSet) {
-	// todo check what flags we need
-	fs.StringVar(&x.OceanClusterID, flags.FlagOFASOceanClusterID, x.OceanClusterID, "ID of Ocean cluster that should be imported into Ocean for Apache Spark. Note that your machine must be configured to access the cluster.")
-	fs.StringVar(&x.KubeConfigPath, flags.FlagOFASKubeConfigPath, kubernetes.GetDefaultKubeConfigPath(), "path to local kubeconfig")
+	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "id of the cluster")
+	fs.StringVar(&x.AppID, flags.FlagOFASAppID, x.AppID, "id of the spark application")
 }
 
 func (x *CmdSparkConnectOptions) Validate() error {
-	if x.OceanClusterID != "" && x.ClusterName != "" {
-		return spotctlerrors.RequiredXor(flags.FlagOFASOceanClusterID, flags.FlagOFASClusterName)
+	errg := spotctlerrors.NewErrorGroup()
+
+	if err := x.CmdSparkOptions.Validate(); err != nil {
+		errg.Add(err)
 	}
-	if x.KubeConfigPath == "" {
-		return spotctlerrors.Required(flags.FlagOFASKubeConfigPath)
+
+	if x.ClusterID == "" {
+		errg.Add(spotctlerrors.Required(flags.FlagOFASClusterID))
 	}
-	return x.CmdSparkOptions.Validate()
+
+	if x.AppID == "" {
+		errg.Add(spotctlerrors.Required(flags.FlagOFASAppID))
+	}
+
+	if errg.Len() > 0 {
+		return errg
+	}
+
+	return nil
+}
+
+func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
+
+	// todo Is there a some other way to get the env params from options?
+	baseURL := os.Getenv("SPOTINST_BASE_URL")
+	token := os.Getenv("SPOTINST_TOKEN")
+	account := os.Getenv("SPOTINST_ACCOUNT")
+
+	clusterID := x.opts.ClusterID
+	appID := x.opts.AppID
+
+	urlStr := fmt.Sprintf("%s/cluster/%s/%s?spotinstAccountId=%s", baseURL, clusterID, appID, account)
+	log.Infof("Starting websocket server on address %s", urlStr)
+
+	header := http.Header{"Authorization": []string{"Bearer " + token}}
+	conn, resp, err := websocket.DefaultDialer.Dial(urlStr, header)
+
+	if err != nil {
+		if err == websocket.ErrBadHandshake {
+			log.Errorf("handshake failed with status %d", resp.StatusCode)
+		}
+		return nil, err
+	}
+	startSocketServer(conn)
+	return &SocketServer{conn: conn}, nil
+}
+
+func startSocketServer(wsConn *websocket.Conn) {
+	ln, err := net.Listen("tcp", ":15002")
+	if err != nil {
+		log.Errorf("handshake failed with status %w", err)
+		return
+	}
+	defer ln.Close()
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Errorf("Accept error: %w", err)
+			return
+		}
+
+		go func() {
+			err := handleConnection(conn, wsConn)
+			if err != nil {
+				log.Errorf("handle connection error: %w", err)
+			}
+		}()
+	}
+}
+
+func handleConnection(conn net.Conn, wsConn *websocket.Conn) error {
+	defer conn.Close()
+
+	g, _ := errgroup.WithContext(context.Background())
+
+	// Websocket to Upstream
+	g.Go(func() error {
+		return toUpstream(conn, wsConn)
+	})
+
+	// Upstream to websocket
+	g.Go(func() error {
+		return fromUpstream(conn, wsConn)
+	})
+
+	return g.Wait()
+}
+
+func fromUpstream(upstream io.Reader, downstream *websocket.Conn) error {
+	for {
+		buf := make([]byte, 1024)
+		readFromUpstream, err := upstream.Read(buf)
+		if err != nil && !errors.Is(err, io.EOF) {
+			return err
+		} else if errors.Is(err, io.EOF) {
+			log.Debugf("Upstream closed")
+
+			break
+		}
+
+		//log.Debugf("Got %d bytes from upstream, will write back to peer", readFromUpstream)
+		err = downstream.WriteMessage(websocket.BinaryMessage, buf[:readFromUpstream]) //wsutil.WriteServerBinary(downstream, buf[:readFromUpstream])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func toUpstream(downstream io.Writer, upstream *websocket.Conn) error {
+	for {
+		_, msg, err := upstream.ReadMessage() //wsutil.ReadClientBinary(downstream)
+		if err != nil && !errors.Is(err, io.EOF) {
+			return err
+		} else if errors.Is(err, io.EOF) {
+			log.Infof("Client closed")
+			break
+		}
+
+		// log.Debugf("Read %d bytes from peer", len(msg))
+
+		_, err = downstream.Write(msg)
+		if err != nil {
+			return err
+		}
+		//log.Debugf("Wrote %d bytes to upstream connect API", wroteUpstream)
+	}
+
+	return nil
 }
