@@ -17,6 +17,8 @@ import (
 	"os"
 )
 
+const DEFAULT_WS_URL = "wss://api.spotinst.io"
+
 type SocketServer struct {
 	conn *websocket.Conn
 }
@@ -129,7 +131,7 @@ func (x *CmdSparkConnectOptions) initDefaults(opts *CmdSparkOptions) {
 func (x *CmdSparkConnectOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "id of the cluster")
 	fs.StringVar(&x.AppID, flags.FlagOFASAppID, x.AppID, "id of the spark application")
-	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.AppID, "web socket url")
+	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.AppID, "web socket url. Default is wss://api.spotinst.io")
 }
 
 func (x *CmdSparkConnectOptions) Validate() error {
@@ -148,7 +150,7 @@ func (x *CmdSparkConnectOptions) Validate() error {
 	}
 
 	if x.WsUrl == "" {
-		errg.Add(spotctlerrors.Required(flags.FlagOFASWsUrl))
+		x.WsUrl = DEFAULT_WS_URL
 	}
 
 	if errg.Len() > 0 {
@@ -160,7 +162,7 @@ func (x *CmdSparkConnectOptions) Validate() error {
 
 func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
 
-	// todo Is there a some other way to get the env params from options?  Perhaps just use cmd options
+	// todo Is there a some other way to get the env params from options?  Perhaps just use cmd options for all params
 	token := os.Getenv("SPOTINST_TOKEN")
 	account := os.Getenv("SPOTINST_ACCOUNT")
 
@@ -237,8 +239,7 @@ func fromUpstream(upstream io.Reader, downstream *websocket.Conn) error {
 			break
 		}
 
-		//log.Debugf("Got %d bytes from upstream, will write back to peer", readFromUpstream)
-		err = downstream.WriteMessage(websocket.BinaryMessage, buf[:readFromUpstream]) //wsutil.WriteServerBinary(downstream, buf[:readFromUpstream])
+		err = downstream.WriteMessage(websocket.BinaryMessage, buf[:readFromUpstream])
 		if err != nil {
 			return err
 		}
@@ -249,7 +250,7 @@ func fromUpstream(upstream io.Reader, downstream *websocket.Conn) error {
 
 func toUpstream(downstream io.Writer, upstream *websocket.Conn) error {
 	for {
-		_, msg, err := upstream.ReadMessage() //wsutil.ReadClientBinary(downstream)
+		_, msg, err := upstream.ReadMessage()
 		if err != nil && !errors.Is(err, io.EOF) {
 			return err
 		} else if errors.Is(err, io.EOF) {
@@ -257,13 +258,10 @@ func toUpstream(downstream io.Writer, upstream *websocket.Conn) error {
 			break
 		}
 
-		// log.Debugf("Read %d bytes from peer", len(msg))
-
 		_, err = downstream.Write(msg)
 		if err != nil {
 			return err
 		}
-		//log.Debugf("Wrote %d bytes to upstream connect API", wroteUpstream)
 	}
 
 	return nil
