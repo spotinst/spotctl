@@ -29,6 +29,7 @@ type (
 
 	CmdSparkConnectOptions struct {
 		*CmdSparkOptions
+		WsUrl     string
 		ClusterID string
 		AppID     string
 	}
@@ -128,6 +129,7 @@ func (x *CmdSparkConnectOptions) initDefaults(opts *CmdSparkOptions) {
 func (x *CmdSparkConnectOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "id of the cluster")
 	fs.StringVar(&x.AppID, flags.FlagOFASAppID, x.AppID, "id of the spark application")
+	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.AppID, "web socket url")
 }
 
 func (x *CmdSparkConnectOptions) Validate() error {
@@ -145,6 +147,10 @@ func (x *CmdSparkConnectOptions) Validate() error {
 		errg.Add(spotctlerrors.Required(flags.FlagOFASAppID))
 	}
 
+	if x.WsUrl == "" {
+		errg.Add(spotctlerrors.Required(flags.FlagOFASWsUrl))
+	}
+
 	if errg.Len() > 0 {
 		return errg
 	}
@@ -154,19 +160,19 @@ func (x *CmdSparkConnectOptions) Validate() error {
 
 func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
 
-	// todo Is there a some other way to get the env params from options?
-	baseURL := os.Getenv("SPOTINST_BASE_URL")
+	// todo Is there a some other way to get the env params from options?  Perhaps just use cmd options
 	token := os.Getenv("SPOTINST_TOKEN")
 	account := os.Getenv("SPOTINST_ACCOUNT")
 
 	clusterID := x.opts.ClusterID
 	appID := x.opts.AppID
+	baseURL := x.opts.WsUrl
 
-	urlStr := fmt.Sprintf("%s/cluster/%s/%s?spotinstAccountId=%s", baseURL, clusterID, appID, account)
-	log.Infof("Starting websocket server on address %s", urlStr)
+	address := fmt.Sprintf("%s/cluster/%s/app/%s?spotinstAccountId=%s", baseURL, clusterID, appID, account)
+	log.Infof("Starting websocket server on address %s", address)
 
 	header := http.Header{"Authorization": []string{"Bearer " + token}}
-	conn, resp, err := websocket.DefaultDialer.Dial(urlStr, header)
+	conn, resp, err := websocket.DefaultDialer.Dial(address, header)
 
 	if err != nil {
 		if err == websocket.ErrBadHandshake {
@@ -228,7 +234,6 @@ func fromUpstream(upstream io.Reader, downstream *websocket.Conn) error {
 			return err
 		} else if errors.Is(err, io.EOF) {
 			log.Debugf("Upstream closed")
-
 			break
 		}
 
