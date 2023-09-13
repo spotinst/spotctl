@@ -168,7 +168,7 @@ func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
 	appID := x.opts.AppID
 	baseURL := x.opts.WsUrl
 
-	address := fmt.Sprintf("%s/cluster/%s/app/%s?spotinstAccountId=%s", baseURL, clusterID, appID, account)
+	address := fmt.Sprintf("%s/ocean/spark/cluster/%s/app/%s/connect?accountId=%s", baseURL, clusterID, appID, account)
 	log.Infof("Starting websocket server on address %s", address)
 
 	header := http.Header{"Authorization": []string{"Bearer " + token}}
