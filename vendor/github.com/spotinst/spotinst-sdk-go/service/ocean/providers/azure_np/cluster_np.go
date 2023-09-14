@@ -21,6 +21,7 @@ type Cluster struct {
 	AutoScaler               *AutoScaler               `json:"autoScaler,omitempty"`
 	Health                   *Health                   `json:"health,omitempty"`
 	VirtualNodeGroupTemplate *VirtualNodeGroupTemplate `json:"virtualNodeGroupTemplate,omitempty"`
+	Scheduling               *Scheduling               `json:"scheduling,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -65,6 +66,8 @@ type VirtualNodeGroupTemplate struct {
 	Labels             *map[string]string  `json:"labels,omitempty"`
 	Tags               *map[string]string  `json:"tags,omitempty"`
 	Taints             []*Taint            `json:"taints,omitempty"`
+	AutoScale          *AutoScale          `json:"autoScale,omitempty"`
+	VmSizes            *VmSizes            `json:"vmSizes,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -422,6 +425,13 @@ func (o *Cluster) SetVirtualNodeGroupTemplate(v *VirtualNodeGroupTemplate) *Clus
 	return o
 }
 
+func (o *Cluster) SetScheduling(v *Scheduling) *Cluster {
+	if o.Scheduling = v; o.Scheduling == nil {
+		o.nullFields = append(o.nullFields, "Scheduling")
+	}
+	return o
+}
+
 // endregion
 
 // region AKS
@@ -566,12 +576,12 @@ func (o Automatic) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-func (o *Automatic) SetIsEnabled(v *bool) *Automatic {
+/*func (o *Automatic) SetIsEnabled(v *bool) *Automatic {
 	if o.IsEnabled = v; o.IsEnabled == nil {
 		o.nullFields = append(o.nullFields, "IsEnabled")
 	}
 	return o
-}
+}*/
 
 func (o *Automatic) SetPercentage(v *int) *Automatic {
 	if o.Percentage = v; o.Percentage == nil {
@@ -635,6 +645,20 @@ func (o *VirtualNodeGroupTemplate) SetTaints(v []*Taint) *VirtualNodeGroupTempla
 func (o *VirtualNodeGroupTemplate) SetTags(v *map[string]string) *VirtualNodeGroupTemplate {
 	if o.Tags = v; o.Tags == nil {
 		o.nullFields = append(o.nullFields, "Tags")
+	}
+	return o
+}
+
+func (o *VirtualNodeGroupTemplate) SetAutoScale(v *AutoScale) *VirtualNodeGroupTemplate {
+	if o.AutoScale = v; o.AutoScale == nil {
+		o.nullFields = append(o.nullFields, "AutoScale")
+	}
+	return o
+}
+
+func (o *VirtualNodeGroupTemplate) SetVmSizes(v *VmSizes) *VirtualNodeGroupTemplate {
+	if o.VmSizes = v; o.VmSizes == nil {
+		o.nullFields = append(o.nullFields, "VmSizes")
 	}
 	return o
 }

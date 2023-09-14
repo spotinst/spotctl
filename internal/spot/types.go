@@ -113,9 +113,10 @@ type (
 		IAMInstanceProfileName   string
 		IAMInstanceProfileARN    string
 
-		LoadBalancerNames []string
-		LoadBalancerARNs  []string
-		LoadBalancerType  string // Deprecated: Inferred from name/arn.
+		LoadBalancerNames               []string
+		LoadBalancerARNs                []string
+		LoadBalancerType                string // Deprecated: Inferred from name/arn.
+		ResourceTagSpecificationVolumes bool
 
 		// Auto Scaling.
 		EnableAutoScaler       bool

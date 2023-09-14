@@ -637,6 +637,14 @@ func (x *oceanKubernetesAWSClusterBuilder) buildCompute() *aws.Compute {
 		}
 	}
 
+	if x.fs.Changed(flags.FlagOceanResourceTagSpecificationVolumes) {
+		vol := new(aws.Volumes)
+		vol.SetShouldTag(spotinst.Bool(x.opts.ResourceTagSpecificationVolumes))
+		launchSpec.SetResourceTagSpecification(&aws.ResourceTagSpecification{
+			Volumes: vol,
+		})
+	}
+
 	compute.SetLaunchSpecification(launchSpec)
 
 	return compute

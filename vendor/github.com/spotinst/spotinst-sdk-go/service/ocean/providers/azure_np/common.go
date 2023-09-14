@@ -9,6 +9,7 @@ type NodePoolProperties struct {
 	OsDiskSizeGB       *int    `json:"osDiskSizeGB,omitempty"`
 	OsDiskType         *string `json:"osDiskType,omitempty"`
 	OsType             *string `json:"osType,omitempty"`
+	OsSKU              *string `json:"osSKU,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -51,6 +52,13 @@ func (o *NodePoolProperties) SetOsDiskType(v *string) *NodePoolProperties {
 func (o *NodePoolProperties) SetOsType(v *string) *NodePoolProperties {
 	if o.OsType = v; o.OsType == nil {
 		o.nullFields = append(o.nullFields, "OsType")
+	}
+	return o
+}
+
+func (o *NodePoolProperties) SetOsSKU(v *string) *NodePoolProperties {
+	if o.OsSKU = v; o.OsSKU == nil {
+		o.nullFields = append(o.nullFields, "OsSKU")
 	}
 	return o
 }
@@ -158,3 +166,223 @@ func (o *Taint) SetEffect(v *string) *Taint {
 }
 
 // endregion
+
+//region AutoScale
+
+type AutoScale struct {
+	Headrooms []*Headrooms `json:"headrooms,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Headrooms struct {
+	CpuPerUnit    *int `json:"cpuPerUnit,omitempty"`
+	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
+	GpuPerUnit    *int `json:"gpuPerUnit,omitempty"`
+	NumberOfUnits *int `json:"numOfUnits,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+func (o AutoScale) MarshalJSON() ([]byte, error) {
+	type noMethod AutoScale
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AutoScale) SetHeadrooms(v []*Headrooms) *AutoScale {
+	if o.Headrooms = v; o.Headrooms == nil {
+		o.nullFields = append(o.nullFields, "Headrooms")
+	}
+	return o
+}
+
+//end region
+
+//region Headrooms
+
+func (o Headrooms) MarshalJSON() ([]byte, error) {
+	type noMethod Headrooms
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Headrooms) SetCpuPerUnit(v *int) *Headrooms {
+	if o.CpuPerUnit = v; o.CpuPerUnit == nil {
+		o.nullFields = append(o.nullFields, "CpuPerUnit")
+	}
+	return o
+}
+
+func (o *Headrooms) SetMemoryPerUnit(v *int) *Headrooms {
+	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
+		o.nullFields = append(o.nullFields, "MemoryPerUnit")
+	}
+	return o
+}
+
+func (o *Headrooms) SetGpuPerUnit(v *int) *Headrooms {
+	if o.GpuPerUnit = v; o.GpuPerUnit == nil {
+		o.nullFields = append(o.nullFields, "GpuPerUnit")
+	}
+	return o
+}
+
+func (o *Headrooms) SetNumOfUnits(v *int) *Headrooms {
+	if o.NumberOfUnits = v; o.NumberOfUnits == nil {
+		o.nullFields = append(o.nullFields, "NumberOfUnits")
+	}
+	return o
+}
+
+// endregion
+
+//region Scheduling
+
+type Scheduling struct {
+	ShutdownHours *ShutdownHours `json:"shutdownHours,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ShutdownHours struct {
+	TimeWindows []string `json:"timeWindows,omitempty"`
+	IsEnabled   *bool    `json:"isEnabled,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+func (o Scheduling) MarshalJSON() ([]byte, error) {
+	type noMethod Scheduling
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Scheduling) SetShutdownHours(v *ShutdownHours) *Scheduling {
+	if o.ShutdownHours = v; o.ShutdownHours == nil {
+		o.nullFields = append(o.nullFields, "ShutdownHours")
+	}
+	return o
+}
+
+func (o ShutdownHours) MarshalJSON() ([]byte, error) {
+	type noMethod ShutdownHours
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ShutdownHours) SetTimeWindows(v []string) *ShutdownHours {
+	if o.TimeWindows = v; o.TimeWindows == nil {
+		o.nullFields = append(o.nullFields, "TimeWindows")
+	}
+	return o
+}
+
+func (o *ShutdownHours) SetIsEnabled(v *bool) *ShutdownHours {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
+
+// end region
+
+// region vmSizes
+
+type VmSizes struct {
+	Filters *Filters `json:"filters,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Filters struct {
+	MinVcpu       *int     `json:"minVCpu,omitempty"`
+	MaxVcpu       *int     `json:"maxVCpu,omitempty"`
+	MinMemoryGiB  *float64 `json:"minMemoryGiB,omitempty"`
+	MaxMemoryGiB  *float64 `json:"maxMemoryGiB,omitempty"`
+	Series        []string `json:"series,omitempty"`
+	Architectures []string `json:"architectures,omitempty"`
+	ExcludeSeries []string `json:"excludeSeries,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+func (o VmSizes) MarshalJSON() ([]byte, error) {
+	type noMethod VmSizes
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *VmSizes) SetFilters(v *Filters) *VmSizes {
+	if o.Filters = v; o.Filters == nil {
+		o.nullFields = append(o.nullFields, "Filters")
+	}
+	return o
+}
+
+// end region
+
+//region filters
+
+func (o Filters) MarshalJSON() ([]byte, error) {
+	type noMethod Filters
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *Filters) SetMinVcpu(v *int) *Filters {
+	if o.MinVcpu = v; o.MinVcpu == nil {
+		o.nullFields = append(o.nullFields, "MinVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxVcpu(v *int) *Filters {
+	if o.MaxVcpu = v; o.MaxVcpu == nil {
+		o.nullFields = append(o.nullFields, "MaxVcpu")
+	}
+	return o
+}
+
+func (o *Filters) SetMinMemoryGiB(v *float64) *Filters {
+	if o.MinMemoryGiB = v; o.MinMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MinMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetMaxMemoryGiB(v *float64) *Filters {
+	if o.MaxMemoryGiB = v; o.MaxMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MaxMemoryGiB")
+	}
+	return o
+}
+
+func (o *Filters) SetSeries(v []string) *Filters {
+	if o.Series = v; o.Series == nil {
+		o.nullFields = append(o.nullFields, "Series")
+	}
+	return o
+}
+
+func (o *Filters) SetArchitectures(v []string) *Filters {
+	if o.Architectures = v; o.Architectures == nil {
+		o.nullFields = append(o.nullFields, "Architectures")
+	}
+	return o
+}
+
+func (o *Filters) SetExcludeSeries(v []string) *Filters {
+	if o.ExcludeSeries = v; o.ExcludeSeries == nil {
+		o.nullFields = append(o.nullFields, "ExcludeSeries")
+	}
+	return o
+}
+
+//end region

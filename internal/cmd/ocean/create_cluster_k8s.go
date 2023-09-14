@@ -161,6 +161,7 @@ func (x *CmdCreateClusterKubernetesOptions) initFlags(fs *pflag.FlagSet) {
 		fs.StringSliceVar(&x.LoadBalancerNames, flags.FlagOceanLoadBalancerName, x.LoadBalancerNames, "")
 		fs.StringSliceVar(&x.LoadBalancerARNs, flags.FlagOceanLoadBalancerARN, x.LoadBalancerARNs, "")
 		fs.StringVar(&x.LoadBalancerType, flags.FlagOceanLoadBalancerType, x.LoadBalancerType, "")
+		fs.BoolVar(&x.ResourceTagSpecificationVolumes, flags.FlagOceanResourceTagSpecificationVolumes, x.ResourceTagSpecificationVolumes, "")
 	}
 
 	// Auto Scaling.

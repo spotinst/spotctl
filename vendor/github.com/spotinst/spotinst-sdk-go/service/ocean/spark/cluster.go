@@ -37,7 +37,9 @@ type Config struct {
 }
 
 type LogCollectionConfig struct {
+	// Deprecated: Use CollectAppLogs instead.
 	CollectDriverLogs *bool `json:"collectDriverLogs,omitempty"`
+	CollectAppLogs    *bool `json:"collectAppLogs,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -430,6 +432,13 @@ func (l LogCollectionConfig) MarshalJSON() ([]byte, error) {
 func (l *LogCollectionConfig) SetCollectDriverLogs(v *bool) *LogCollectionConfig {
 	if l.CollectDriverLogs = v; l.CollectDriverLogs == nil {
 		l.nullFields = append(l.nullFields, "CollectDriverLogs")
+	}
+	return l
+}
+
+func (l *LogCollectionConfig) SetCollectAppLogs(v *bool) *LogCollectionConfig {
+	if l.CollectAppLogs = v; l.CollectAppLogs == nil {
+		l.nullFields = append(l.nullFields, "CollectAppLogs")
 	}
 	return l
 }
