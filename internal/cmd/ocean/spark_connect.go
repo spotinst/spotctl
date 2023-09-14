@@ -17,7 +17,10 @@ import (
 	"os"
 )
 
-const DEFAULT_WS_URL = "wss://api.spotinst.io"
+const (
+	defaultWsUrl            = "wss://api.spotinst.io"
+	defaultSparkConnectPort = "15002"
+)
 
 type SocketServer struct {
 	conn *websocket.Conn
@@ -34,6 +37,7 @@ type (
 		WsUrl     string
 		ClusterID string
 		AppID     string
+		Port      string
 	}
 )
 
@@ -132,6 +136,7 @@ func (x *CmdSparkConnectOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "id of the cluster")
 	fs.StringVar(&x.AppID, flags.FlagOFASAppID, x.AppID, "id of the spark application")
 	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.AppID, "web socket url. Default is wss://api.spotinst.io")
+	fs.StringVar(&x.Port, "port", x.Port, "spark connection port. Default is 1502")
 }
 
 func (x *CmdSparkConnectOptions) Validate() error {
@@ -150,7 +155,11 @@ func (x *CmdSparkConnectOptions) Validate() error {
 	}
 
 	if x.WsUrl == "" {
-		x.WsUrl = DEFAULT_WS_URL
+		x.WsUrl = defaultWsUrl
+	}
+
+	if x.Port == "" {
+		x.Port = defaultSparkConnectPort
 	}
 
 	if errg.Len() > 0 {
@@ -182,12 +191,12 @@ func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
 		}
 		return nil, err
 	}
-	startSocketServer(conn)
+	x.startSocketServer(conn)
 	return &SocketServer{conn: conn}, nil
 }
 
-func startSocketServer(wsConn *websocket.Conn) {
-	ln, err := net.Listen("tcp", ":15002")
+func (x *CmdSparkConnect) startSocketServer(wsConn *websocket.Conn) {
+	ln, err := net.Listen("tcp", ":"+x.opts.Port)
 	if err != nil {
 		log.Errorf("handshake failed with status %w", err)
 		return
