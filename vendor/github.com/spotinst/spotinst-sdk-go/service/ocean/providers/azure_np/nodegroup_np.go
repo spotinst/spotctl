@@ -14,38 +14,22 @@ import (
 )
 
 type VirtualNodeGroup struct {
-	ID                 *string                    `json:"id,omitempty"`
-	OceanID            *string                    `json:"oceanId,omitempty"`
-	Name               *string                    `json:"name,omitempty"`
-	Labels             *map[string]string         `json:"labels,omitempty"`
-	AvailabilityZones  []string                   `json:"availabilityZones,omitempty"`
-	Tags               *map[string]string         `json:"tags,omitempty"`
-	Strategy           *Strategy                  `json:"strategy,omitempty"`
-	NodePoolProperties *NodePoolProperties        `json:"nodePoolProperties,omitempty"`
-	NodeCountLimits    *NodeCountLimits           `json:"nodeCountLimits,omitempty"`
-	AutoScale          *VirtualNodeGroupAutoScale `json:"autoScale,omitempty"`
-	Taints             []*Taint                   `json:"taints,omitempty"`
+	ID                 *string             `json:"id,omitempty"`
+	OceanID            *string             `json:"oceanId,omitempty"`
+	Name               *string             `json:"name,omitempty"`
+	Labels             *map[string]string  `json:"labels,omitempty"`
+	AvailabilityZones  []string            `json:"availabilityZones,omitempty"`
+	Tags               *map[string]string  `json:"tags,omitempty"`
+	Strategy           *Strategy           `json:"strategy,omitempty"`
+	NodePoolProperties *NodePoolProperties `json:"nodePoolProperties,omitempty"`
+	NodeCountLimits    *NodeCountLimits    `json:"nodeCountLimits,omitempty"`
+	AutoScale          *AutoScale          `json:"autoScale,omitempty"`
+	Taints             []*Taint            `json:"taints,omitempty"`
+	VmSizes            *VmSizes            `json:"vmSizes,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
-
-	forceSendFields []string
-	nullFields      []string
-}
-
-type VirtualNodeGroupAutoScale struct {
-	Headrooms []*VirtualNodeGroupHeadrooms `json:"headrooms,omitempty"`
-
-	forceSendFields []string
-	nullFields      []string
-}
-
-type VirtualNodeGroupHeadrooms struct {
-	CpuPerUnit    *int `json:"cpuPerUnit,omitempty"`
-	MemoryPerUnit *int `json:"memoryPerUnit,omitempty"`
-	GpuPerUnit    *int `json:"gpuPerUnit,omitempty"`
-	NumberOfUnits *int `json:"numOfUnits,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -325,66 +309,18 @@ func (o *VirtualNodeGroup) SetTags(v *map[string]string) *VirtualNodeGroup {
 	return o
 }
 
-func (o *VirtualNodeGroup) SetAutoScale(v *VirtualNodeGroupAutoScale) *VirtualNodeGroup {
+func (o *VirtualNodeGroup) SetAutoScale(v *AutoScale) *VirtualNodeGroup {
 	if o.AutoScale = v; o.AutoScale == nil {
 		o.nullFields = append(o.nullFields, "AutoScale")
 	}
 	return o
 }
 
+func (o *VirtualNodeGroup) SetVmSizes(v *VmSizes) *VirtualNodeGroup {
+	if o.VmSizes = v; o.VmSizes == nil {
+		o.nullFields = append(o.nullFields, "VmSizes")
+	}
+	return o
+}
+
 //endregion
-
-//region AutoScale
-
-func (o VirtualNodeGroupAutoScale) MarshalJSON() ([]byte, error) {
-	type noMethod VirtualNodeGroupAutoScale
-	raw := noMethod(o)
-	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
-}
-
-func (o *VirtualNodeGroupAutoScale) SetHeadrooms(v []*VirtualNodeGroupHeadrooms) *VirtualNodeGroupAutoScale {
-	if o.Headrooms = v; o.Headrooms == nil {
-		o.nullFields = append(o.nullFields, "Headrooms")
-	}
-	return o
-}
-
-//end region
-
-//region Headrooms
-
-func (o VirtualNodeGroupHeadrooms) MarshalJSON() ([]byte, error) {
-	type noMethod VirtualNodeGroupHeadrooms
-	raw := noMethod(o)
-	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
-}
-
-func (o *VirtualNodeGroupHeadrooms) SetCpuPerUnit(v *int) *VirtualNodeGroupHeadrooms {
-	if o.CpuPerUnit = v; o.CpuPerUnit == nil {
-		o.nullFields = append(o.nullFields, "CpuPerUnit")
-	}
-	return o
-}
-
-func (o *VirtualNodeGroupHeadrooms) SetMemoryPerUnit(v *int) *VirtualNodeGroupHeadrooms {
-	if o.MemoryPerUnit = v; o.MemoryPerUnit == nil {
-		o.nullFields = append(o.nullFields, "MemoryPerUnit")
-	}
-	return o
-}
-
-func (o *VirtualNodeGroupHeadrooms) SetGpuPerUnit(v *int) *VirtualNodeGroupHeadrooms {
-	if o.GpuPerUnit = v; o.GpuPerUnit == nil {
-		o.nullFields = append(o.nullFields, "GpuPerUnit")
-	}
-	return o
-}
-
-func (o *VirtualNodeGroupHeadrooms) SetNumOfUnits(v *int) *VirtualNodeGroupHeadrooms {
-	if o.NumberOfUnits = v; o.NumberOfUnits == nil {
-		o.nullFields = append(o.nullFields, "NumberOfUnits")
-	}
-	return o
-}
-
-// endregion
