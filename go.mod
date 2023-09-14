@@ -10,6 +10,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.66.4
 	github.com/go-logr/logr v1.2.1 // indirect
+	github.com/gobwas/ws v1.3.0
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
@@ -27,6 +28,7 @@ require (
 	github.com/spotinst/spotinst-sdk-go v1.171.0
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
