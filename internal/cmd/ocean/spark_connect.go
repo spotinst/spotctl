@@ -10,11 +10,11 @@ import (
 	spotctlerrors "github.com/spotinst/spotctl/internal/errors"
 	"github.com/spotinst/spotctl/internal/flags"
 	"github.com/spotinst/spotctl/internal/log"
+	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"net"
 	"net/http"
-	"os"
 )
 
 const (
@@ -109,16 +109,21 @@ func (x *CmdSparkConnect) log(_ context.Context) error {
 }
 
 func (x *CmdSparkConnect) validate(_ context.Context) error {
+	// perhaps get credentials here
 	return x.opts.Validate()
 }
 
 func (x *CmdSparkConnect) run(ctx context.Context) error {
 	log.Infof("Spark connect will now run")
-	_, err := x.NewWebSocketServer()
+
+	socketServer, err := x.connectToServer(ctx)
 	if err != nil {
 		log.Errorf("could not connect to websocket server %w", err)
 		return err
 	}
+
+	log.Infof("Starting websocket server on address %s", socketServer.conn.RemoteAddr().String())
+	x.startSocketServer(ctx, *socketServer)
 
 	return nil
 }
@@ -169,39 +174,45 @@ func (x *CmdSparkConnectOptions) Validate() error {
 	return nil
 }
 
-func (x *CmdSparkConnect) NewWebSocketServer() (*SocketServer, error) {
-
-	// todo Is there a some other way to get the env params from options?  Perhaps just use cmd options for all params
-	token := os.Getenv("SPOTINST_TOKEN")
-	account := os.Getenv("SPOTINST_ACCOUNT")
+func (x *CmdSparkConnect) connectToServer(ctx context.Context) (*SocketServer, error) {
+	cfg := spotinst.DefaultConfig()
+	cred, err := cfg.Credentials.Get()
+	if err != nil {
+		return nil, err
+	}
 
 	clusterID := x.opts.ClusterID
 	appID := x.opts.AppID
 	baseURL := x.opts.WsUrl
 
-	address := fmt.Sprintf("%s/ocean/spark/cluster/%s/app/%s/connect?accountId=%s", baseURL, clusterID, appID, account)
+	address := fmt.Sprintf("%s/ocean/spark/cluster/%s/app/%s/connect?accountId=%s", baseURL, clusterID, appID, cred.Account)
 	log.Infof("Starting websocket server on address %s", address)
 
-	header := http.Header{"Authorization": []string{"Bearer " + token}}
-	conn, resp, err := websocket.DefaultDialer.Dial(address, header)
+	header := http.Header{"Authorization": []string{"Bearer " + cred.Token}}
+	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, address, header)
 
 	if err != nil {
-		if err == websocket.ErrBadHandshake {
+		if errors.Is(err, websocket.ErrBadHandshake) {
 			log.Errorf("handshake failed with status %d", resp.StatusCode)
 		}
 		return nil, err
 	}
-	x.startSocketServer(conn)
+
 	return &SocketServer{conn: conn}, nil
 }
 
-func (x *CmdSparkConnect) startSocketServer(wsConn *websocket.Conn) {
+func (x *CmdSparkConnect) startSocketServer(ctx context.Context, server SocketServer) {
 	ln, err := net.Listen("tcp", ":"+x.opts.Port)
 	if err != nil {
 		log.Errorf("handshake failed with status %w", err)
 		return
 	}
-	defer ln.Close()
+	defer func(ln net.Listener) {
+		err := ln.Close()
+		if err != nil {
+			log.Errorf("error closing listener %w", err)
+		}
+	}(ln)
 
 	for {
 		conn, err := ln.Accept()
@@ -211,7 +222,7 @@ func (x *CmdSparkConnect) startSocketServer(wsConn *websocket.Conn) {
 		}
 
 		go func() {
-			err := handleConnection(conn, wsConn)
+			err := handleConnection(ctx, conn, server.conn)
 			if err != nil {
 				log.Errorf("handle connection error: %w", err)
 			}
@@ -219,10 +230,15 @@ func (x *CmdSparkConnect) startSocketServer(wsConn *websocket.Conn) {
 	}
 }
 
-func handleConnection(conn net.Conn, wsConn *websocket.Conn) error {
-	defer conn.Close()
+func handleConnection(ctx context.Context, conn net.Conn, wsConn *websocket.Conn) error {
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			log.Errorf("error closing connection %w", err)
+		}
+	}(conn)
 
-	g, _ := errgroup.WithContext(context.Background())
+	g, _ := errgroup.WithContext(ctx)
 
 	// Websocket to Upstream
 	g.Go(func() error {
