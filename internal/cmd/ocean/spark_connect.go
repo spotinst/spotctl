@@ -22,10 +22,6 @@ const (
 	defaultSparkConnectPort = "15002"
 )
 
-type SocketServer struct {
-	conn *websocket.Conn
-}
-
 type (
 	CmdSparkConnect struct {
 		cmd  *cobra.Command
@@ -109,20 +105,19 @@ func (x *CmdSparkConnect) log(_ context.Context) error {
 }
 
 func (x *CmdSparkConnect) validate(_ context.Context) error {
-	// perhaps get credentials here
 	return x.opts.Validate()
 }
 
 func (x *CmdSparkConnect) run(ctx context.Context) error {
 	log.Infof("Spark connect will now run")
 
-	socketServer, err := x.connectToSocketServer(ctx)
+	socketConnection, err := x.connectToSocketServer(ctx)
 	if err != nil {
 		log.Errorf("could not connect to websocket server %w", err)
 		return err
 	}
 
-	log.Infof("Starting websocket server on address %s", socketServer.conn.RemoteAddr().String())
+	log.Infof("Starting websocket server on address %s", socketConnection.RemoteAddr().String())
 
 	ln, err := net.Listen("tcp", ":"+x.opts.Port)
 	if err != nil {
@@ -144,7 +139,7 @@ func (x *CmdSparkConnect) run(ctx context.Context) error {
 		}
 
 		go func() {
-			err := handleConnection(ctx, conn, socketServer.conn)
+			err := handleSocketConnection(ctx, conn, socketConnection)
 			if err != nil {
 				log.Errorf("handle connection error: %w", err)
 			}
@@ -200,7 +195,7 @@ func (x *CmdSparkConnectOptions) Validate() error {
 	return nil
 }
 
-func (x *CmdSparkConnect) connectToSocketServer(ctx context.Context) (*SocketServer, error) {
+func (x *CmdSparkConnect) connectToSocketServer(ctx context.Context) (*websocket.Conn, error) {
 	cfg := spotinst.DefaultConfig()
 	cred, err := cfg.Credentials.Get()
 	if err != nil {
@@ -224,10 +219,10 @@ func (x *CmdSparkConnect) connectToSocketServer(ctx context.Context) (*SocketSer
 		return nil, err
 	}
 
-	return &SocketServer{conn: conn}, nil
+	return conn, nil
 }
 
-func handleConnection(ctx context.Context, conn net.Conn, wsConn *websocket.Conn) error {
+func handleSocketConnection(ctx context.Context, conn net.Conn, wsConn *websocket.Conn) error {
 	defer func(conn net.Conn) {
 		err := conn.Close()
 		if err != nil {
