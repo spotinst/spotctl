@@ -15,6 +15,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"time"
 )
 
 const (
@@ -118,6 +119,23 @@ func (x *CmdSparkConnect) run(ctx context.Context) error {
 	}
 
 	log.Infof("Starting websocket server on address %s", socketConnection.RemoteAddr().String())
+
+	// Start ping ticker to keep connection alive
+	pingTicker := time.NewTicker(5 * time.Second)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-pingTicker.C:
+				if err := socketConnection.WriteMessage(websocket.PingMessage, nil); err != nil {
+					log.Errorf("Failed to send ping: %v", err)
+					return
+				}
+			}
+		}
+	}()
+	defer pingTicker.Stop()
 
 	ln, err := net.Listen("tcp", ":"+x.opts.Port)
 	if err != nil {
