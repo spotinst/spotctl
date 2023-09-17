@@ -116,14 +116,40 @@ func (x *CmdSparkConnect) validate(_ context.Context) error {
 func (x *CmdSparkConnect) run(ctx context.Context) error {
 	log.Infof("Spark connect will now run")
 
-	socketServer, err := x.connectToServer(ctx)
+	socketServer, err := x.connectToSocketServer(ctx)
 	if err != nil {
 		log.Errorf("could not connect to websocket server %w", err)
 		return err
 	}
 
 	log.Infof("Starting websocket server on address %s", socketServer.conn.RemoteAddr().String())
-	x.startSocketServer(ctx, *socketServer)
+
+	ln, err := net.Listen("tcp", ":"+x.opts.Port)
+	if err != nil {
+		log.Errorf("handshake failed with status %w", err)
+		return err
+	}
+	defer func(ln net.Listener) {
+		err := ln.Close()
+		if err != nil {
+			log.Errorf("error closing listener %w", err)
+		}
+	}(ln)
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Errorf("Accept error: %w", err)
+			return err
+		}
+
+		go func() {
+			err := handleConnection(ctx, conn, socketServer.conn)
+			if err != nil {
+				log.Errorf("handle connection error: %w", err)
+			}
+		}()
+	}
 
 	return nil
 }
@@ -174,7 +200,7 @@ func (x *CmdSparkConnectOptions) Validate() error {
 	return nil
 }
 
-func (x *CmdSparkConnect) connectToServer(ctx context.Context) (*SocketServer, error) {
+func (x *CmdSparkConnect) connectToSocketServer(ctx context.Context) (*SocketServer, error) {
 	cfg := spotinst.DefaultConfig()
 	cred, err := cfg.Credentials.Get()
 	if err != nil {
@@ -199,35 +225,6 @@ func (x *CmdSparkConnect) connectToServer(ctx context.Context) (*SocketServer, e
 	}
 
 	return &SocketServer{conn: conn}, nil
-}
-
-func (x *CmdSparkConnect) startSocketServer(ctx context.Context, server SocketServer) {
-	ln, err := net.Listen("tcp", ":"+x.opts.Port)
-	if err != nil {
-		log.Errorf("handshake failed with status %w", err)
-		return
-	}
-	defer func(ln net.Listener) {
-		err := ln.Close()
-		if err != nil {
-			log.Errorf("error closing listener %w", err)
-		}
-	}(ln)
-
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			log.Errorf("Accept error: %w", err)
-			return
-		}
-
-		go func() {
-			err := handleConnection(ctx, conn, server.conn)
-			if err != nil {
-				log.Errorf("handle connection error: %w", err)
-			}
-		}()
-	}
 }
 
 func handleConnection(ctx context.Context, conn net.Conn, wsConn *websocket.Conn) error {
