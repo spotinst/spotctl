@@ -130,7 +130,6 @@ func (x *CmdSparkConnect) run(ctx context.Context) error {
 			case <-pingTicker.C:
 				if err := socketConnection.WriteMessage(websocket.PingMessage, nil); err != nil {
 					log.Errorf("Failed to send ping: %v", err)
-					return
 				}
 			}
 		}
