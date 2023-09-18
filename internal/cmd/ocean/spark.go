@@ -61,6 +61,7 @@ func (x *CmdSpark) initSubCommands() {
 		NewCmdSparkGet,
 		NewCmdSparkDescribe,
 		NewCmdSparkDelete,
+		NewCmdSparkConnect,
 	}
 
 	for _, cmd := range commands {
