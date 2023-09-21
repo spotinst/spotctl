@@ -222,7 +222,7 @@ func (x *CmdSparkCreateCluster) run(ctx context.Context) error {
 	}
 
 	log.Infof("Creating deployer RBAC")
-	if err := ofas.CreateDeployerRBAC(ctx, client, spotSystemNamespace); err != nil {
+	if err := ofas.CreateDeployerRBAC(ctx, client); err != nil {
 		return fmt.Errorf("could not create deployer rbac, %w", err)
 	}
 

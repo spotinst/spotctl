@@ -25,7 +25,7 @@ func main() {
 	clientset, _ := kubernetes.NewForConfig(conf)
 
 	// Sample YAML, you would read this from a file in a real use case
-	largeYAML, _ := config.GetDeploymentFile()
+	largeYAML, _ := config.GetDeploymentYaml()
 	decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(largeYAML), 4096)
 
 	for {

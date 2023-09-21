@@ -3,7 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"text/template"
@@ -113,7 +113,7 @@ func getRBACManifests(namespace string) (*rbacManifests, error) {
 		RoleBindingName:         RoleBindingName,
 	}
 
-	deploymentFile, err := GetDeploymentFile()
+	deploymentFile, err := GetDeploymentYaml()
 	fmt.Println(deploymentFile)
 
 	saTemplate, err := template.New("sa").Parse(serviceAccountTemplate)
@@ -144,28 +144,23 @@ func getRBACManifests(namespace string) (*rbacManifests, error) {
 	}, nil
 }
 
-func GetDeploymentFile() (string, error) {
-	url := "https://spotinst-public.s3.amazonaws.com/integrations/kubernetes/ocean-spark/templates/ocean-spark-deploy.yaml"
+const OceanSparkDeployYamlUrl = "https://spotinst-public.s3.amazonaws.com/integrations/kubernetes/ocean-spark/templates/ocean-spark-deploy.yaml"
 
-	resp, err := http.Get(url)
+func GetDeploymentYaml() (string, error) {
+	resp, err := http.Get(OceanSparkDeployYamlUrl)
 	if err != nil {
-		fmt.Println("Error fetching the URL:", err)
-		return "", fmt.Errorf("could not read  ocean-spark-deploy.yaml  %w", err)
+		return "", fmt.Errorf("error fetching the ocean-spark-deploy.yaml from %s: %w", OceanSparkDeployYamlUrl, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Error status:", resp.Status)
-		return "", fmt.Errorf("could not read ocean-spark-deploy.yaml  %w", err)
-
+		return "", fmt.Errorf("could not read ocean-spark-deploy.yaml from %s: unexpected status code %d: %s", OceanSparkDeployYamlUrl, resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return "", fmt.Errorf("error reading ocean-spark-deploy.yaml  %w", err)
+		return "", fmt.Errorf("error reading response body for ocean-spark-deploy.yaml from %s: %w", OceanSparkDeployYamlUrl, err)
 	}
 
-	fmt.Println(string(data))
 	return string(data), nil
 }
