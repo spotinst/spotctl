@@ -35,6 +35,25 @@ func ValidateClusterContext(ctx context.Context, client kubernetes.Interface, cl
 	return nil
 }
 
+func CreateDeployerRBAC_OLD(ctx context.Context, client kubernetes.Interface, namespace string) error {
+	sa, crb, err := config.GetDeployerRBAC(namespace)
+	if err != nil {
+		return fmt.Errorf("could not get deployer rbac objects, %w", err)
+	}
+
+	_, err = client.CoreV1().ServiceAccounts(namespace).Create(ctx, sa, metav1.CreateOptions{})
+	if err != nil && !k8serrors.IsAlreadyExists(err) {
+		return fmt.Errorf("could not create deployer service account, %w", err)
+	}
+
+	_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, crb, metav1.CreateOptions{})
+	if err != nil && !k8serrors.IsAlreadyExists(err) {
+		return fmt.Errorf("could not create deployer cluster role binding, %w", err)
+	}
+
+	return nil
+}
+
 func CreateDeployerRBAC(ctx context.Context, client kubernetes.Interface, namespace string) error {
 	sa, crb, err := config.GetDeployerRBAC(namespace)
 	if err != nil {
