@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	rbakv1 "k8s.io/api/rbac/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -12,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes"
-	"strings"
 
+	"github.com/spotinst/spotctl/internal/log"
 	"github.com/spotinst/spotctl/internal/ocean/ofas/config"
 )
 
@@ -104,6 +106,9 @@ func CreateDeployerRBAC(ctx context.Context, client kubernetes.Interface) error 
 			if err != nil && !k8serrors.IsAlreadyExists(err) {
 				return fmt.Errorf("could not create cluster role binding, %w", err)
 			}
+
+		default:
+			log.Warnf("Skipping unsupported resource type %q", obj.GetKind())
 		}
 	}
 
