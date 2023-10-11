@@ -21,6 +21,8 @@ import (
 const (
 	defaultWsUrl            = "wss://api.spotinst.io"
 	defaultSparkConnectPort = "15002"
+	defaultHivePort         = "10000"
+	defaultEndpoint         = "connect"
 )
 
 type (
@@ -35,6 +37,7 @@ type (
 		ClusterID string
 		AppID     string
 		Port      string
+		EndPoint  string
 	}
 )
 
@@ -178,8 +181,9 @@ func (x *CmdSparkConnectOptions) initDefaults(opts *CmdSparkOptions) {
 func (x *CmdSparkConnectOptions) initFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&x.ClusterID, flags.FlagOFASClusterID, x.ClusterID, "id of the cluster")
 	fs.StringVar(&x.AppID, flags.FlagOFASAppID, x.AppID, "id of the spark application")
-	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.AppID, "web socket url. Default is wss://api.spotinst.io")
-	fs.StringVar(&x.Port, "port", x.Port, "spark connection port. Default is 1502")
+	fs.StringVar(&x.WsUrl, flags.FlagOFASWsUrl, x.WsUrl, "web socket url. Default is wss://api.spotinst.io")
+	fs.StringVar(&x.Port, "port", x.Port, "spark connection port. Default is 15002")
+	fs.StringVar(&x.EndPoint, "endpoint", x.EndPoint, "spark connection endpoint. Default is connect, hive is also supported")
 }
 
 func (x *CmdSparkConnectOptions) Validate() error {
@@ -201,8 +205,18 @@ func (x *CmdSparkConnectOptions) Validate() error {
 		x.WsUrl = defaultWsUrl
 	}
 
+	if x.EndPoint == "" {
+		x.EndPoint = defaultEndpoint
+	} else if x.EndPoint != defaultEndpoint && x.EndPoint != "hive" {
+		errg.Add(fmt.Errorf("endpoint %s is not supported", x.EndPoint))
+	}
+
 	if x.Port == "" {
-		x.Port = defaultSparkConnectPort
+		if x.EndPoint == defaultEndpoint {
+			x.Port = defaultSparkConnectPort
+		} else {
+			x.Port = defaultHivePort
+		}
 	}
 
 	if errg.Len() > 0 {
@@ -222,8 +236,9 @@ func (x *CmdSparkConnect) connectToSocketServer(ctx context.Context) (*websocket
 	clusterID := x.opts.ClusterID
 	appID := x.opts.AppID
 	baseURL := x.opts.WsUrl
+	endPoint := x.opts.EndPoint
 
-	address := fmt.Sprintf("%s/ocean/spark/cluster/%s/app/%s/connect?accountId=%s", baseURL, clusterID, appID, cred.Account)
+	address := fmt.Sprintf("%s/ocean/spark/cluster/%s/app/%s/%s?accountId=%s", baseURL, clusterID, appID, endPoint, cred.Account)
 	log.Infof("Starting websocket server on address %s", address)
 
 	header := http.Header{"Authorization": []string{"Bearer " + cred.Token}}
