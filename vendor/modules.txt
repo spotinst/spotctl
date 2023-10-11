@@ -170,8 +170,6 @@ github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
 github.com/pierrec/lz4/v4/internal/lz4stream
 github.com/pierrec/lz4/v4/internal/xxh32
-# github.com/pmezard/go-difflib v1.0.0
-github.com/pmezard/go-difflib/difflib
 # github.com/riywo/loginshell v0.0.0-20190610082906-2ed199a032f6
 ## explicit
 github.com/riywo/loginshell
@@ -204,9 +202,6 @@ github.com/spotinst/spotinst-sdk-go/spotinst/session
 github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil
 github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates
 github.com/spotinst/spotinst-sdk-go/spotinst/util/useragent
-# github.com/stretchr/testify v1.8.1
-## explicit
-github.com/stretchr/testify/assert
 # github.com/ulikunitz/xz v0.5.9
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
