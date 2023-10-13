@@ -39,6 +39,8 @@ func newCmdGetCluster(opts *CmdGetOptions) *CmdGetCluster {
 func (x *CmdGetCluster) initSubCommands() {
 	commands := []func(*CmdGetClusterOptions) *cobra.Command{
 		NewCmdGetClusterKubernetes,
+		NewCmdGetClusterEcs,
+		NewCmdGetClusterLogs,
 	}
 
 	for _, cmd := range commands {

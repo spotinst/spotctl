@@ -44,6 +44,7 @@ todo: ## Show to-do items per file
 .PHONY: build
 build: fmt ## Build all commands
 	$(Q) $(GO) build -trimpath -race -o dist/spotctl cmd/spotctl/main.go
+	cp dist/spotctl /home/pathcl/go/bin
 
 .PHONY: test
 test: fmt ## Run all tests
